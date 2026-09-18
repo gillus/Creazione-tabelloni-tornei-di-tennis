@@ -1,0 +1,30 @@
+CARTELLA "manuali"
+==================
+
+Qui dentro c'e' il TESTO dei due manuali della Federazione Italiana Tennis:
+
+  manuale-volume1-istruzioni.txt   (dal file MANUALE TABELLONI_1.pdf, 103 pagine)
+  manuale-volume2-esercizi.txt     (dal file MANUALE TABELLONI_2.pdf, 208 pagine)
+
+Titolo completo dei manuali:
+  "Modalita' di compilazione dei tabelloni ad eliminazione diretta
+   per la disputa delle manifestazioni individuali"
+  versione 2.0 - novembre 2011
+  a cura di Mauricio Rosciano e Carlo Capodaglio
+
+A COSA SERVONO
+--------------
+Sono una copia comoda da consultare e da cercare mentre si scrive il programma:
+nei file .txt si puo' cercare una parola (per esempio "aspettito" o "teste di serie")
+molto piu' velocemente che nel PDF.
+I PDF originali restano nella cartella principale e sono quelli che fanno fede.
+
+ATTENZIONE
+----------
+Il testo e' stato ricavato dai PDF in automatico, quindi:
+- i disegni dei tabelloni (le graffe con i nomi) NON si vedono: al loro posto
+  compaiono elenchi disordinati di sigle;
+- le lettere accentate a volte si perdono ("l'introduzione" diventa "lintroduzione");
+- ogni pagina del PDF e' segnalata da una riga come:  ===== [manuale1.txt pag.12] =====
+
+Per gli schemi disegnati bisogna sempre guardare il PDF originale.
