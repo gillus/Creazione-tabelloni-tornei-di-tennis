@@ -1,4 +1,4 @@
-"""Calcoli preliminari di un tabellone di estrazione (manuale, Volume I, capitolo II).
+"""Calcoli preliminari di un tabellone di estrazione (manuale, Volume I, capitoli II e III).
 
 Sono i conti che il giudice arbitro fa prima di disegnare il tabellone:
 dimensione, aspettiti, incontri del primo turno, chi gioca il primo turno,
@@ -6,6 +6,9 @@ quante teste di serie e quali.
 
 Le sigle sono quelle del manuale:
   Qu  qualificati uscenti (quanti giocatori escono dal tabellone)
+  S   sezioni: quando Qu non e' una potenza di due (1, 2, 4, 8...) il tabellone
+      e' diviso in Qu sezioni, piccoli tabelloni che danno un qualificato
+      ciascuno (manuale, Volume I, capitolo III)
   q   qualificati entranti (arrivano da un tabellone precedente)
   N   numero dei giocatori partecipanti (direttamente ammessi + q)
   D   dimensione del tabellone
@@ -29,6 +32,7 @@ class Calcoli:
     # Giocatori direttamente ammessi: coppie (classifica, quanti), dalla classifica piu' alta.
     ammessi: list
     N: int = 0
+    sezioni: int = 0  # 0 = tabellone senza sezioni
     D: int = 0
     A: int = 0
     NA: int = 0
@@ -37,6 +41,7 @@ class Calcoli:
     non_aspettiti: list = field(default_factory=list)
     aspettiti: list = field(default_factory=list)
     # Numero minimo e massimo di teste di serie (None se non si fanno teste di serie).
+    # Con le sezioni sono multipli del numero delle sezioni.
     teste_di_serie_minimo: int = None
     teste_di_serie_massimo: int = None
     teste_di_serie_proposta: int = None
@@ -98,6 +103,20 @@ def proposta_teste_di_serie(ammessi, minimo, massimo):
     return minimo
 
 
+def proposta_teste_di_serie_sezioni(aspettiti_diretti, minimo, massimo, sezioni):
+    """Propone quante teste di serie fare in un tabellone a sezioni.
+
+    Il numero deve essere un multiplo delle sezioni. Regola usata (ricavata dagli
+    esercizi del Volume II, capitolo 2): il multiplo piu' piccolo che fa teste di
+    serie tutti i giocatori ammessi direttamente al secondo turno; se non c'e',
+    il massimo.
+    """
+    for numero in range(minimo, massimo + 1, sezioni):
+        if numero >= aspettiti_diretti:
+            return numero
+    return massimo
+
+
 def calcola(ammessi, qualificati_entranti=0, qualificati_uscenti=1, teste_di_serie=None):
     """Fa i calcoli preliminari.
 
@@ -118,18 +137,18 @@ def calcola(ammessi, qualificati_entranti=0, qualificati_uscenti=1, teste_di_ser
         problemi.append(Problema(ERRORE, "", 0, f"servono almeno 2 giocatori, invece ce ne sono {N}"))
         return calcoli
 
-    # Numeri del tabellone
-    calcoli.D = D = potenza_di_due_successiva(N)
+    # Numeri del tabellone. Con le sezioni la dimensione e' il numero delle
+    # sezioni per una potenza di due (per esempio 5 x 4 = 20, 3 x 8 = 24).
+    calcoli.sezioni = S = 0 if e_potenza_di_due(Qu) else Qu
+    if S:
+        calcoli.D = D = S * potenza_di_due_successiva(-(-N // S))
+    else:
+        calcoli.D = D = potenza_di_due_successiva(N)
     calcoli.A = A = D - N
     calcoli.NA = NA = N - A
     calcoli.I1 = I1 = NA // 2
 
-    if not e_potenza_di_due(Qu):
-        problemi.append(Problema(
-            ERRORE, "", 0,
-            f"i qualificati uscenti sono {Qu}, che non e' una potenza di due (1, 2, 4, 8, 16...): "
-            f"serve un tabellone a sezioni (capitolo III del manuale), che il programma non fa ancora"))
-    elif 2 * Qu > N:
+    if 2 * Qu > N:
         problemi.append(Problema(
             ERRORE, "", 0,
             f"troppi qualificati uscenti ({Qu}) per {N} giocatori: "
@@ -167,25 +186,37 @@ def calcola(ammessi, qualificati_entranti=0, qualificati_uscenti=1, teste_di_ser
 
     minimo = max(-(-N // 8), Qu)  # un ottavo dei giocatori, arrotondato per eccesso
     massimo = min(N // 2, diretti)  # la meta' dei giocatori; i q non possono essere teste di serie
+    if S:
+        # Ogni sezione deve avere lo stesso numero di teste di serie.
+        minimo = -(-minimo // S) * S
+        massimo = massimo // S * S
     calcoli.teste_di_serie_minimo = minimo
     calcoli.teste_di_serie_massimo = massimo
     if minimo > massimo:
         problemi.append(Problema(
             ERRORE, "", 0,
             f"non si possono fare le teste di serie: ne servono almeno {minimo} "
-            f"ma al massimo se ne possono fare {massimo}"))
+            f"ma al massimo se ne possono fare {massimo}"
+            + (f" (con {S} sezioni devono essere un multiplo di {S})" if S else "")))
         return calcoli
-    calcoli.teste_di_serie_proposta = proposta_teste_di_serie(ammessi, minimo, massimo)
+    if S:
+        calcoli.teste_di_serie_proposta = proposta_teste_di_serie_sezioni(
+            sum(n for c, n in calcoli.aspettiti if c != QUALIFICATO), minimo, massimo, S)
+    else:
+        calcoli.teste_di_serie_proposta = proposta_teste_di_serie(ammessi, minimo, massimo)
 
     if teste_di_serie is None:
         calcoli.teste_di_serie = calcoli.teste_di_serie_proposta
-    elif minimo <= teste_di_serie <= massimo:
+    elif minimo <= teste_di_serie <= massimo and (not S or teste_di_serie % S == 0):
         calcoli.teste_di_serie = teste_di_serie
         calcoli.teste_di_serie_scelte_dal_giudice = True
     else:
+        multiplo = (f" e, con {S} sezioni, essere un multiplo di {S} (lo stesso numero "
+                    f"in ogni sezione)") if S else ""
         problemi.append(Problema(
             ERRORE, "", 0,
-            f"le teste di serie scelte ({teste_di_serie}) devono essere tra {minimo} e {massimo}"))
+            f"le teste di serie scelte ({teste_di_serie}) devono essere tra {minimo} e {massimo}"
+            f"{multiplo}"))
         return calcoli
 
     # Le teste di serie sono i giocatori con la classifica piu' alta.
@@ -213,8 +244,12 @@ def descrivi(calcoli):
     ]
     if not calcoli.D:
         return "\n".join(righe)
+    S = calcoli.sezioni
+    if S:
+        righe.append(f"Sezioni (una per qualificato)  {S}, da {calcoli.D // S} posti ciascuna")
     righe += [
-        f"Dimensione del tabellone       D  = {calcoli.D}",
+        f"Dimensione del tabellone       D  = {calcoli.D}"
+        + (f" ({S} x {calcoli.D // S})" if S else ""),
         f"Aspettiti (entrano al 2 turno) A  = {calcoli.D} - {calcoli.N} = {calcoli.A}",
         f"Non aspettiti (primo turno)    NA = {calcoli.N} - {calcoli.A} = {calcoli.NA}",
         f"Incontri del primo turno       I1 = {calcoli.NA} / 2 = {calcoli.I1}",
@@ -225,7 +260,8 @@ def descrivi(calcoli):
         righe.append("Teste di serie:                nessuna (giocano solo non classificati)")
         return "\n".join(righe)
     righe.append(f"Teste di serie possibili:      da {calcoli.teste_di_serie_minimo}"
-                 f" a {calcoli.teste_di_serie_massimo}")
+                 f" a {calcoli.teste_di_serie_massimo}"
+                 + (f", solo multipli di {S} (lo stesso numero in ogni sezione)" if S else ""))
     if calcoli.composizione_teste_di_serie:
         chi = "scelte dal giudice arbitro" if calcoli.teste_di_serie_scelte_dal_giudice \
             else "proposta del programma"

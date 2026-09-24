@@ -18,7 +18,7 @@ CLASSIFICHE, _ = leggi_classifiche(os.path.join(CARTELLA, "..", "dati", "classif
 
 def leggi_elenco(testo):
     """'3 q, 2 (4.6)' -> {'q': 3, '4.6': 2}"""
-    if testo.strip() == "nessuna":
+    if testo.strip() in ("nessuna", "nessuno"):
         return {}
     elenco = {}
     for numero, qualificati, classifica in re.findall(r"(\d+)\s*(?:(q)\b|\(([^)]+)\))", testo):
@@ -50,7 +50,7 @@ def calcola_esercizio(esercizio, teste_di_serie=None):
 
 class ProveEserciziDelManuale(unittest.TestCase):
     def test_ci_sono_tutti_gli_esercizi(self):
-        self.assertEqual(len(leggi_esercizi()), 22)
+        self.assertEqual(len(leggi_esercizi()), 40)
 
     def test_calcoli_come_nel_manuale(self):
         for nome, esercizio in leggi_esercizi().items():
@@ -88,8 +88,21 @@ class ProveCasiParticolari(unittest.TestCase):
         self.assertEqual(dict(calcoli.non_aspettiti), {"q": 8, "3.1": 8})
 
     def test_qualificati_uscenti_non_potenza_di_due(self):
-        calcoli = calcola([("4.NC", 24)], qualificati_uscenti=3)
-        self.assertIn("sezioni", calcoli.problemi[0].messaggio)
+        # 3 qualificati uscenti: tabellone a 3 sezioni da 8 posti.
+        calcoli = calcola([("4.NC", 21)], qualificati_uscenti=3)
+        self.assertEqual(calcoli.problemi, [])
+        self.assertEqual((calcoli.sezioni, calcoli.D), (3, 24))
+        self.assertIn("Sezioni (una per qualificato)  3, da 8 posti ciascuna", descrivi(calcoli))
+
+    def test_teste_di_serie_non_multiple_delle_sezioni(self):
+        # Volume II, esercizio 2.08: con 3 sezioni le teste di serie possono essere 3, 6 o 9.
+        ammessi = [("4.1", 4), ("4.2", 7)]
+        calcoli = calcola(ammessi, qualificati_entranti=7, qualificati_uscenti=3, teste_di_serie=9)
+        self.assertEqual(calcoli.problemi, [])
+        calcoli = calcola(ammessi, qualificati_entranti=7, qualificati_uscenti=3, teste_di_serie=5)
+        self.assertEqual(calcoli.problemi[0].gravita, ERRORE)
+        self.assertIn("multiplo di 3", calcoli.problemi[0].messaggio)
+        self.assertIn("solo multipli di 3", descrivi(calcola(ammessi, 7, 3)))
 
     def test_troppi_qualificati_uscenti(self):
         calcoli = calcola([("4.NC", 5)], qualificati_uscenti=4)
