@@ -1,3 +1,6 @@
 # File che NON vanno nel repository (che e' pubblico)
 # Tabellone vero con nomi di persone reali: resta solo su questo computer
 Tabellone FITP - sola visualizzazione.pdf
+
+# File temporanei che Python crea da solo
+__pycache__/
