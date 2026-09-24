@@ -70,6 +70,19 @@ def e_potenza_di_due(numero):
     return numero >= 1 and potenza_di_due_successiva(numero) == numero
 
 
+def dimensione_del_tabellone(giocatori, qualificati_uscenti=1):
+    """Quanti posti deve avere il tabellone.
+
+    Senza sezioni: la potenza di due uguale o subito superiore ai giocatori.
+    Con le sezioni (qualificati uscenti diversi da 1, 2, 4, 8...): il numero delle
+    sezioni per una potenza di due (per esempio 5 x 4 = 20, 3 x 8 = 24).
+    """
+    if e_potenza_di_due(qualificati_uscenti):
+        return potenza_di_due_successiva(giocatori)
+    sezioni = qualificati_uscenti
+    return sezioni * potenza_di_due_successiva(-(-giocatori // sezioni))
+
+
 def togli_dal_basso(ammessi, quanti):
     """Prende 'quanti' giocatori partendo dalla classifica piu' bassa.
 
@@ -137,13 +150,9 @@ def calcola(ammessi, qualificati_entranti=0, qualificati_uscenti=1, teste_di_ser
         problemi.append(Problema(ERRORE, "", 0, f"servono almeno 2 giocatori, invece ce ne sono {N}"))
         return calcoli
 
-    # Numeri del tabellone. Con le sezioni la dimensione e' il numero delle
-    # sezioni per una potenza di due (per esempio 5 x 4 = 20, 3 x 8 = 24).
+    # Numeri del tabellone
     calcoli.sezioni = S = 0 if e_potenza_di_due(Qu) else Qu
-    if S:
-        calcoli.D = D = S * potenza_di_due_successiva(-(-N // S))
-    else:
-        calcoli.D = D = potenza_di_due_successiva(N)
+    calcoli.D = D = dimensione_del_tabellone(N, Qu)
     calcoli.A = A = D - N
     calcoli.NA = NA = N - A
     calcoli.I1 = I1 = NA // 2

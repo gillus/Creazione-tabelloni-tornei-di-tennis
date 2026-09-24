@@ -12,7 +12,7 @@ puo' scrivere quello che si vuole (classifica, circolo): il programma
 prende classifica e circolo da dati/giocatori.txt.
 E' lo stesso modo in cui il programma salva il tabellone in risultati/.
 
-Il controllo segue il manuale (Volume I, capitoli I e II) e segnala:
+Il controllo segue il manuale (Volume I, capitoli I, II e III) e segnala:
   ERRORE  una regola non rispettata: il tabellone va corretto;
   AVVISO  una raccomandazione non seguita, o una cosa da guardare.
 """
@@ -20,10 +20,12 @@ Il controllo segue il manuale (Volume I, capitoli I e II) e segnala:
 import random
 import re
 
-from programma.calcoli import calcola, conta_per_classifica, potenza_di_due_successiva
+from programma.calcoli import (calcola, conta_per_classifica, dimensione_del_tabellone,
+                               e_potenza_di_due)
 from programma.dati import AVVISO, ERRORE, Problema, leggi_righe
 from programma.sorteggio import (GIOCATORE, LIBERO, QUALIFICATO_ENTRANTE, Posto, Tabellone,
-                                 incontri_stesso_circolo, schema, sorteggia)
+                                 giocatori_per_sezione, incontri_stesso_circolo, schema,
+                                 sorteggia)
 
 _RIGA = re.compile(r"^(?:(\d+)\s+)?(?:\(\s*(\d+)\s*\)\s*)?(\S+)(.*)$")
 
@@ -103,11 +105,21 @@ def controlla(posti, giocatori, classifiche, qualificati_entranti=0, qualificati
 
     livello = {c: i for i, c in enumerate(classifiche)}  # 0 = classifica piu' alta
     D = len(posti)
+    Qu = qualificati_uscenti
+    sezioni = 0 if e_potenza_di_due(Qu) else Qu
 
     # --- Dimensione e giocatori -------------------------------------------------
-    if D < 2 or potenza_di_due_successiva(D) != D:
+    if sezioni:
+        if D % sezioni or not e_potenza_di_due(D // sezioni) or D < 2 * sezioni:
+            errore(f"il tabellone ha {D} posti: con {sezioni} qualificati uscenti e' un tabellone "
+                   f"a {sezioni} sezioni, e i posti devono essere {sezioni} per 2, 4, 8, 16... "
+                   f"({', '.join(str(sezioni * 2 ** k) for k in range(1, 5))}...)")
+            return problemi
+    elif D < 2 or not e_potenza_di_due(D):
         errore(f"il tabellone ha {D} posti: i posti devono essere 2, 4, 8, 16, 32, 64...")
         return problemi
+    larghezza_sezione = D // sezioni if sezioni else D
+    coppie_per_sezione = larghezza_sezione // 2
 
     nel_tabellone = {p.giocatore.codice.upper() for p in posti if p.giocatore}
     mancano = [g.codice for g in giocatori if g.codice.upper() not in nel_tabellone]
@@ -121,9 +133,11 @@ def controlla(posti, giocatori, classifiche, qualificati_entranti=0, qualificati
 
     diretti = [p for p in posti if p.tipo == GIOCATORE and p.giocatore]
     N = len(diretti) + q
-    if D != potenza_di_due_successiva(N):
-        errore(f"con {N} giocatori il tabellone deve avere {potenza_di_due_successiva(N)} posti, "
-               f"invece ne ha {D} (Volume I, capitolo II, lettera B)")
+    giusta = dimensione_del_tabellone(N, Qu)
+    if D != giusta:
+        errore(f"con {N} giocatori il tabellone deve avere {giusta} posti, invece ne ha {D} "
+               + ("(Volume I, capitolo III, lettera C)" if sezioni
+                  else "(Volume I, capitolo II, lettera B)"))
         return problemi
     if mancano:
         return problemi
@@ -236,20 +250,25 @@ def controlla(posti, giocatori, classifiche, qualificati_entranti=0, qualificati
                f"entrare in gara dopo una con il numero piu' basso (Volume I, capitolo I, lettera E)")
 
     # --- Qualificati entranti -----------------------------------------------------
-    meta = D // 2
+    def nella_meta_superiore(indice_posto):
+        """Se il posto e' nella meta' superiore del tabellone (o della sua sezione)."""
+        return (indice_posto // 2) % coppie_per_sezione < max(1, coppie_per_sezione // 2)
+
+    di_cosa = "della sua sezione" if sezioni else "del tabellone"
     for alto, basso in coppie:
         tipi = (posti[alto].tipo, posti[basso].tipo)
         if tipi == (QUALIFICATO_ENTRANTE, QUALIFICATO_ENTRANTE):
             errore(f"ai posti {alto + 1} e {basso + 1} due qualificati entranti si incontrano "
                    f"al primo turno (Volume I, capitolo I, lettera G)")
         elif QUALIFICATO_ENTRANTE in tipi and LIBERO not in tipi:
-            giusto = basso if alto < meta else alto
+            superiore = nella_meta_superiore(alto)
+            giusto = basso if superiore else alto
             if posti[giusto].tipo != QUALIFICATO_ENTRANTE:
-                dove = "in basso" if alto < meta else "in alto"
-                meta_nome = "superiore" if alto < meta else "inferiore"
+                dove = "in basso" if superiore else "in alto"
+                meta_nome = "superiore" if superiore else "inferiore"
                 errore(f"il qualificato entrante al posto {(alto if giusto == basso else basso) + 1} "
                        f"deve stare {dove} nel suo incontro (al posto {giusto + 1}), perche' e' "
-                       f"nella meta' {meta_nome} del tabellone (Volume I, capitolo I, lettera F)")
+                       f"nella meta' {meta_nome} {di_cosa} (Volume I, capitolo I, lettera F)")
     # Un q che entra al secondo turno non deve trovare un altro q al suo primo incontro.
     for i, posto in enumerate(posti):
         if posto.tipo == QUALIFICATO_ENTRANTE and aspettito(posti, i):
@@ -268,8 +287,18 @@ def controlla(posti, giocatori, classifiche, qualificati_entranti=0, qualificati
         errore(f"il qualificato entrante {_elenco_posti(q_al_secondo)} entra al secondo turno, "
                f"mentre al primo turno ci sono incontri tra giocatori ammessi direttamente: "
                f"i qualificati vanno messi prima al primo turno (Volume I, capitolo I, lettera G)")
-    # Distribuzione dei q nelle frazioni del tabellone: meta', quarti, ottavi...
-    larghezza = D
+    # Distribuzione dei q tra le sezioni, con una differenza di uno al massimo.
+    if sezioni:
+        q_sezioni = [sum(1 for p in posti[i:i + larghezza_sezione] if p.tipo == QUALIFICATO_ENTRANTE)
+                     for i in range(0, D, larghezza_sezione)]
+        if max(q_sezioni) - min(q_sezioni) > 1:
+            piu, meno = q_sezioni.index(max(q_sezioni)), q_sezioni.index(min(q_sezioni))
+            errore(f"i qualificati entranti non sono distribuiti in modo uguale tra le sezioni: "
+                   f"la sezione {piu + 1} ne ha {max(q_sezioni)}, la sezione {meno + 1} ne ha "
+                   f"{min(q_sezioni)}; la differenza puo' essere al massimo di uno "
+                   f"(Volume I, capitolo III, lettera B)")
+    # Distribuzione dei q nelle frazioni del tabellone (o di ogni sezione): meta', quarti...
+    larghezza = larghezza_sezione
     squilibrio = None
     while larghezza >= 4 and squilibrio is None:
         for inizio in range(0, D, larghezza):
@@ -285,6 +314,14 @@ def controlla(posti, giocatori, classifiche, qualificati_entranti=0, qualificati
         errore(f"i qualificati entranti non sono distribuiti in modo uguale: dal posto {inizio + 1} "
                f"al {inizio + larghezza // 2} ce ne sono {su}, dal {inizio + larghezza // 2 + 1} "
                f"al {inizio + larghezza} ce ne sono {giu} (Volume I, capitolo I, lettera G)")
+
+    # --- Sezioni con lo stesso numero di giocatori -----------------------------------
+    if sezioni:
+        per_sezione = giocatori_per_sezione(posti, sezioni)
+        if max(per_sezione) - min(per_sezione) > 2:
+            avviso(f"le sezioni hanno un numero di giocatori troppo diverso (da {min(per_sezione)} "
+                   f"a {max(per_sezione)}): la differenza dovrebbe essere di due al massimo "
+                   f"(Volume I, capitolo III, lettera B; Volume II, esercizio 2.23)")
 
     # --- Regola dello stesso circolo ------------------------------------------------
     stessi = incontri_stesso_circolo(Tabellone(calcoli, posti))

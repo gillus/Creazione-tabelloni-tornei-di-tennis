@@ -73,13 +73,13 @@ class ProveTabelloneGiusto(ProvaTabellone):
         rng = random.Random(11)
         classifiche = ["3.5", "4.1", "4.2", "4.3", "4.4", "4.5", "4.6", "4.NC"]
         provati = 0
-        while provati < 60:
+        while provati < 90:
             n = rng.randint(2, 70)
             scelte = rng.sample(classifiche, rng.randint(1, 4))
             elenco = [(rng.choice(scelte), f"C{rng.randint(0, 6)}") for _ in range(n)]
             giocatori = giocatori_di_prova(elenco)
             q = rng.randint(0, n)
-            Qu = rng.choice([1, 2, 4, 8])
+            Qu = rng.choice([1, 2, 3, 4, 5, 6, 7, 8])  # 3, 5, 6, 7: tabelloni a sezioni
             calcoli = calcola(conta_per_classifica(giocatori, CLASSIFICHE),
                               qualificati_entranti=q, qualificati_uscenti=Qu)
             if any(p.gravita == ERRORE for p in calcoli.problemi):
@@ -88,6 +88,78 @@ class ProveTabelloneGiusto(ProvaTabellone):
             tabellone = sorteggia(calcoli, giocatori, rng)
             with self.subTest(giocatori=n, q=q, Qu=Qu):
                 self.assertEqual(errori(controlla(tabellone.posti, giocatori, CLASSIFICHE, q, Qu)), [])
+
+
+class ProveTabelloneASezioni(unittest.TestCase):
+    """Un tabellone a 5 sezioni come l'esercizio 2.22 del Volume II:
+    12 qualificati entranti, 7 (4.6), 5 (4.5), 7 (4.4), 5 qualificati uscenti."""
+
+    def setUp(self):
+        elenco = [(c, f"Circolo {i}") for i, c in enumerate(["4.6"] * 7 + ["4.5"] * 5 + ["4.4"] * 7)]
+        self.giocatori = giocatori_di_prova(elenco)
+        calcoli = calcola(conta_per_classifica(self.giocatori, CLASSIFICHE), qualificati_entranti=12,
+                          qualificati_uscenti=5, teste_di_serie=5)
+        self.posti = sorteggia(calcoli, self.giocatori, random.Random(2)).posti
+
+    def controlla(self):
+        return controlla(self.posti, self.giocatori, CLASSIFICHE, 12, 5)
+
+    def test_nessun_errore(self):
+        self.assertEqual(len(self.posti), 40)
+        self.assertEqual(self.controlla(), [])
+
+    def test_numero_di_posti_sbagliato(self):
+        self.posti += [Posto(LIBERO), Posto(LIBERO)]
+        self.assertIn("i posti devono essere 5 per 2, 4, 8, 16", " ".join(errori(self.controlla())))
+
+    def test_qualificato_nella_riga_sbagliata(self):
+        # Sezione 2 (posti da 9 a 16): nella sua meta' superiore il q sta in basso.
+        i = next(i for i in range(8, 12, 2) if self.posti[i + 1].tipo == QUALIFICATO_ENTRANTE)
+        self.posti[i], self.posti[i + 1] = self.posti[i + 1], self.posti[i]
+        self.assertIn(f"il qualificato entrante al posto {i + 1} deve stare in basso nel suo "
+                      f"incontro (al posto {i + 2}), perche' e' nella meta' superiore della sua sezione",
+                      errori(self.controlla())[0])
+
+    def test_qualificati_non_divisi_tra_le_sezioni(self):
+        # Un q della sezione 5 va al posto libero della sezione 1: la sezione 1 ha 4 q,
+        # la sezione 5 ne ha solo 1.
+        q = next(i for i in range(32, 40) if self.posti[i].tipo == QUALIFICATO_ENTRANTE)
+        libero = next(i for i in range(0, 8) if self.posti[i].tipo == LIBERO)
+        self.posti[q], self.posti[libero] = self.posti[libero], self.posti[q]
+        self.assertTrue(any("tra le sezioni" in e for e in errori(self.controlla())))
+
+    def test_teste_di_serie_non_multiple_delle_sezioni(self):
+        # Una testa di serie in piu': 6 teste di serie con 5 sezioni.
+        altro = next(p for p in self.posti if p.tipo == GIOCATORE and not p.testa_di_serie
+                     and p.giocatore.classifica == "4.4")
+        altro.testa_di_serie = 6
+        self.assertTrue(any("multiplo di 5" in e for e in errori(self.controlla())))
+
+    def test_sezioni_troppo_diverse(self):
+        # Volume II, esercizio 2.23, soluzione 1 (sbagliata): sezioni da 7 e da 4 giocatori.
+        elenco = [(c, f"Circolo {i}") for i, c in enumerate(["4.6"] * 4 + ["4.5"] * 16)]
+        giocatori = giocatori_di_prova(elenco)
+        testo = ("(1) - | x q | q x | q (14) | (2) - | x q | q x | q (13) | (3) - | x q | - q | "
+                 "- (12) | (4) - | x q | - q | - (11) | (5) - | q - | - q | - (10) | "
+                 "(6) - | q - | - q | - (9) | (7) - | q - | - q | - (8)")
+        posti = []
+        for segno in testo.replace("|", " ").split():
+            if segno == "-":
+                posti.append(Posto(LIBERO))
+            elif segno == "q":
+                posti.append(Posto(QUALIFICATO_ENTRANTE))
+            else:
+                posti.append(Posto(GIOCATORE, int(segno.strip("()")) if segno != "x" else 0))
+        # Le teste di serie sono i 14 (4.5); gli altri posti ai 4 (4.6) e ai 2 (4.5) rimasti.
+        teste = [g for g in giocatori if g.classifica == "4.5"][:14]
+        altri = [g for g in giocatori if g not in teste]
+        for posto in posti:
+            if posto.tipo == GIOCATORE:
+                posto.giocatore = teste[posto.testa_di_serie - 1] if posto.testa_di_serie \
+                    else altri.pop()
+        problemi = controlla(posti, giocatori, CLASSIFICHE, 16, 7)
+        self.assertTrue(any("sezioni hanno un numero di giocatori troppo diverso (da 4 a 7)"
+                            in p.messaggio for p in problemi), [str(p) for p in problemi])
 
 
 class ProveTabelloneSbagliato(ProvaTabellone):
