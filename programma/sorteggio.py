@@ -46,6 +46,7 @@ import random
 from collections import Counter
 from dataclasses import dataclass, field
 
+from programma.armonizzazione import Armonizzazione
 from programma.calcoli import QUALIFICATO
 from programma.dati import AVVISO, ERRORE, Problema
 
@@ -57,6 +58,8 @@ QUALIFICATO_ENTRANTE = "q"
 # Oltre questo numero di tentativi il programma smette di cercare un sorteggio
 # che rispetti la regola dello stesso circolo (serve solo nei casi molto difficili).
 LIMITE_TENTATIVI = 20_000
+# Lo stesso, per ognuna delle disposizioni delle classifiche del sorteggio mirato.
+LIMITE_TENTATIVI_MIRATO = 3_000
 
 
 @dataclass
@@ -346,7 +349,8 @@ class _Ricerca:
     """
 
     def __init__(self, tra_ammessi, contro_q, avversario, richiesta, pedine, quote,
-                 posti_aspettiti, rng):
+                 posti_aspettiti, rng, limite=LIMITE_TENTATIVI):
+        self.limite = limite
         # Gli incontri tra due ammessi si riempiono in ordine casuale, non dall'alto.
         incontri = [tra_ammessi[i:i + 2] for i in range(0, len(tra_ammessi), 2)]
         rng.shuffle(incontri)
@@ -417,7 +421,7 @@ class _Ricerca:
 
     def _cerca(self, violazioni_ammesse):
         self.tentativi += 1
-        if self.tentativi > LIMITE_TENTATIVI:
+        if self.tentativi > self.limite:
             raise _TroppiTentativi()
         if len(self.assegnati) == len(self.posti):
             return True
@@ -460,6 +464,9 @@ class _Ricerca:
             del self.assegnati[posto]
 
 
+_TIPO_ARMONIA = {GIOCATORE: "G", LIBERO: "L", QUALIFICATO_ENTRANTE: "Q"}
+
+
 class _Pedina:
     """Un giocatore durante il sorteggio (per segnare se e' gia' stato messo)."""
 
@@ -475,15 +482,18 @@ class _Pedina:
 PROVE_DEI_QUALIFICATI = 30
 
 
-def sorteggia(calcoli, giocatori, rng=None):
+def sorteggia(calcoli, giocatori, rng=None, classifiche=None):
     """Compila il tabellone: schema e sorteggio dei giocatori.
 
-    calcoli    i calcoli preliminari (programma.calcoli.calcola), senza errori
-    giocatori  i giocatori ammessi direttamente
-    rng        il generatore di numeri casuali (per le prove si puo' fissare)
+    calcoli      i calcoli preliminari (programma.calcoli.calcola), senza errori
+    giocatori    i giocatori ammessi direttamente
+    rng          il generatore di numeri casuali (per le prove si puo' fissare)
+    classifiche  tutte le classifiche, dalla piu' alta (servono per misurare le
+                 differenze di classifica); se mancano, quelle dei giocatori
     """
     rng = rng or random.Random()
-    tabellone = _sorteggia_con_schema(calcoli, giocatori, rng, schema(calcoli, rng))
+    livello = {c: i for i, c in enumerate(classifiche or [c for c, _ in calcoli.ammessi])}
+    tabellone = _sorteggio(calcoli, giocatori, rng, schema(calcoli, rng), livello)
     q_primo_turno = sum(n for c, n in calcoli.non_aspettiti if c == QUALIFICATO)
     scelta_dei_q = 0 < q_primo_turno < calcoli.I1
     if not tabellone.problemi or not scelta_dei_q:
@@ -491,7 +501,7 @@ def sorteggia(calcoli, giocatori, rng=None):
     # Si puo' scegliere in quali incontri mettere i q: si provano altre disposizioni.
     migliore = tabellone
     for _ in range(PROVE_DEI_QUALIFICATI):
-        prova = _sorteggia_con_schema(calcoli, giocatori, rng, schema(calcoli, rng))
+        prova = _sorteggio(calcoli, giocatori, rng, schema(calcoli, rng), livello)
         if len(incontri_stesso_circolo(prova)) < len(incontri_stesso_circolo(migliore)):
             migliore = prova
         if not migliore.problemi:
@@ -504,12 +514,41 @@ def sorteggia(calcoli, giocatori, rng=None):
     return migliore
 
 
-def _sorteggia_con_schema(calcoli, giocatori, rng, posti):
-    """Il sorteggio dei giocatori in uno schema gia' pronto."""
+def _classifiche_fisse(calcoli, posti):
+    """La classifica dei posti gia' decisi: le teste di serie e gli aspettiti.
+
+    La testa di serie n. k ha la k-esima classifica dall'alto; gli aspettiti che
+    non sono teste di serie hanno i numeri subito dopo, anche loro dalla
+    classifica piu' alta: cosi' i q in aspettito incontrano i piu' deboli.
+    """
+    ordinati = _classifiche_ordinate(calcoli)
+    numeri = numeri_delle_coppie(len(posti), calcoli.sezioni)
+    fisse = {}
+    for j, posto in enumerate(posti):
+        if posto.tipo != GIOCATORE:
+            continue
+        if posto.testa_di_serie:
+            fisse[j] = ordinati[posto.testa_di_serie - 1]
+        elif posti[j ^ 1].tipo == LIBERO:
+            fisse[j] = ordinati[numeri[j // 2] - 1]
+    return fisse
+
+
+def _sorteggio(calcoli, giocatori, rng, posti, livello):
+    """Il sorteggio dei giocatori in uno schema gia' pronto.
+
+    1. Il sorteggio mirato decide quale classifica va in ogni posto del primo
+       turno (programma.armonizzazione).
+    2. Il sorteggio vero sceglie i giocatori, rispettando la regola dello stesso
+       circolo. Se con le disposizioni migliori del sorteggio mirato la regola
+       non si puo' rispettare, la regola vince: si sorteggia senza disposizione
+       e poi si migliora la disposizione con scambi che non la violano.
+    """
     tabellone = Tabellone(calcoli, posti)
     ordinati = _classifiche_ordinate(calcoli)
     T = calcoli.teste_di_serie
     diretti_aspettiti = _aspettiti_diretti(calcoli)
+    fisse = _classifiche_fisse(calcoli, posti)
 
     # Quanti giocatori di ogni classifica vanno nei posti non di testa di serie
     # del primo turno (li sceglie il sorteggio tra quelli di quella classifica).
@@ -529,44 +568,60 @@ def _sorteggia_con_schema(calcoli, giocatori, rng, posti):
             tra_ammessi += diretti
         else:
             contro_q += diretti
-    richiesta = {j: ordinati[posti[j].testa_di_serie - 1] if posti[j].testa_di_serie else None
-                 for j in tra_ammessi + contro_q}
     # Posti degli aspettiti, per classifica: teste di serie e altri aspettiti.
     posti_aspettiti = Counter(ordinati[k - 1] for k in range(1, min(T, diretti_aspettiti) + 1))
     posti_aspettiti.update(ordinati[T:diretti_aspettiti])
 
     pedine = [_Pedina(g) for g in giocatori]
     rng.shuffle(pedine)
-    ricerca = _Ricerca(tra_ammessi, contro_q, avversario, richiesta, pedine, quote,
-                       posti_aspettiti, rng)
 
-    # Primo tentativo: il sorteggio che rispetta la regola dello stesso circolo.
-    try:
-        assegnati = ricerca.prova(0)
-        esaurito = assegnati is None  # provati tutti i casi: nessuno la rispetta
-    except _TroppiTentativi:
-        assegnati, esaurito = None, False
+    def nuova_ricerca(richiesta, limite=LIMITE_TENTATIVI):
+        return _Ricerca(tra_ammessi, contro_q, avversario, richiesta, pedine, quote,
+                        posti_aspettiti, rng, limite)
+
+    # 1. Il sorteggio mirato: le disposizioni delle classifiche, dalla migliore.
+    liberi = [j for j in tra_ammessi + contro_q if j not in fisse]
+    armonia = Armonizzazione(
+        [_TIPO_ARMONIA[p.tipo] for p in posti], {j: livello[c] for j, c in fisse.items()},
+        liberi, [livello[c] for c in quote.elements()], len(posti) // 2 // (calcoli.sezioni or 1))
+    di_livello = {v: c for c, v in livello.items()}
+    assegnati = None
+    for disposizione, _ in armonia.cerca(rng):
+        richiesta = {j: fisse.get(j) or di_livello[disposizione[j]] for j in tra_ammessi + contro_q}
+        try:
+            assegnati = nuova_ricerca(richiesta, LIMITE_TENTATIVI_MIRATO).prova(0)
+        except _TroppiTentativi:
+            assegnati = None
+        if assegnati is not None:
+            break
+
+    # 2. Se non si e' trovato: il sorteggio che rispetta la regola dello stesso circolo.
+    ricerca = nuova_ricerca({j: fisse.get(j) for j in tra_ammessi + contro_q})
+    esaurito = False
     if assegnati is None:
-        # Un sorteggio qualsiasi (con eccezioni ammesse si trova subito),
-        # poi si migliora scambiando i giocatori.
-        assegnati = ricerca.prova(len(tra_ammessi))
+        try:
+            assegnati = ricerca.prova(0)
+            esaurito = assegnati is None  # provati tutti i casi: nessuno la rispetta
+        except _TroppiTentativi:
+            assegnati = None
+        if assegnati is None:
+            # Un sorteggio qualsiasi (con eccezioni ammesse si trova subito),
+            # poi si migliora scambiando i giocatori.
+            assegnati = ricerca.prova(len(tra_ammessi))
     for pedina in pedine:
         pedina.usato = False
     for j, pedina in assegnati.items():
         pedina.usato = True
         posti[j].giocatore = pedina.giocatore
 
-    # Gli aspettiti: prima le teste di serie, poi gli altri, per sorteggio.
+    # Gli aspettiti: ognuno con la classifica del suo numero, per sorteggio tra
+    # i giocatori di quella classifica.
     rimasti = [p for p in pedine if not p.usato]
-    for posto in posti:
-        if posto.tipo == GIOCATORE and posto.giocatore is None and posto.testa_di_serie:
-            classifica = ordinati[posto.testa_di_serie - 1]
-            pedina = next(p for p in rimasti if p.classifica == classifica)
+    for j, posto in enumerate(posti):
+        if posto.tipo == GIOCATORE and posto.giocatore is None:
+            pedina = next(p for p in rimasti if p.classifica == fisse[j])
             rimasti.remove(pedina)
             posto.giocatore = pedina.giocatore
-    vuoti = [posto for posto in posti if posto.tipo == GIOCATORE and posto.giocatore is None]
-    for posto, pedina in zip(vuoti, rimasti):
-        posto.giocatore = pedina.giocatore
 
     if incontri_stesso_circolo(tabellone):
         minimo = ricerca.violazioni_inevitabili()
@@ -589,7 +644,36 @@ def _sorteggia_con_schema(calcoli, giocatori, rng, posti):
             AVVISO, "", 0,
             f"regola dello stesso circolo al primo turno non rispettata: {spiegazione}. "
             f"Incontri tra giocatori dello stesso circolo: {'; '.join(coppie)}"))
+    _migliora_la_disposizione(posti, armonia, liberi, avversario, livello, rng)
     return tabellone
+
+
+def _migliora_la_disposizione(posti, armonia, liberi, avversario, livello, rng):
+    """Dopo il sorteggio, scambia due giocatori del primo turno (non teste di serie)
+    quando la disposizione delle classifiche migliora e la regola dello stesso
+    circolo non peggiora. Serve quando la regola ha impedito il sorteggio mirato."""
+    for j in liberi:
+        armonia.livelli[j] = livello[posti[j].giocatore.classifica]
+
+    def stessi(j, giocatore):
+        rivale = avversario.get(j)
+        return rivale is not None and posti[rivale].giocatore.chiave_circolo == giocatore.chiave_circolo
+
+    migliorato = True
+    while migliorato:
+        migliorato = False
+        ordine = list(liberi)
+        rng.shuffle(ordine)
+        for x, a in enumerate(ordine):
+            for b in ordine[x + 1:]:
+                ga, gb = posti[a].giocatore, posti[b].giocatore
+                if ga.classifica == gb.classifica or avversario.get(a) == b:
+                    continue
+                if stessi(a, gb) + stessi(b, ga) > stessi(a, ga) + stessi(b, gb):
+                    continue
+                if armonia.prova_scambio(a, b):
+                    posti[a].giocatore, posti[b].giocatore = gb, ga
+                    migliorato = True
 
 
 def _meno_incontri_stesso_circolo(tabellone, avversario, rng, minimo, giri=20_000):
@@ -597,8 +681,8 @@ def _meno_incontri_stesso_circolo(tabellone, avversario, rng, minimo, giri=20_00
     scambiando di posto due giocatori alla volta.
 
     Si scambiano solo giocatori che possono stare l'uno al posto dell'altro:
-    con la stessa classifica, oppure due giocatori che non sono teste di serie
-    ed entrano nello stesso turno. Cosi' il tabellone resta giusto per il manuale.
+    con la stessa classifica, oppure due giocatori del primo turno che non sono
+    teste di serie. Cosi' il tabellone resta giusto per il manuale.
     """
     posti = tabellone.posti
     aspettito = {j: posti[j ^ 1].tipo == LIBERO for j in range(len(posti))}
@@ -608,7 +692,8 @@ def _meno_incontri_stesso_circolo(tabellone, avversario, rng, minimo, giri=20_00
         a, b = posti[j], posti[k]
         if a.giocatore.classifica == b.giocatore.classifica:
             return True
-        return not a.testa_di_serie and not b.testa_di_serie and aspettito[j] == aspettito[k]
+        return (not a.testa_di_serie and not b.testa_di_serie
+                and not aspettito[j] and not aspettito[k])
 
     def stesso_circolo(j, giocatore):
         rivale = avversario.get(j)

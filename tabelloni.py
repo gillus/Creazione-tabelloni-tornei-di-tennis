@@ -102,7 +102,7 @@ def fai_tabellone(file_dati=FILE_DATI):
         print()
         problemi += calcoli.problemi
         if not any(p.gravita == ERRORE for p in calcoli.problemi):
-            tabellone = sorteggia(calcoli, giocatori)
+            tabellone = sorteggia(calcoli, giocatori, classifiche=classifiche)
             problemi += tabellone.problemi
             titolo = (f"{torneo.impostazioni['nome']} - {torneo.impostazioni['gara']}"
                       + (f" - {torneo.impostazioni['date']}" if "date" in torneo.impostazioni else ""))

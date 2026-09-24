@@ -328,7 +328,7 @@ def controlla(posti, giocatori, classifiche, qualificati_entranti=0, qualificati
     if stessi:
         elenco = "; ".join(f"{a.giocatore.codice} e {b.giocatore.codice} ({a.giocatore.circolo})"
                            for a, b in stessi)
-        prova = sorteggia(calcoli, [p.giocatore for p in diretti], random.Random(0))
+        prova = sorteggia(calcoli, [p.giocatore for p in diretti], random.Random(0), classifiche)
         migliore = len(incontri_stesso_circolo(prova))
         if migliore < len(stessi):
             quanti = "senza incontri" if migliore == 0 else f"con solo {migliore} incontri"

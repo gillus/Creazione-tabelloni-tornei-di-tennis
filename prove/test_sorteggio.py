@@ -168,6 +168,73 @@ class ProveSorteggio(unittest.TestCase):
         self.assertIn("(1)  G001", testo)
 
 
+class ProveSorteggioMirato(unittest.TestCase):
+    """Il sorteggio mirato mette le classifiche come negli esercizi del manuale:
+    i giocatori destinati a incontrarsi hanno classifiche vicine."""
+
+    def sorteggio(self, esempio, seme=0):
+        calcoli = calcoli_esempio(leggi_schemi()[esempio])
+        elenco = [(c, f"Circolo {i}")
+                  for i, c in enumerate(c for c, n in calcoli.ammessi for _ in range(n))]
+        tabellone = sorteggia(calcoli, giocatori_di_prova(elenco), random.Random(seme), CLASSIFICHE)
+        self.assertEqual(tabellone.problemi, [])
+        return tabellone.posti
+
+    def primo_turno(self, posti, inizio, fine):
+        """Le classifiche dei giocatori non teste di serie che giocano il primo turno."""
+        return sorted(p.giocatore.classifica for i, p in enumerate(posti[inizio:fine], inizio)
+                      if p.tipo == GIOCATORE and not p.testa_di_serie
+                      and posti[i ^ 1].tipo != LIBERO)
+
+    def test_esercizio_2_06(self):
+        # I (4.2) giocano nelle sezioni delle teste di serie (4.2), cosi' al secondo
+        # turno c'e' una compressione tra pari classifica; il (4.3) va nella sezione 1.
+        for seme in range(5):
+            posti = self.sorteggio("Volume II, esercizio 2.06", seme)
+            self.assertEqual(self.primo_turno(posti, 0, 4), ["4.3"])
+            self.assertEqual(self.primo_turno(posti, 4, 12), ["4.2", "4.2"])
+
+    def test_esercizio_2_10(self):
+        # "In corrispondenza delle teste di serie n. 5 e n. 6 si faranno giocare i (3.4)".
+        for seme in range(5):
+            posti = self.sorteggio("Volume II, esercizio 2.10", seme)
+            self.assertEqual(self.primo_turno(posti, 16, 24), ["3.4", "3.4"])
+
+    def test_esercizio_2_11(self):
+        # "Prima della testa di serie n. 7 si fara' giocare quindi il rimanente (4.2)".
+        for seme in range(5):
+            posti = self.sorteggio("Volume II, esercizio 2.11", seme)
+            self.assertEqual(self.primo_turno(posti, 24, 28), ["4.2"])
+
+    def test_esercizio_2_22(self):
+        # Compressione tra pari classifica: nella meta' inferiore delle sezioni 1 e 2
+        # giocano i (4.6). L'aspettito n. 8 (sezione 3, contro il q) e' il (4.5).
+        for seme in range(5):
+            posti = self.sorteggio("Volume II, esercizio 2.22", seme)
+            self.assertEqual(self.primo_turno(posti, 4, 8), ["4.6", "4.6"])
+            self.assertEqual(self.primo_turno(posti, 12, 16), ["4.6", "4.6"])
+            self.assertEqual(posti[23].giocatore.classifica, "4.5")
+            self.assertEqual(posti[21].tipo, QUALIFICATO_ENTRANTE)
+
+    def test_esempio_44(self):
+        # Tabellone di estrazione senza sezioni: al primo turno si incontrano
+        # giocatori della stessa classifica (4.NC con 4.NC, 4.6 con 4.6).
+        posti = self.sorteggio("Volume I, esempio 44")
+        for i in range(0, len(posti), 2):
+            if posti[i].tipo == posti[i + 1].tipo == GIOCATORE:
+                self.assertEqual(posti[i].giocatore.classifica, posti[i + 1].giocatore.classifica)
+
+    def test_la_regola_del_circolo_vince(self):
+        # Il sorteggio mirato vorrebbe (3.2) contro (3.2), ma sono dello stesso circolo:
+        # la regola dello stesso circolo viene prima.
+        elenco = [("3.1", "X"), ("3.1", "Y"), ("3.2", "A"), ("3.2", "A"),
+                  ("3.3", "B"), ("3.3", "C"), ("3.3", "D"), ("3.3", "E")]
+        for seme in range(10):
+            tabellone, _ = tabellone_di_prova(elenco, random.Random(seme), teste_di_serie=2)
+            self.assertEqual(incontri_stesso_circolo(tabellone), [])
+            self.assertEqual(tabellone.problemi, [])
+
+
 def come_testo_codici(tabellone):
     return " ".join(p.giocatore.codice if p.giocatore else segno(p) for p in tabellone.posti)
 
