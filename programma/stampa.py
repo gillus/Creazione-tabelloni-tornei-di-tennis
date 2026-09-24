@@ -5,7 +5,9 @@ stile scritto dentro, che funziona anche senza collegamento a internet.
 
 Un foglio contiene al massimo 32 posti. Se il tabellone e' piu' grande:
   - quando ogni qualificato uscente viene da una parte di 32 posti o meno,
-    ogni foglio contiene parti intere e finisce con i suoi qualificati;
+    ogni foglio contiene parti intere e finisce con i suoi qualificati
+    (nei tabelloni a sezioni, sezioni intere, divise tra i fogli in parti
+    quasi uguali, e separate da una linea tratteggiata);
   - altrimenti ogni foglio arriva fino al vincente del foglio, e un ultimo
     foglio contiene i turni finali tra i vincenti dei fogli.
 """
@@ -51,7 +53,7 @@ def _nome_breve(posto):
 
 
 def _griglia(voci, turni, primo_turno, etichette_uscita, titolo_uscita, altezza_riga,
-             secondo_turno_gia_scritto=None):
+             secondo_turno_gia_scritto=None, righe_per_sezione=0):
     """Disegna un pezzo di tabellone.
 
     voci                 il contenuto HTML delle righe della prima colonna
@@ -59,6 +61,7 @@ def _griglia(voci, turni, primo_turno, etichette_uscita, titolo_uscita, altezza_
     primo_turno          il numero del turno della prima colonna (1, oppure piu' avanti)
     etichette_uscita     le scritte accanto alle righe dell'ultima colonna (Q1, Q2... o nessuna)
     secondo_turno_gia_scritto  per ogni incontro, chi passa senza giocare (o "")
+    righe_per_sezione    nei tabelloni a sezioni, quante righe ha ogni sezione (0 = niente sezioni)
     """
     righe = len(voci)
     colonne = [f"{primo_turno + c}&deg; turno" for c in range(turni)] + [titolo_uscita]
@@ -67,6 +70,9 @@ def _griglia(voci, turni, primo_turno, etichette_uscita, titolo_uscita, altezza_
              f'--riga:{altezza_riga:.2f}mm">']
     for c, titolo in enumerate(colonne):
         parti.append(f'<div class="intestazione" style="grid-column:{c + 1}">{titolo}</div>')
+    if righe_per_sezione:
+        for i in range(righe_per_sezione, righe, righe_per_sezione):
+            parti.append(f'<div class="separatore" style="grid-column:1 / -1; grid-row:{i + 2}"></div>')
     for i, voce in enumerate(voci):
         parti.append(f'<div class="voce prima" style="grid-column:1; grid-row:{i + 2}">'
                      f'<div class="testo">{voce}</div><div class="linea"></div></div>')
@@ -105,10 +111,21 @@ def fogli(tabellone):
     vincitore = Qu == 1
     titolo_uscita = "Vincitore" if vincitore else "Qualificati"
 
+    sezioni = tabellone.calcoli.sezioni
     per_foglio = min(D, POSTI_PER_FOGLIO)
+    pezzi = [(inizio, inizio + per_foglio) for inizio in range(0, D, per_foglio)]
+    if sezioni and parte <= POSTI_PER_FOGLIO:
+        # Sezioni intere su ogni foglio, divise tra i fogli in parti quasi uguali.
+        numero_fogli = -(-D // POSTI_PER_FOGLIO)
+        pezzi, inizio = [], 0
+        for n in range(numero_fogli):
+            quante = sezioni // numero_fogli + (n < sezioni % numero_fogli)
+            pezzi.append((inizio, inizio + quante * parte))
+            inizio += quante * parte
+        per_foglio = max(fine - inizio for inizio, fine in pezzi)
     risultato = []
-    for inizio in range(0, D, per_foglio):
-        pezzo = posti[inizio:inizio + per_foglio]
+    for inizio, fine in pezzi:
+        pezzo = posti[inizio:fine]
         voci = [_voce_giocatore(inizio + i + 1, p) for i, p in enumerate(pezzo)]
         gia_scritti = []
         for i in range(0, len(pezzo), 2):
@@ -125,7 +142,8 @@ def fogli(tabellone):
             etichette = ([""] if vincitore else
                          [f"Q{primo_q + k + 1}" for k in range(len(pezzo) // parte)])
             risultato.append(_griglia(voci, turni, 1, etichette, titolo_uscita,
-                                      _altezza_riga(len(pezzo)), gia_scritti))
+                                      _altezza_riga(len(pezzo)), gia_scritti,
+                                      parte if sezioni else 0))
         else:
             numero_foglio = inizio // per_foglio + 1
             risultato.append(_griglia(voci, _turni(per_foglio), 1, [f"al foglio finale"],
@@ -165,6 +183,7 @@ body { margin: 0; background: var(--sfondo); color: var(--inchiostro);
 .intestazione { font-size: 7.5pt; text-transform: uppercase; letter-spacing: .04em;
                 color: var(--grigio); padding-left: 2mm; }
 .voce { position: relative; }
+.separatore { border-top: 1.2px dashed var(--grigio); margin-top: -.6mm; }
 .voce .linea { position: absolute; left: 0; right: 0;
                top: calc(50% + var(--riga) / 2); border-top: 1px solid var(--inchiostro); }
 .voce .testo { position: absolute; left: 2mm; right: 1mm;
@@ -207,6 +226,8 @@ def pagina(tabellone, impostazioni, adesso=None):
     uscita = "il vincitore" if Qu == 1 else f"{Qu} qualificati"
     riassunto = (f"Tabellone di {len(tabellone.posti)} posti &middot; {calcoli.N} giocatori"
                  f" &middot; esce {uscita}")
+    if calcoli.sezioni:
+        riassunto += f" &middot; {calcoli.sezioni} sezioni"
     if calcoli.teste_di_serie:
         riassunto += f" &middot; {calcoli.teste_di_serie} teste di serie"
     griglie = fogli(tabellone)

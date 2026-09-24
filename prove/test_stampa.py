@@ -83,6 +83,20 @@ class ProvePagina(unittest.TestCase):
         for q in range(5, 9):
             self.assertIn(f">Q{q}<", fogli[2])
 
+    def test_tabellone_a_sezioni(self):
+        # Volume II, esercizio 2.02: 27 non classificati, 13 qualificati uscenti,
+        # 13 sezioni da 4 posti. Due fogli: 7 sezioni e 6 sezioni, tutte intere.
+        tabellone, testo = fai_pagina([("4.NC", f"C{i % 5}") for i in range(27)],
+                                      qualificati_uscenti=13)
+        self.assertEqual(len(tabellone.posti), 52)
+        self.assertBenFatta(testo)
+        fogli = testo.split('class="foglio"')[1:]
+        self.assertEqual(len(fogli), 2)
+        self.assertEqual([f.count('class="separatore"') for f in fogli], [6, 5])
+        self.assertIn(">Q7<", fogli[0])
+        self.assertIn(">Q8<", fogli[1])
+        self.assertIn("13 sezioni", testo)
+
     def test_caratteri_speciali_nel_circolo(self):
         tabellone, testo = fai_pagina([("4.NC", "<b>Circolo & Co</b>"), ("4.NC", "Altro")])
         self.assertBenFatta(testo)
