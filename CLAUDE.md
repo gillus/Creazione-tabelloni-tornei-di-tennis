@@ -26,7 +26,8 @@ Deciso con chi ha proposto il progetto (risposte complete in `DOMANDE.txt`).
   Regola dello stesso circolo: **al primo turno due giocatori dello stesso
   circolo non devono incontrarsi**. Vale **solo al primo turno** (il manuale
   dice "nei primi due incontri", ma qui si segue la scelta di chi ha proposto
-  il progetto). La regola si può non rispettare **solo se non esiste nessun
+  il progetto). Chi ha il posto libero (bye) **puo'** incontrare un compagno
+  di circolo al secondo turno (confermato, domanda F in `PIANO.txt`). La regola si può non rispettare **solo se non esiste nessun
   sorteggio possibile** che la rispetti; in quel caso il programma lo segnala.
 - **Sorteggio fatto dal programma**: teste di serie, posti liberi (bye) e
   tutto il resto li decide il programma. Le correzioni a mano sono

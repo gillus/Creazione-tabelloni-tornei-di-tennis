@@ -147,4 +147,6 @@ DA CHIEDERE A CHI HA PROPOSTO IL PROGETTO, PRIMA DI COMINCIARE
     compagno di circolo.
     Domanda: va bene cosi', oppure la regola deve valere per il PRIMO
     INCONTRO di ogni giocatore (anche per chi entra al secondo turno)?
-    Risposta:
+    Risposta: va bene cosi'. Chi ha il posto libero PUO' incontrare un
+    compagno di circolo al secondo turno. La regola vale solo per gli
+    incontri del primo turno.
