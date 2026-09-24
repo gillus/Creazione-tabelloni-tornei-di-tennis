@@ -1,12 +1,14 @@
 """Programma dei tabelloni dei tornei di tennis.
 
-Per ora legge i file nella cartella dati/ e dice se sono scritti bene.
+Per ora legge i file nella cartella dati/, dice se sono scritti bene
+e fa i calcoli preliminari del tabellone di estrazione.
 Si avvia con:  py tabelloni.py
 """
 
 import os
 import sys
 
+from programma.calcoli import calcola, conta_per_classifica, descrivi
 from programma.dati import ERRORE, leggi_classifiche, leggi_giocatori, leggi_torneo
 
 FILE_CLASSIFICHE = os.path.join("dati", "classifiche.txt")
@@ -40,12 +42,22 @@ def controlla_dati():
     print(f"Circoli diversi: {len(circoli)}")
     print()
 
+    if giocatori and not any(p.gravita == ERRORE for p in problemi):
+        calcoli = calcola(conta_per_classifica(giocatori, classifiche),
+                          qualificati_entranti=torneo.impostazioni.get("qualificati entranti", 0),
+                          qualificati_uscenti=torneo.impostazioni.get("qualificati uscenti", 1),
+                          teste_di_serie=torneo.impostazioni.get("teste di serie"))
+        print("CALCOLI PRELIMINARI")
+        print(descrivi(calcoli))
+        print()
+        problemi += calcoli.problemi
+
     if problemi:
         print("PROBLEMI TROVATI:")
         for problema in problemi:
             print(f"  {problema}")
     else:
-        print("Nessun problema: i file sono scritti bene.")
+        print("Nessun problema.")
     return not any(p.gravita == ERRORE for p in problemi)
 
 

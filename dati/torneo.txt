@@ -7,12 +7,22 @@
 #
 # Le righe che cominciano con # sono commenti e vengono ignorate.
 #
-#   nome   il nome del torneo, come deve comparire sul tabellone (obbligatorio)
-#   gara   la gara, per esempio "Singolare maschile" (obbligatorio)
-#   date   le date del torneo, scritte come si vuole (facoltativo)
+#   nome                  il nome del torneo, come deve comparire sul tabellone
+#                         (obbligatorio)
+#   gara                  la gara, per esempio "Singolare maschile" (obbligatorio)
+#   date                  le date del torneo, scritte come si vuole (facoltativo)
+#   qualificati entranti  quanti giocatori arrivano da un tabellone precedente
+#                         (facoltativo; se manca vale 0)
+#   qualificati uscenti   quanti giocatori escono da questo tabellone per andare
+#                         al successivo; 1 vuol dire che il tabellone da' il vincitore
+#                         (facoltativo; se manca vale 1)
+#   teste di serie        quante teste di serie fare (facoltativo; se manca le
+#                         propone il programma, secondo le regole del manuale)
 #
 # Qui sotto c'e' un torneo DI FANTASIA, solo per provare il programma.
 
 nome = Torneo di prova
 gara = Singolare maschile
 date = dal 1 al 10 ottobre
+qualificati entranti = 0
+qualificati uscenti = 1
