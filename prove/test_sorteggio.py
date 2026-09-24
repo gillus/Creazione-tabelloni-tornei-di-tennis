@@ -82,7 +82,7 @@ class ProveOrdine(unittest.TestCase):
 
 class ProveSchemiDelManuale(unittest.TestCase):
     def test_ci_sono_tutti_gli_esempi(self):
-        self.assertEqual(len(leggi_schemi()), 10)
+        self.assertEqual(len(leggi_schemi()), 28)
 
     def test_schemi_come_nel_manuale(self):
         for nome, esempio in leggi_schemi().items():

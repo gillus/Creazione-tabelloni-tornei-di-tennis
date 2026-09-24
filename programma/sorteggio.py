@@ -25,6 +25,21 @@ da 39 a 47 del Volume I e sugli esercizi del Volume II):
     gli altri aspettiti, cosi' due q non si incontrano mai al loro primo
     incontro;
   - nelle coppie rimaste si gioca il primo turno.
+
+Tabellone a sezioni (Volume I, capitolo III): e' fatto di tante sezioni
+quanti sono i qualificati uscenti, ognuna un piccolo tabellone.
+  - Dentro ogni sezione le coppie si numerano come sopra; poi i numeri
+    si danno "a serpentina": il numero 1 della sezione 1, il numero 1 della
+    sezione 2... fino all'ultima sezione, poi i numeri 2 dall'ultima sezione
+    alla prima, poi i numeri 3 dalla prima all'ultima, e cosi' via. Cosi' la
+    testa di serie n. 1 e' in alto nella sezione 1, la n. 2 in alto nella
+    sezione 2, e dopo l'ultima sezione si torna indietro dal basso.
+  - Alto e basso (per le teste di serie e per i q) si decidono dentro la
+    sezione: ogni sezione ha la sua meta' superiore e inferiore.
+  - Le sezioni devono avere lo stesso numero di giocatori, con una differenza
+    di due al massimo: se non e' cosi', alcuni incontri del primo turno si
+    spostano nelle sezioni con meno giocatori (Volume II, esercizio 2.23).
+  - I q si dividono tra le sezioni con una differenza di uno al massimo.
 """
 
 import random
@@ -86,9 +101,27 @@ def ordine_delle_coppie(numero_coppie):
     return ordine
 
 
-def _riga_principale(indice_coppia, numero_coppie):
-    """0 = riga alta della coppia (meta' superiore), 1 = riga bassa (meta' inferiore)."""
-    return 0 if indice_coppia < max(1, numero_coppie // 2) else 1
+def numeri_delle_coppie(D, sezioni=0):
+    """Il numero d'ordine di ogni coppia, dall'alto in basso, anche con le sezioni.
+
+    Senza sezioni e' ordine_delle_coppie(D / 2). Con le sezioni ogni sezione e'
+    numerata come un piccolo tabellone e i numeri vanno a serpentina tra le sezioni.
+    """
+    S = sezioni or 1
+    locale = ordine_delle_coppie(D // 2 // S)
+    numeri = []
+    for sezione in range(S):
+        for j in locale:
+            giro = j - 1
+            numeri.append(giro * S + (sezione + 1 if giro % 2 == 0 else S - sezione))
+    return numeri
+
+
+def _riga_principale(indice_coppia, coppie_per_sezione):
+    """0 = riga alta della coppia (meta' superiore), 1 = riga bassa (meta' inferiore).
+    Con le sezioni conta la meta' della sezione."""
+    locale = indice_coppia % coppie_per_sezione
+    return 0 if locale < max(1, coppie_per_sezione // 2) else 1
 
 
 def scegli_equilibrati(disponibili, fissi, quanti, rng, inizio, fine, preferiti=()):
@@ -144,14 +177,22 @@ def schema(calcoli, rng=None):
     rng = rng or random.Random()
     D = calcoli.D
     numero_coppie = D // 2
+    S = calcoli.sezioni or 1
+    coppie_per_sezione = numero_coppie // S
     T = calcoli.teste_di_serie
     diretti_aspettiti = _aspettiti_diretti(calcoli)
     teste_aspettiti = min(T, diretti_aspettiti)
     q_aspettiti = sum(n for c, n in calcoli.aspettiti if c == QUALIFICATO)
     q_primo_turno = sum(n for c, n in calcoli.non_aspettiti if c == QUALIFICATO)
 
-    ordine = ordine_delle_coppie(numero_coppie)
+    ordine = numeri_delle_coppie(D, calcoli.sezioni)
     coppia_del_numero = {numero: indice for indice, numero in enumerate(ordine)}
+
+    def compagna(numero):
+        """Il numero della coppia che si incontra con questa al secondo turno."""
+        if coppie_per_sezione == 1:
+            return None
+        return ordine[coppia_del_numero[numero] ^ 1]
 
     # Cosa c'e' nella coppia con un certo numero d'ordine.
     teste = set(range(1, T + 1))
@@ -161,35 +202,49 @@ def schema(calcoli, rng=None):
     numeri_aspettiti = list(range(1, teste_aspettiti + 1)) + aspettiti_non_teste
     occupati = teste | set(aspettiti_non_teste)
     # I q in aspettito vanno contro gli aspettiti piu' deboli (numero piu' alto):
-    # nel secondo turno la coppia k incontra la coppia (numero delle coppie + 1 - k).
+    # nella coppia che al secondo turno incontra la loro.
     q_in_aspettito = []
     for k in reversed(numeri_aspettiti):
         if len(q_in_aspettito) == q_aspettiti:
             break
-        numero = numero_coppie + 1 - k
-        if numero not in occupati:
+        numero = compagna(k)
+        if numero is not None and numero not in occupati:
             q_in_aspettito.append(numero)
             occupati.add(numero)
     # Se non bastano (succede solo in casi molto particolari), i primi numeri liberi.
     liberi = [n for n in range(1, numero_coppie + 1) if n not in occupati]
     while len(q_in_aspettito) < q_aspettiti:
         q_in_aspettito.append(liberi.pop(0))
+    if S > 1:
+        _bilancia_le_sezioni(q_in_aspettito, set(numeri_aspettiti), teste, ordine,
+                             coppia_del_numero, compagna, coppie_per_sezione)
+        occupati = teste | set(aspettiti_non_teste) | set(q_in_aspettito)
+        liberi = [n for n in range(1, numero_coppie + 1) if n not in occupati]
     # Tutte le altre coppie giocano il primo turno.
     primo_turno = [k for k in range(teste_aspettiti + 1, T + 1)] + liberi
 
     # Quali incontri del primo turno hanno un qualificato entrante: uno per ogni
-    # frazione del tabellone; a parita', quelli senza testa di serie, perche' i q
-    # devono incontrare i giocatori di classifica piu' bassa (raccomandazione 1).
+    # frazione del tabellone (o della sezione); a parita', quelli senza testa di serie,
+    # perche' i q devono incontrare i giocatori di classifica piu' bassa (raccomandazione 1).
     fissi = [coppia_del_numero[n] for n in q_in_aspettito]
     disponibili = [coppia_del_numero[n] for n in primo_turno]
     preferiti = {coppia_del_numero[n] for n in primo_turno if n not in teste}
-    con_q = set(scegli_equilibrati(disponibili, fissi, q_primo_turno, rng, 0, numero_coppie,
-                                   preferiti))
+    if S == 1:
+        con_q = set(scegli_equilibrati(disponibili, fissi, q_primo_turno, rng, 0, numero_coppie,
+                                       preferiti))
+    else:
+        con_q = set()
+        quanti = _q_per_sezione(disponibili, fissi, preferiti, q_primo_turno, S,
+                                coppie_per_sezione, rng)
+        for sezione, numero in enumerate(quanti):
+            inizio, fine = sezione * coppie_per_sezione, (sezione + 1) * coppie_per_sezione
+            con_q |= set(scegli_equilibrati([i for i in disponibili if inizio <= i < fine],
+                                            fissi, numero, rng, inizio, fine, preferiti))
 
     posti = [None] * D
     for indice, numero in enumerate(ordine):
-        principale = 2 * indice + _riga_principale(indice, numero_coppie)
-        altro = 2 * indice + 1 - _riga_principale(indice, numero_coppie)
+        principale = 2 * indice + _riga_principale(indice, coppie_per_sezione)
+        altro = 2 * indice + 1 - _riga_principale(indice, coppie_per_sezione)
         testa = numero if numero in teste else 0
         if numero in q_in_aspettito:
             posti[principale] = Posto(QUALIFICATO_ENTRANTE)
@@ -201,6 +256,73 @@ def schema(calcoli, rng=None):
             posti[principale] = Posto(GIOCATORE, testa)
             posti[altro] = Posto(QUALIFICATO_ENTRANTE if indice in con_q else GIOCATORE)
     return posti
+
+
+def giocatori_per_sezione(posti, sezioni):
+    """Quanti giocatori (compresi i q) ci sono in ogni sezione."""
+    larghezza = len(posti) // sezioni
+    return [sum(1 for p in posti[i:i + larghezza] if p.tipo != LIBERO)
+            for i in range(0, len(posti), larghezza)]
+
+
+def _bilancia_le_sezioni(q_in_aspettito, numeri_aspettiti, teste, ordine, coppia_del_numero,
+                         compagna, coppie_per_sezione):
+    """Le sezioni devono avere lo stesso numero di giocatori, con una differenza di due
+    al massimo. Se non e' cosi', un incontro del primo turno passa dalla sezione piu'
+    piena a quella piu' vuota, al posto di un q in aspettito (Volume II, esercizio 2.23):
+    nella sezione piu' vuota il q che avrebbe incontrato l'aspettito piu' forte gioca
+    il primo turno, e nella sezione piu' piena al suo posto va un q in aspettito.
+    """
+    def sezione(numero):
+        return coppia_del_numero[numero] // coppie_per_sezione
+
+    numero_sezioni = len(ordine) // coppie_per_sezione
+    while True:
+        conta = [0] * numero_sezioni
+        for numero in ordine:
+            conta[sezione(numero)] += 1 if (numero in numeri_aspettiti
+                                           or numero in q_in_aspettito) else 2
+        if max(conta) - min(conta) <= 2:
+            return
+        # Dove si puo' togliere un incontro: una coppia senza testa di serie che al
+        # secondo turno incontra un aspettito (il q poi incontrera' lui).
+        da_togliere = sorted(
+            (conta[sezione(n)] * -1, compagna(n), n) for n in ordine
+            if n not in numeri_aspettiti and n not in q_in_aspettito and n not in teste
+            and compagna(n) in numeri_aspettiti)
+        da_aggiungere = sorted((conta[sezione(n)], compagna(n), n) for n in q_in_aspettito)
+        if not da_togliere or not da_aggiungere:
+            return
+        piu_piena, piu_vuota = da_togliere[0], da_aggiungere[0]
+        if -piu_piena[0] - piu_vuota[0] <= 2:
+            return
+        q_in_aspettito.remove(piu_vuota[2])
+        q_in_aspettito.append(piu_piena[2])
+
+
+def _q_per_sezione(disponibili, fissi, preferiti, quanti, sezioni, coppie_per_sezione, rng):
+    """Quanti q al primo turno in ogni sezione: tutte le sezioni devono averne lo stesso
+    numero (contando anche i q in aspettito), con una differenza di uno al massimo."""
+    def sezione(indice):
+        return indice // coppie_per_sezione
+
+    totale = [0] * sezioni
+    for indice in fissi:
+        totale[sezione(indice)] += 1
+    posti = [0] * sezioni
+    buoni = [0] * sezioni  # incontri senza testa di serie, dove i q stanno meglio
+    for indice in disponibili:
+        posti[sezione(indice)] += 1
+        buoni[sezione(indice)] += indice in preferiti
+    risultato = [0] * sezioni
+    for _ in range(quanti):
+        possibili = [s for s in range(sezioni) if risultato[s] < posti[s]]
+        if not possibili:
+            break
+        scelta = min(possibili, key=lambda s: (totale[s], risultato[s] >= buoni[s], rng.random()))
+        risultato[scelta] += 1
+        totale[scelta] += 1
+    return risultato
 
 
 class _TroppiTentativi(Exception):
@@ -557,7 +679,9 @@ def disegna(tabellone, titolo=""):
     righe.append("# Il numero tra parentesi indica la testa di serie.")
     parte = D // Qu if Qu and D % Qu == 0 else D
     for i, posto in enumerate(tabellone.posti):
-        if i % parte == 0 and Qu > 1:
+        if i % parte == 0 and calcoli.sezioni:
+            righe += ["", f"# --- sezione {i // parte + 1}: qualificato Q{i // parte + 1} ---"]
+        elif i % parte == 0 and Qu > 1:
             righe += ["", f"# --- parte del qualificato Q{i // parte + 1} ---"]
         elif i % 2 == 0:
             righe.append("")
