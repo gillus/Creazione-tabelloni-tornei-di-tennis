@@ -3,37 +3,69 @@
 Per ora legge i file nella cartella dati/, dice se sono scritti bene,
 fa i calcoli preliminari del tabellone di estrazione e il sorteggio.
 Il tabellone viene mostrato e salvato in risultati/tabellone.txt.
+
 Si avvia con:  py tabelloni.py
+Per controllare un tabellone gia' fatto (anche a mano):
+    py tabelloni.py controlla                      controlla dati/tabellone-da-controllare.txt
+    py tabelloni.py controlla risultati/tabellone.txt   controlla un altro file
 """
 
 import os
 import sys
 
 from programma.calcoli import calcola, conta_per_classifica, descrivi
+from programma.controllo import controlla, leggi_tabellone
 from programma.dati import ERRORE, leggi_classifiche, leggi_giocatori, leggi_torneo
 from programma.sorteggio import disegna, sorteggia
 
 FILE_CLASSIFICHE = os.path.join("dati", "classifiche.txt")
 FILE_GIOCATORI = os.path.join("dati", "giocatori.txt")
 FILE_TORNEO = os.path.join("dati", "torneo.txt")
+FILE_DA_CONTROLLARE = os.path.join("dati", "tabellone-da-controllare.txt")
 CARTELLA_RISULTATI = "risultati"
 FILE_TABELLONE = os.path.join(CARTELLA_RISULTATI, "tabellone.txt")
 
 
-def controlla_dati():
-    """Legge i tre file, stampa un riepilogo e i problemi. Restituisce True se non ci sono errori."""
-    problemi = []
+def leggi_dati():
+    """Legge i tre file dei dati. Restituisce classifiche, giocatori, torneo e problemi,
+    oppure None se manca un file."""
     for percorso in (FILE_CLASSIFICHE, FILE_GIOCATORI, FILE_TORNEO):
         if not os.path.exists(percorso):
             print(f"ERRORE - manca il file {percorso}")
-            return False
-
+            return None
+    problemi = []
     classifiche, trovati = leggi_classifiche(FILE_CLASSIFICHE)
     problemi += trovati
     giocatori, trovati = leggi_giocatori(FILE_GIOCATORI, classifiche)
     problemi += trovati
     torneo, trovati = leggi_torneo(FILE_TORNEO)
     problemi += trovati
+    return classifiche, giocatori, torneo, problemi
+
+
+def stampa_problemi(problemi, se_nessuno="Nessun problema."):
+    if problemi:
+        print("PROBLEMI TROVATI:")
+        for problema in problemi:
+            print(f"  {problema}")
+    else:
+        print(se_nessuno)
+    return not any(p.gravita == ERRORE for p in problemi)
+
+
+def controlla_tabellone(giocatori, classifiche, torneo, posti):
+    return controlla(posti, giocatori, classifiche,
+                     qualificati_entranti=torneo.impostazioni.get("qualificati entranti", 0),
+                     qualificati_uscenti=torneo.impostazioni.get("qualificati uscenti", 1),
+                     teste_di_serie_impostate=torneo.impostazioni.get("teste di serie"))
+
+
+def fai_tabellone():
+    """Legge i dati, fa i calcoli e il sorteggio. Restituisce True se non ci sono errori."""
+    letti = leggi_dati()
+    if letti is None:
+        return False
+    classifiche, giocatori, torneo, problemi = letti
 
     print(f"Torneo: {torneo.impostazioni.get('nome', '(senza nome)')}"
           f" - {torneo.impostazioni.get('gara', '(gara non indicata)')}")
@@ -67,22 +99,53 @@ def controlla_dati():
             with open(FILE_TABELLONE, "w", encoding="utf-8") as f:
                 f.write(testo + "\n")
             print(f"Tabellone salvato in {FILE_TABELLONE}")
+            # Il programma controlla anche il suo tabellone, per sicurezza.
+            if not any(p.gravita == ERRORE
+                       for p in controlla_tabellone(giocatori, classifiche, torneo, tabellone.posti)):
+                print("Controllo del tabellone con le regole del manuale: nessun errore.")
+            else:
+                print("ATTENZIONE: il controllo ha trovato errori nel tabellone fatto dal programma.")
+                print(f"Si vedono con:  py tabelloni.py controlla {FILE_TABELLONE}")
             print()
 
-    if problemi:
-        print("PROBLEMI TROVATI:")
-        for problema in problemi:
-            print(f"  {problema}")
-    else:
-        print("Nessun problema.")
-    return not any(p.gravita == ERRORE for p in problemi)
+    return stampa_problemi(problemi)
+
+
+def controlla_file(percorso):
+    """Controlla un tabellone scritto in un file. Restituisce True se non ci sono errori."""
+    letti = leggi_dati()
+    if letti is None:
+        return False
+    classifiche, giocatori, torneo, problemi = letti
+    if not stampa_problemi(problemi, se_nessuno=""):
+        print("Prima vanno corretti i file dei dati.")
+        return False
+    if not os.path.exists(percorso):
+        print(f"ERRORE - manca il file {percorso}")
+        return False
+    print(f"CONTROLLO DEL TABELLONE {percorso}")
+    print(f"Torneo: {torneo.impostazioni['nome']} - {torneo.impostazioni['gara']}")
+    print()
+    posti, problemi = leggi_tabellone(percorso, giocatori)
+    if not any(p.gravita == ERRORE for p in problemi):
+        problemi += controlla_tabellone(giocatori, classifiche, torneo, posti)
+    return stampa_problemi(problemi, se_nessuno="Il tabellone rispetta le regole del manuale: "
+                                                "nessun problema.")
 
 
 def main():
     # Il programma lavora sempre dalla sua cartella, cosi' i percorsi relativi funzionano
     # anche se viene avviato con un doppio clic.
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
-    tutto_bene = controlla_dati()
+    argomenti = sys.argv[1:]
+    if argomenti and argomenti[0].lower() == "controlla":
+        tutto_bene = controlla_file(argomenti[1] if len(argomenti) > 1 else FILE_DA_CONTROLLARE)
+    elif argomenti:
+        print(f"Comando sconosciuto: {' '.join(argomenti)}")
+        print(__doc__)
+        tutto_bene = False
+    else:
+        tutto_bene = fai_tabellone()
     if sys.stdin and sys.stdin.isatty():
         input("\nPremi Invio per chiudere...")
     return 0 if tutto_bene else 1
