@@ -79,7 +79,14 @@ Deciso con chi ha proposto il progetto (risposte complete in `DOMANDE.txt`).
 
 ## 5. Come lavorare con git
 
-- Usare **solo `git` da riga di comando**. **Mai `gh`** (la GitHub CLI non è installata).
+- Si usa `git` da riga di comando. Si può usare anche **`gh`** (la GitHub CLI),
+  che è installata e collegata all'account `gillus`: per esempio per aprire
+  issue o pull request, o per il push.
+- Il push va sulla **copia (fork)** dell'account `gillus`
+  (https://github.com/gillus/Creazione-tabelloni-tornei-di-tennis, remote `fork`),
+  perché su quello originale `gillus` non ha il permesso di scrivere.
+- **Prima di aprire issue o pull request va chiesta conferma**: il repository
+  è pubblico e tutti le vedono.
 - **Commit piccoli e frequenti**: un commit per ogni cosa che cambia,
   non un unico commit gigante.
 - Messaggi di commit **in italiano**, che spiegano **cosa è cambiato**
