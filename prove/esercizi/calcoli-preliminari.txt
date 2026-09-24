@@ -1,0 +1,317 @@
+# CALCOLI PRELIMINARI DEGLI ESERCIZI DEL MANUALE
+# ==============================================
+#
+# Qui sono ricopiati, esercizio per esercizio, i "calcoli preliminari"
+# dei tabelloni di estrazione, come li risolve il manuale.
+# Le prove automatiche controllano che il programma trovi gli stessi numeri.
+#
+# Ogni esercizio comincia con il suo nome tra parentesi quadre.
+#   - "giocatori", "qualificati entranti", "qualificati uscenti" sono i dati
+#     del problema;
+#   - tutte le altre righe sono la soluzione del manuale.
+# Si scrive "3 q" per tre qualificati entranti e "2 (4.6)" per due giocatori 4.6.
+#
+# "teste di serie" e' la scelta del manuale. Quando il programma
+# proporrebbe un numero diverso, e' scritto in "proposta del programma".
+#
+# Fonte: Volume II (esercizi da 1.01 a 1.27, pagine 8-41)
+#        e Volume I (esempi da 39 a 43, pagine 20-27).
+
+[Volume II, esercizio 1.01]
+giocatori = 12 (4.NC)
+qualificati uscenti = 4
+N = 12
+D = 16
+A = 4
+NA = 8
+I1 = 4
+primo turno = 8 (4.NC)
+secondo turno = 4 (4.NC)
+teste di serie = nessuna
+
+[Volume II, esercizio 1.02]
+giocatori = 21 (4.NC)
+qualificati uscenti = 8
+N = 21
+D = 32
+A = 11
+NA = 10
+I1 = 5
+primo turno = 10 (4.NC)
+secondo turno = 11 (4.NC)
+teste di serie = nessuna
+
+[Volume II, esercizio 1.03]
+giocatori = 25 (4.NC)
+qualificati uscenti = 8
+N = 25
+D = 32
+A = 7
+NA = 18
+I1 = 9
+primo turno = 18 (4.NC)
+secondo turno = 7 (4.NC)
+teste di serie = nessuna
+
+[Volume II, esercizio 1.04]
+giocatori = 37 (4.NC)
+qualificati uscenti = 16
+N = 37
+D = 64
+A = 27
+NA = 10
+I1 = 5
+primo turno = 10 (4.NC)
+secondo turno = 27 (4.NC)
+teste di serie = nessuna
+
+[Volume II, esercizio 1.05]
+giocatori = 53 (4.NC)
+qualificati uscenti = 16
+N = 53
+D = 64
+A = 11
+NA = 42
+I1 = 21
+primo turno = 42 (4.NC)
+secondo turno = 11 (4.NC)
+teste di serie = nessuna
+
+[Volume II, esercizio 1.06]
+giocatori = 2 (4.6), 4 (4.5), 1 (4.4)
+qualificati entranti = 4
+qualificati uscenti = 4
+N = 11
+D = 16
+A = 5
+NA = 6
+I1 = 3
+primo turno = 3 q, 2 (4.6), 1 (4.5)
+secondo turno = 1 q, 3 (4.5), 1 (4.4)
+teste di serie possibili = da 4 a 5
+teste di serie = 1 (4.4), 4 (4.5)
+
+[Volume II, esercizio 1.07]
+giocatori = 6 (4.6), 4 (4.5), 1 (4.4)
+qualificati uscenti = 4
+N = 11
+D = 16
+A = 5
+NA = 6
+I1 = 3
+primo turno = 6 (4.6)
+secondo turno = 4 (4.5), 1 (4.4)
+teste di serie possibili = da 4 a 5
+teste di serie = 1 (4.4), 4 (4.5)
+
+[Volume II, esercizio 1.08]
+giocatori = 2 (4.6), 2 (4.5), 4 (4.4), 6 (4.3), 6 (4.2), 6 (4.1)
+qualificati uscenti = 8
+N = 26
+D = 32
+A = 6
+NA = 20
+I1 = 10
+primo turno = 2 (4.6), 2 (4.5), 4 (4.4), 6 (4.3), 6 (4.2)
+secondo turno = 6 (4.1)
+teste di serie possibili = da 8 a 13
+teste di serie = 6 (4.1), 2 (4.2)
+# Il manuale sceglie "inizialmente" il minimo e dice che il tabellone
+# e' corretto ma sconsigliabile.
+proposta del programma = 12
+
+[Volume II, esercizio 1.09]
+giocatori = 6 (4.6), 3 (4.5), 7 (4.4)
+qualificati entranti = 9
+qualificati uscenti = 8
+N = 25
+D = 32
+A = 7
+NA = 18
+I1 = 9
+primo turno = 9 q, 6 (4.6), 3 (4.5)
+secondo turno = 7 (4.4)
+teste di serie possibili = da 8 a 12
+# Il manuale dice che vanno bene sia 8 sia 10; il disegno della soluzione ne ha 10.
+teste di serie = 7 (4.4), 3 (4.5)
+
+[Volume II, esercizio 1.10]
+giocatori = 6 (4.3), 4 (4.2), 4 (4.1)
+qualificati entranti = 8
+qualificati uscenti = 8
+N = 22
+D = 32
+A = 10
+NA = 12
+I1 = 6
+primo turno = 6 q, 6 (4.3)
+secondo turno = 2 q, 4 (4.2), 4 (4.1)
+teste di serie possibili = da 8 a 11
+teste di serie = 4 (4.1), 4 (4.2)
+
+[Volume II, esercizio 1.21]
+giocatori = 3 (4.2), 3 (4.1)
+qualificati entranti = 5
+qualificati uscenti = 4
+N = 11
+D = 16
+A = 5
+NA = 6
+I1 = 3
+primo turno = 3 q, 3 (4.2)
+secondo turno = 2 q, 3 (4.1)
+teste di serie possibili = da 4 a 5
+teste di serie = 3 (4.1), 1 (4.2)
+
+[Volume II, esercizio 1.22]
+giocatori = 5 (4.2), 2 (4.1)
+qualificati entranti = 7
+qualificati uscenti = 4
+N = 14
+D = 16
+A = 2
+NA = 12
+I1 = 6
+primo turno = 6 q, 5 (4.2), 1 (4.1)
+secondo turno = 1 q, 1 (4.1)
+teste di serie possibili = da 4 a 7
+teste di serie = 2 (4.1), 5 (4.2)
+
+[Volume II, esercizio 1.23]
+giocatori = 10 (4.6)
+qualificati entranti = 10
+qualificati uscenti = 8
+N = 20
+D = 32
+A = 12
+NA = 8
+I1 = 4
+primo turno = 4 q, 4 (4.6)
+secondo turno = 6 q, 6 (4.6)
+teste di serie possibili = da 8 a 10
+teste di serie = 10 (4.6)
+
+[Volume II, esercizio 1.24]
+giocatori = 8 (4.6), 5 (4.5)
+qualificati entranti = 11
+qualificati uscenti = 8
+N = 24
+D = 32
+A = 8
+NA = 16
+I1 = 8
+primo turno = 8 q, 8 (4.6)
+secondo turno = 3 q, 5 (4.5)
+teste di serie possibili = da 8 a 12
+teste di serie = 5 (4.5), 3 (4.6)
+
+[Volume II, esercizio 1.25]
+giocatori = 10 (4.6), 3 (4.5), 2 (4.4)
+qualificati entranti = 10
+qualificati uscenti = 8
+N = 25
+D = 32
+A = 7
+NA = 18
+I1 = 9
+primo turno = 9 q, 9 (4.6)
+secondo turno = 1 q, 1 (4.6), 3 (4.5), 2 (4.4)
+teste di serie possibili = da 8 a 12
+teste di serie = 2 (4.4), 3 (4.5), 3 (4.6)
+
+[Volume II, esercizio 1.26]
+giocatori = 8 (4.6), 6 (4.5)
+qualificati entranti = 12
+qualificati uscenti = 8
+N = 26
+D = 32
+A = 6
+NA = 20
+I1 = 10
+primo turno = 10 q, 8 (4.6), 2 (4.5)
+secondo turno = 2 q, 4 (4.5)
+teste di serie possibili = da 8 a 13
+teste di serie = 6 (4.5), 2 (4.6)
+
+[Volume II, esercizio 1.27]
+giocatori = 7 (3.5), 11 (3.4), 7 (3.3), 4 (3.2)
+qualificati entranti = 18
+qualificati uscenti = 16
+N = 47
+D = 64
+A = 17
+NA = 30
+I1 = 15
+primo turno = 15 q, 7 (3.5), 8 (3.4)
+secondo turno = 3 q, 3 (3.4), 7 (3.3), 4 (3.2)
+teste di serie possibili = da 16 a 23
+# Il manuale dice che si puo' scegliere 16 oppure 18, e sceglie 18.
+teste di serie = 4 (3.2), 7 (3.3), 7 (3.4)
+proposta del programma = 22
+
+[Volume I, esempio 39]
+giocatori = 11 (4.NC)
+qualificati uscenti = 4
+N = 11
+D = 16
+A = 5
+NA = 6
+I1 = 3
+primo turno = 6 (4.NC)
+secondo turno = 5 (4.NC)
+teste di serie = nessuna
+
+[Volume I, esempio 40]
+giocatori = 23 (4.NC)
+qualificati uscenti = 8
+N = 23
+D = 32
+A = 9
+NA = 14
+I1 = 7
+primo turno = 14 (4.NC)
+secondo turno = 9 (4.NC)
+teste di serie = nessuna
+
+[Volume I, esempio 41]
+giocatori = 3 (3.5), 2 (3.4), 2 (3.3)
+qualificati entranti = 4
+qualificati uscenti = 4
+N = 11
+D = 16
+A = 5
+NA = 6
+I1 = 3
+primo turno = 3 q, 3 (3.5)
+secondo turno = 1 q, 2 (3.4), 2 (3.3)
+teste di serie possibili = da 4 a 5
+teste di serie = 2 (3.3), 2 (3.4)
+
+[Volume I, esempio 42]
+giocatori = 14 (3.5), 12 (3.4)
+qualificati entranti = 16
+qualificati uscenti = 16
+N = 42
+D = 64
+A = 22
+NA = 20
+I1 = 10
+primo turno = 10 q, 10 (3.5)
+secondo turno = 6 q, 4 (3.5), 12 (3.4)
+teste di serie possibili = da 16 a 21
+teste di serie = 12 (3.4), 4 (3.5)
+
+[Volume I, esempio 43]
+giocatori = 3 (3.5), 2 (3.4), 1 (3.3), 1 (3.2), 1 (3.1)
+qualificati entranti = 5
+qualificati uscenti = 4
+N = 13
+D = 16
+A = 3
+NA = 10
+I1 = 5
+primo turno = 5 q, 3 (3.5), 2 (3.4)
+secondo turno = 1 (3.3), 1 (3.2), 1 (3.1)
+teste di serie possibili = da 4 a 6
+teste di serie = 1 (3.1), 1 (3.2), 1 (3.3), 2 (3.4), 1 (3.5)
+proposta del programma = 5
