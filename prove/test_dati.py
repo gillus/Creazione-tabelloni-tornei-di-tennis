@@ -106,6 +106,13 @@ class ProveTorneo(ProvaFile):
         # riga senza "=", "gara" mancante: errori; "colore" sconosciuta: avviso
         self.assertEqual(gravita, [AVVISO, ERRORE, ERRORE])
 
+    def test_impostazioni_con_numeri(self):
+        percorso = self.file("nome = Uno\ngara = Due\nqualificati  Entranti = 4\n"
+                             "qualificati uscenti = 0\nteste di serie = tre\n")
+        torneo, problemi = leggi_torneo(percorso)
+        self.assertEqual(torneo.impostazioni["qualificati entranti"], 4)
+        self.assertEqual([p.riga for p in problemi], [4, 5])
+
 
 if __name__ == "__main__":
     unittest.main()

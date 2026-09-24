@@ -12,17 +12,21 @@ AVVISO = "AVVISO"
 
 # Impostazioni del torneo che il programma conosce, e quali sono obbligatorie.
 IMPOSTAZIONI_OBBLIGATORIE = ("nome", "gara")
-IMPOSTAZIONI_FACOLTATIVE = ("date",)
+IMPOSTAZIONI_FACOLTATIVE = ("date", "qualificati entranti", "qualificati uscenti", "teste di serie")
+# Impostazioni che devono essere un numero intero, e il numero piu' piccolo ammesso.
+IMPOSTAZIONI_NUMERICHE = {"qualificati entranti": 0, "qualificati uscenti": 1, "teste di serie": 0}
 
 
 @dataclass
 class Problema:
     gravita: str  # ERRORE oppure AVVISO
-    file: str
+    file: str  # "" quando il problema non riguarda un file
     riga: int  # 0 quando il problema riguarda il file intero
     messaggio: str
 
     def __str__(self):
+        if not self.file:
+            return f"{self.gravita}: {self.messaggio}"
         dove = self.file if self.riga == 0 else f"{self.file}, riga {self.riga}"
         return f"{self.gravita} - {dove}: {self.messaggio}"
 
@@ -153,7 +157,7 @@ def leggi_torneo(percorso):
                 f"la riga deve essere nella forma 'nome = valore': \"{riga}\""))
             continue
         nome, valore = riga.split("=", 1)
-        nome = nome.strip().lower()
+        nome = " ".join(nome.split()).lower()
         valore = valore.strip()
         if nome not in conosciute:
             problemi.append(Problema(
@@ -166,6 +170,14 @@ def leggi_torneo(percorso):
         elif not valore:
             problemi.append(Problema(ERRORE, percorso, numero,
                                      f"manca il valore dell'impostazione \"{nome}\""))
+        elif nome in IMPOSTAZIONI_NUMERICHE:
+            minimo = IMPOSTAZIONI_NUMERICHE[nome]
+            if not valore.isdigit() or int(valore) < minimo:
+                problemi.append(Problema(
+                    ERRORE, percorso, numero,
+                    f"l'impostazione \"{nome}\" deve essere un numero intero, almeno {minimo}: \"{valore}\""))
+            else:
+                torneo.impostazioni[nome] = int(valore)
         else:
             torneo.impostazioni[nome] = valore
 
