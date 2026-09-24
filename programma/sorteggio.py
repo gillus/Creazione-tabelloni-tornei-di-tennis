@@ -19,8 +19,11 @@ da 39 a 47 del Volume I e sugli esercizi del Volume II):
     inferiore; l'altra riga e' dell'avversario (o del posto libero);
   - gli aspettiti occupano le coppie con i numeri piu' bassi, come se
     fossero teste di serie;
-  - i qualificati entranti in aspettito vanno contro le teste di serie in
-    aspettito piu' deboli (quelle con il numero piu' alto);
+  - i qualificati entranti in aspettito vanno contro gli aspettiti piu'
+    deboli (quelli con il numero piu' alto): di solito sono le teste di
+    serie in aspettito, come dice il manuale; se i q sono di piu', anche
+    gli altri aspettiti, cosi' due q non si incontrano mai al loro primo
+    incontro;
   - nelle coppie rimaste si gioca il primo turno.
 """
 
@@ -88,30 +91,39 @@ def _riga_principale(indice_coppia, numero_coppie):
     return 0 if indice_coppia < max(1, numero_coppie // 2) else 1
 
 
-def scegli_equilibrati(disponibili, fissi, quanti, rng, inizio, fine):
+def scegli_equilibrati(disponibili, fissi, quanti, rng, inizio, fine, preferiti=()):
     """Sceglie 'quanti' coppie tra le 'disponibili' (indici da inizio a fine escluso)
     in modo che meta', quarti, ottavi... ricevano lo stesso numero di qualificati,
     contando anche quelli gia' 'fissi', con differenza al massimo di uno.
-    A parita', decide il sorteggio.
+    A parita', sceglie prima le coppie 'preferite', e poi decide il sorteggio.
     """
     if quanti == 0:
         return []
     if fine - inizio == 1:
         return [inizio]
+
+    def conta(elenco, da, a):
+        return sum(1 for i in elenco if da <= i < a)
+
     meta = (inizio + fine) // 2
-    liberi_alto = sum(1 for i in disponibili if inizio <= i < meta)
-    liberi_basso = sum(1 for i in disponibili if meta <= i < fine)
-    fissi_alto = sum(1 for i in fissi if inizio <= i < meta)
-    fissi_basso = sum(1 for i in fissi if meta <= i < fine)
+    liberi_alto, liberi_basso = conta(disponibili, inizio, meta), conta(disponibili, meta, fine)
+    fissi_alto, fissi_basso = conta(fissi, inizio, meta), conta(fissi, meta, fine)
+    preferiti_alto, preferiti_basso = conta(preferiti, inizio, meta), conta(preferiti, meta, fine)
     possibili = []
     for in_alto in range(quanti + 1):
         in_basso = quanti - in_alto
         if in_alto <= liberi_alto and in_basso <= liberi_basso:
             differenza = abs((in_alto + fissi_alto) - (in_basso + fissi_basso))
-            possibili.append((differenza, rng.random(), in_alto))
-    _, _, in_alto = min(possibili)
-    return (scegli_equilibrati(disponibili, fissi, in_alto, rng, inizio, meta)
-            + scegli_equilibrati(disponibili, fissi, quanti - in_alto, rng, meta, fine))
+            coperti = min(in_alto, preferiti_alto) + min(in_basso, preferiti_basso)
+            possibili.append((differenza, -coperti, rng.random(), in_alto))
+    in_alto = min(possibili)[-1]
+    if fine - inizio == 2:
+        # Ultima scelta tra due coppie vicine: prima quella preferita.
+        scelte = sorted((i for i in disponibili if inizio <= i < fine),
+                        key=lambda i: (i not in preferiti, rng.random()))
+        return scelte[:quanti]
+    return (scegli_equilibrati(disponibili, fissi, in_alto, rng, inizio, meta, preferiti)
+            + scegli_equilibrati(disponibili, fissi, quanti - in_alto, rng, meta, fine, preferiti))
 
 
 def _classifiche_ordinate(calcoli):
@@ -141,30 +153,38 @@ def schema(calcoli, rng=None):
     ordine = ordine_delle_coppie(numero_coppie)
     coppia_del_numero = {numero: indice for indice, numero in enumerate(ordine)}
 
-    # Cosa c'e' nella coppia con un certo numero d'ordine
+    # Cosa c'e' nella coppia con un certo numero d'ordine.
     teste = set(range(1, T + 1))
+    # Gli aspettiti diretti: prima le teste di serie, poi gli altri, con i numeri
+    # subito dopo le teste di serie (come se fossero teste di serie).
+    aspettiti_non_teste = list(range(T + 1, diretti_aspettiti + 1))
+    numeri_aspettiti = list(range(1, teste_aspettiti + 1)) + aspettiti_non_teste
+    occupati = teste | set(aspettiti_non_teste)
+    # I q in aspettito vanno contro gli aspettiti piu' deboli (numero piu' alto):
+    # nel secondo turno la coppia k incontra la coppia (numero delle coppie + 1 - k).
     q_in_aspettito = []
-    # I q in aspettito vanno contro le teste di serie in aspettito piu' deboli...
-    for k in range(teste_aspettiti, 0, -1):
+    for k in reversed(numeri_aspettiti):
         if len(q_in_aspettito) == q_aspettiti:
             break
         numero = numero_coppie + 1 - k
-        if numero not in teste:
+        if numero not in occupati:
             q_in_aspettito.append(numero)
-    # ...e se non bastano, nei primi numeri liberi dopo le teste di serie.
-    occupati = teste | set(q_in_aspettito)
+            occupati.add(numero)
+    # Se non bastano (succede solo in casi molto particolari), i primi numeri liberi.
     liberi = [n for n in range(1, numero_coppie + 1) if n not in occupati]
     while len(q_in_aspettito) < q_aspettiti:
         q_in_aspettito.append(liberi.pop(0))
-    # Gli aspettiti diretti che non sono teste di serie: i primi numeri liberi.
-    aspettiti_non_teste = [liberi.pop(0) for _ in range(diretti_aspettiti - teste_aspettiti)]
     # Tutte le altre coppie giocano il primo turno.
     primo_turno = [k for k in range(teste_aspettiti + 1, T + 1)] + liberi
 
-    # Quali incontri del primo turno hanno un qualificato entrante
+    # Quali incontri del primo turno hanno un qualificato entrante: uno per ogni
+    # frazione del tabellone; a parita', quelli senza testa di serie, perche' i q
+    # devono incontrare i giocatori di classifica piu' bassa (raccomandazione 1).
     fissi = [coppia_del_numero[n] for n in q_in_aspettito]
     disponibili = [coppia_del_numero[n] for n in primo_turno]
-    con_q = set(scegli_equilibrati(disponibili, fissi, q_primo_turno, rng, 0, numero_coppie))
+    preferiti = {coppia_del_numero[n] for n in primo_turno if n not in teste}
+    con_q = set(scegli_equilibrati(disponibili, fissi, q_primo_turno, rng, 0, numero_coppie,
+                                   preferiti))
 
     posti = [None] * D
     for indice, numero in enumerate(ordine):
@@ -328,6 +348,11 @@ class _Pedina:
         self.usato = False
 
 
+# Quante disposizioni diverse dei qualificati entranti provare, quando la
+# regola dello stesso circolo non si riesce a rispettare con la prima.
+PROVE_DEI_QUALIFICATI = 30
+
+
 def sorteggia(calcoli, giocatori, rng=None):
     """Compila il tabellone: schema e sorteggio dei giocatori.
 
@@ -336,7 +361,29 @@ def sorteggia(calcoli, giocatori, rng=None):
     rng        il generatore di numeri casuali (per le prove si puo' fissare)
     """
     rng = rng or random.Random()
-    posti = schema(calcoli, rng)
+    tabellone = _sorteggia_con_schema(calcoli, giocatori, rng, schema(calcoli, rng))
+    q_primo_turno = sum(n for c, n in calcoli.non_aspettiti if c == QUALIFICATO)
+    scelta_dei_q = 0 < q_primo_turno < calcoli.I1
+    if not tabellone.problemi or not scelta_dei_q:
+        return tabellone
+    # Si puo' scegliere in quali incontri mettere i q: si provano altre disposizioni.
+    migliore = tabellone
+    for _ in range(PROVE_DEI_QUALIFICATI):
+        prova = _sorteggia_con_schema(calcoli, giocatori, rng, schema(calcoli, rng))
+        if len(incontri_stesso_circolo(prova)) < len(incontri_stesso_circolo(migliore)):
+            migliore = prova
+        if not migliore.problemi:
+            return migliore
+    for problema in migliore.problemi:
+        problema.messaggio = problema.messaggio.replace(
+            "il minimo possibile di questi incontri",
+            "il minimo possibile di questi incontri, tra le disposizioni dei qualificati "
+            "entranti che ha provato")
+    return migliore
+
+
+def _sorteggia_con_schema(calcoli, giocatori, rng, posti):
+    """Il sorteggio dei giocatori in uno schema gia' pronto."""
     tabellone = Tabellone(calcoli, posti)
     ordinati = _classifiche_ordinate(calcoli)
     T = calcoli.teste_di_serie
@@ -494,20 +541,24 @@ def _riga(numero, posto):
 
 def disegna(tabellone, titolo=""):
     """Il tabellone come testo, un posto per riga, con gli incontri del primo turno
-    separati da una riga vuota e le parti che danno ciascun qualificato uscente."""
+    separati da una riga vuota e le parti che danno ciascun qualificato uscente.
+
+    Le righe di spiegazione cominciano con #: cosi' il testo si puo' salvare,
+    correggere a mano e far controllare dal programma (py tabelloni.py controlla).
+    """
     calcoli = tabellone.calcoli
     D = len(tabellone.posti)
     Qu = calcoli.qualificati_uscenti
     righe = []
     if titolo:
-        righe += [titolo, "=" * len(titolo)]
+        righe += [f"# {titolo}", "# " + "=" * len(titolo)]
     uscita = "il vincitore" if Qu == 1 else f"{Qu} qualificati (da Q1 a Q{Qu})"
-    righe.append(f"Tabellone di {D} posti, {calcoli.N} giocatori, esce {uscita}.")
-    righe.append("Il numero tra parentesi indica la testa di serie.")
+    righe.append(f"# Tabellone di {D} posti, {calcoli.N} giocatori, esce {uscita}.")
+    righe.append("# Il numero tra parentesi indica la testa di serie.")
     parte = D // Qu if Qu and D % Qu == 0 else D
     for i, posto in enumerate(tabellone.posti):
         if i % parte == 0 and Qu > 1:
-            righe += ["", f"--- parte del qualificato Q{i // parte + 1} ---"]
+            righe += ["", f"# --- parte del qualificato Q{i // parte + 1} ---"]
         elif i % 2 == 0:
             righe.append("")
         righe.append(_riga(i + 1, posto))
