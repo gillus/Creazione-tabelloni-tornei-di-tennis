@@ -1,0 +1,68 @@
+DOMANDE SUL PROGRAMMA DEI TABELLONI
+===================================
+
+Domande da fare a chi ha proposto il progetto, per capire bene cosa deve
+fare il programma prima di cominciare a scriverlo.
+Le risposte si possono scrivere sotto ogni domanda, dopo "Risposta:".
+
+Le domande piu' importanti sono la 1, la 2 e la 4: dicono se e' un lavoro
+di pochi giorni o un progetto molto piu' grande.
+
+
+1. CHI LO USERA', E PER FARE COSA?
+   Un giudice arbitro che prepara il tabellone di un torneo vero, qualcuno
+   che si esercita per l'esame da giudice arbitro, oppure un torneo a scuola?
+   Da questo dipende quanto il programma deve seguire alla lettera le regole
+   della Federazione.
+   Risposta:
+
+
+2. QUANTA PARTE DEL MANUALE DEVE COPRIRE?
+   Solo un tabellone singolo (un elenco di giocatori -> un tabellone),
+   oppure anche piu' tabelloni collegati (per esempio tabellone di
+   qualificazione -> tabellone principale, con giocatori che entrano in
+   fasi diverse secondo la classifica)?
+   Risposta:
+
+
+3. QUALI DATI SI INSERISCONO?
+   Per ogni giocatore, probabilmente nome e classifica (per esempio 4.6 o 3.2).
+   Serve altro? Per esempio il circolo o la regione, per non far incontrare
+   subito giocatori dello stesso circolo, oppure l'ordine di iscrizione.
+   Risposta:
+
+
+4. COSA DEVE PRODURRE?
+   Un tabellone da stampare (in PDF, come pagina da aprire nel browser,
+   come testo semplice?), un elenco degli incontri del primo turno,
+   o tutte e due le cose?
+   Il tabellone resta vuoto da compilare a mano, oppure i risultati si
+   inseriscono nel programma e i vincitori avanzano da soli?
+   Risposta:
+
+
+5. SORTEGGIO FATTO DAL PROGRAMMA O A MANO?
+   Il manuale prevede dei sorteggi (per esempio dove mettere le teste di
+   serie e i posti liberi, cioe' i giocatori che passano il turno senza
+   giocare). Il sorteggio lo fa il programma, oppure il giudice arbitro lo
+   fa a mano e poi lo scrive nel programma?
+   Risposta:
+
+
+6. COSTRUIRE O CONTROLLARE?
+   Il programma deve solo COSTRUIRE i tabelloni, oppure anche CONTROLLARE
+   se un tabellone fatto a mano rispetta le regole?
+   La seconda cosa sarebbe utile per esercitarsi all'esame.
+   Risposta:
+
+
+7. CON O SENZA FINESTRA?
+   Una finestra semplice con dei pulsanti, oppure basta un doppio clic e il
+   programma legge i file di testo da solo?
+   Risposta:
+
+
+8. ESEMPI PER LE PROVE
+   Possiamo usare gli esercizi risolti del secondo volume del manuale per
+   controllare che il programma dia le stesse soluzioni?
+   Risposta:
