@@ -1,0 +1,36 @@
+# ELENCO DELLE CLASSIFICHE FITP
+# =============================
+#
+# Una classifica per riga, DALLA PIU' ALTA ALLA PIU' BASSA.
+# L'ordine conta: il programma lo usa per sapere chi e' piu' forte
+# (per esempio per scegliere le teste di serie).
+#
+# Le righe che cominciano con # sono commenti e vengono ignorate.
+# Se la Federazione aggiunge o cambia una classifica, basta modificare
+# questo elenco: non serve toccare il programma.
+
+# Seconda categoria
+2.1
+2.2
+2.3
+2.4
+2.5
+2.6
+2.7
+2.8
+
+# Terza categoria
+3.1
+3.2
+3.3
+3.4
+3.5
+
+# Quarta categoria
+4.1
+4.2
+4.3
+4.4
+4.5
+4.6
+4.NC

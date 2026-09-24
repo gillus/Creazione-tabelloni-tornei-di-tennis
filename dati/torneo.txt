@@ -1,0 +1,18 @@
+# IMPOSTAZIONI DEL TORNEO
+# =======================
+#
+# Una impostazione per riga, nella forma:
+#
+#     nome dell'impostazione = valore
+#
+# Le righe che cominciano con # sono commenti e vengono ignorate.
+#
+#   nome   il nome del torneo, come deve comparire sul tabellone (obbligatorio)
+#   gara   la gara, per esempio "Singolare maschile" (obbligatorio)
+#   date   le date del torneo, scritte come si vuole (facoltativo)
+#
+# Qui sotto c'e' un torneo DI FANTASIA, solo per provare il programma.
+
+nome = Torneo di prova
+gara = Singolare maschile
+date = dal 1 al 10 ottobre
