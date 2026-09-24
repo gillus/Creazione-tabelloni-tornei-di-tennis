@@ -5,8 +5,9 @@ fa i calcoli preliminari del tabellone di estrazione e il sorteggio.
 Il tabellone viene mostrato e salvato in risultati/tabellone.txt; la pagina
 da stampare viene salvata in risultati/tabellone.html e aperta nel browser.
 
-Si avvia con:  py tabelloni.py
-Per controllare un tabellone gia' fatto (anche a mano):
+Si avvia con:  py tabelloni.py        (si apre la finestra con i pulsanti)
+Senza finestra, scrivendo i comandi:
+    py tabelloni.py tabellone                      fa il tabellone
     py tabelloni.py controlla                      controlla dati/tabellone-da-controllare.txt
     py tabelloni.py controlla risultati/tabellone.txt   controlla un altro file
 """
@@ -25,25 +26,26 @@ from programma.stampa import pagina
 FILE_CLASSIFICHE = os.path.join("dati", "classifiche.txt")
 FILE_GIOCATORI = os.path.join("dati", "giocatori.txt")
 FILE_TORNEO = os.path.join("dati", "torneo.txt")
+FILE_DATI = {"giocatori": FILE_GIOCATORI, "torneo": FILE_TORNEO, "classifiche": FILE_CLASSIFICHE}
 FILE_DA_CONTROLLARE = os.path.join("dati", "tabellone-da-controllare.txt")
 CARTELLA_RISULTATI = "risultati"
 FILE_TABELLONE = os.path.join(CARTELLA_RISULTATI, "tabellone.txt")
 FILE_DA_STAMPARE = os.path.join(CARTELLA_RISULTATI, "tabellone.html")
 
 
-def leggi_dati():
+def leggi_dati(file_dati=FILE_DATI):
     """Legge i tre file dei dati. Restituisce classifiche, giocatori, torneo e problemi,
     oppure None se manca un file."""
-    for percorso in (FILE_CLASSIFICHE, FILE_GIOCATORI, FILE_TORNEO):
+    for percorso in file_dati.values():
         if not os.path.exists(percorso):
             print(f"ERRORE - manca il file {percorso}")
             return None
     problemi = []
-    classifiche, trovati = leggi_classifiche(FILE_CLASSIFICHE)
+    classifiche, trovati = leggi_classifiche(file_dati["classifiche"])
     problemi += trovati
-    giocatori, trovati = leggi_giocatori(FILE_GIOCATORI, classifiche)
+    giocatori, trovati = leggi_giocatori(file_dati["giocatori"], classifiche)
     problemi += trovati
-    torneo, trovati = leggi_torneo(FILE_TORNEO)
+    torneo, trovati = leggi_torneo(file_dati["torneo"])
     problemi += trovati
     return classifiche, giocatori, torneo, problemi
 
@@ -72,9 +74,9 @@ def apri_nel_browser(percorso):
         print(f"Non si e' aperto il browser: aprire a mano il file {percorso}")
 
 
-def fai_tabellone():
+def fai_tabellone(file_dati=FILE_DATI):
     """Legge i dati, fa i calcoli e il sorteggio. Restituisce True se non ci sono errori."""
-    letti = leggi_dati()
+    letti = leggi_dati(file_dati)
     if letti is None:
         return False
     classifiche, giocatori, torneo, problemi = letti
@@ -128,9 +130,9 @@ def fai_tabellone():
     return stampa_problemi(problemi)
 
 
-def controlla_file(percorso):
+def controlla_file(percorso, file_dati=FILE_DATI):
     """Controlla un tabellone scritto in un file. Restituisce True se non ci sono errori."""
-    letti = leggi_dati()
+    letti = leggi_dati(file_dati)
     if letti is None:
         return False
     classifiche, giocatori, torneo, problemi = letti
@@ -155,14 +157,25 @@ def main():
     # anche se viene avviato con un doppio clic.
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
     argomenti = sys.argv[1:]
+    if not argomenti:
+        try:
+            from programma import finestra
+        except ImportError:
+            print("Non si riesce ad aprire la finestra (manca tkinter): si continua senza.\n")
+        else:
+            finestra.avvia(fai_tabellone=fai_tabellone, controlla_file=controlla_file,
+                           file_dati=FILE_DATI, file_da_controllare=FILE_DA_CONTROLLARE,
+                           file_da_stampare=FILE_DA_STAMPARE,
+                           cartella_risultati=CARTELLA_RISULTATI)
+            return 0
     if argomenti and argomenti[0].lower() == "controlla":
         tutto_bene = controlla_file(argomenti[1] if len(argomenti) > 1 else FILE_DA_CONTROLLARE)
-    elif argomenti:
+    elif not argomenti or argomenti[0].lower() == "tabellone":
+        tutto_bene = fai_tabellone()
+    else:
         print(f"Comando sconosciuto: {' '.join(argomenti)}")
         print(__doc__)
         tutto_bene = False
-    else:
-        tutto_bene = fai_tabellone()
     if sys.stdin and sys.stdin.isatty():
         input("\nPremi Invio per chiudere...")
     return 0 if tutto_bene else 1
