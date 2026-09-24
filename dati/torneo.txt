@@ -15,9 +15,13 @@
 #                         (facoltativo; se manca vale 0)
 #   qualificati uscenti   quanti giocatori escono da questo tabellone per andare
 #                         al successivo; 1 vuol dire che il tabellone da' il vincitore
-#                         (facoltativo; se manca vale 1)
+#                         (facoltativo; se manca vale 1). Se non e' 1, 2, 4, 8, 16...
+#                         (per esempio 3, 5 o 6) il tabellone viene diviso in
+#                         sezioni, una per ogni qualificato (capitolo III del manuale)
 #   teste di serie        quante teste di serie fare (facoltativo; se manca le
-#                         propone il programma, secondo le regole del manuale)
+#                         propone il programma, secondo le regole del manuale).
+#                         Con le sezioni deve essere un multiplo del numero delle
+#                         sezioni (lo stesso numero di teste di serie in ognuna)
 #
 # Qui sotto c'e' un torneo DI FANTASIA, solo per provare il programma.
 
