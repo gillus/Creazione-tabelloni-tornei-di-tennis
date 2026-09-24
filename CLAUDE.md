@@ -16,13 +16,18 @@ Deciso con chi ha proposto il progetto (risposte complete in `DOMANDE.txt`).
 - **Chi lo usa**: un **giudice arbitro regionale** che prepara i tabelloni
   di tornei FITP veri. Quindi il programma deve rispettare **alla lettera**
   le regole dei manuali FIT (cartella `manuali/` e i due PDF, che fanno fede).
+  I manuali sono l'**ultima versione** in uso (confermato da chi ha proposto
+  il progetto).
 - **Tabelloni concatenati**: non un solo tabellone, ma **più tabelloni
   collegati** (qualificazioni → tabellone intermedio → tabellone finale),
   con i giocatori che entrano in fasi diverse secondo la classifica.
 - **Dati di ogni giocatore**: un **codice anonimo** (userid), la **classifica**
   FITP (per esempio 4.6, 3.2) e il **circolo**.
-  Regola in più: **al primo turno due giocatori dello stesso circolo
-  non devono incontrarsi**.
+  Regola dello stesso circolo: **al primo turno due giocatori dello stesso
+  circolo non devono incontrarsi**. Vale **solo al primo turno** (il manuale
+  dice "nei primi due incontri", ma qui si segue la scelta di chi ha proposto
+  il progetto). La regola si può non rispettare **solo se non esiste nessun
+  sorteggio possibile** che la rispetti; in quel caso il programma lo segnala.
 - **Sorteggio fatto dal programma**: teste di serie, posti liberi (bye) e
   tutto il resto li decide il programma. Le correzioni a mano sono
   **l'ultima risorsa**, non il modo normale di lavorare.
