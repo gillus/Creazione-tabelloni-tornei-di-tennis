@@ -121,3 +121,19 @@ DA CHIEDERE A CHI HA PROPOSTO IL PROGETTO, PRIMA DI COMINCIARE
       - oppure chi ha proposto il progetto, a mano.
     Risposta: lo fa Claude; chi ha proposto il progetto controlla
     qualche esercizio a campione.
+
+ E. NUMERO DELLE TESTE DI SERIE. Il manuale da' un minimo e un massimo,
+    poi la scelta la fa il giudice arbitro "secondo logica". Il programma
+    propone: il numero piu' piccolo che prende TUTTI i giocatori di una
+    classifica (senza dividerla); se non c'e', il minimo.
+    Cosi' si ottiene la stessa scelta del manuale in 19 esempi su 22.
+    Nei 3 casi diversi:
+      - esercizio 1.08: il manuale sceglie 8, il programma propone 12
+        (il manuale stesso dice che con 8 il tabellone e' "sconsigliabile");
+      - esercizio 1.27: il manuale sceglie 18, il programma propone 22;
+      - Volume I, esempio 43: il manuale sceglie 6, il programma propone 5.
+    Il giudice arbitro puo' sempre scrivere il numero che vuole in
+    dati/torneo.txt ("teste di serie = ...").
+    Domanda: va bene questa regola? Nei casi 1.27 e 43, perche' il manuale
+    sceglie 18 e 6?
+    Risposta:
