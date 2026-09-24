@@ -76,7 +76,18 @@ passare al successivo.
     e aprire il risultato.
 
  7. TABELLONI A SEZIONI E DI QUALIFICAZIONE (capitoli 3 e 4)
-    E' la parte piu' difficile.
+    E' la parte piu' difficile. Diviso in due:
+    7a. FATTO - Tabelloni a sezioni (capitolo 3): quando i qualificati
+        uscenti non sono 1, 2, 4, 8, 16... (per esempio 3, 5, 6).
+        Provato con tutti i 18 esercizi a sezioni del manuale.
+        Insieme e' stato aggiunto il "sorteggio mirato" (esercizi 2.06,
+        2.10, 2.11, 2.22, 1.09, esempio 44): le classifiche del primo turno
+        si dispongono in modo che si incontrino giocatori di classifica
+        vicina. La regola dello stesso circolo viene sempre prima.
+    7b. DA FARE - Tabelloni di selezione (capitolo 4): i giocatori entrano
+        in tre o piu' turni secondo la classifica, come nel tabellone vero
+        mandato da chi ha proposto il progetto. Prima servono le risposte
+        alle domande G e H qui sotto.
 
  8. TABELLONI COLLEGATI E TABELLONE FINALE (capitoli 5 e 6)
     Il torneo intero, dalle qualificazioni al tabellone finale.
@@ -138,6 +149,17 @@ DA CHIEDERE A CHI HA PROPOSTO IL PROGETTO, PRIMA DI COMINCIARE
     sceglie 18 e 6?
     Risposta:
 
+    E2. TESTE DI SERIE NEI TABELLONI A SEZIONI. Qui il numero deve essere
+    un multiplo delle sezioni (lo stesso numero in ogni sezione). Il
+    programma propone: il multiplo piu' piccolo che fa teste di serie tutti
+    i giocatori che entrano al secondo turno. Cosi' si ottiene la stessa
+    scelta del manuale in 9 casi su 12. Nei 3 casi diversi (esercizi 2.12
+    e 2.22, Volume I esempio 49) il manuale sceglie il minimo, e il
+    programma propone di piu' (12 invece di 6, 10 invece di 5).
+    Domanda: va bene cosi'? Il giudice arbitro puo' sempre scrivere il
+    numero che vuole in dati/torneo.txt.
+    Risposta:
+
  F. REGOLA DELLO STESSO CIRCOLO E POSTI LIBERI. Chi ha un posto libero
     (bye) non gioca il primo turno: il suo primo incontro e' al secondo
     turno, contro il vincitore di un incontro del primo turno.
@@ -150,3 +172,31 @@ DA CHIEDERE A CHI HA PROPOSTO IL PROGETTO, PRIMA DI COMINCIARE
     Risposta: va bene cosi'. Chi ha il posto libero PUO' incontrare un
     compagno di circolo al secondo turno. La regola vale solo per gli
     incontri del primo turno.
+
+ G. TABELLONI DI SELEZIONE: CHI SCEGLIE LA "SCALA"?
+    Nel tabellone di selezione (capitolo 4) bisogna decidere quanti
+    giocatori, e di quale classifica, entrano in ogni turno (il manuale la
+    chiama "scala"). Il manuale dice che spesso ci sono piu' scale giuste,
+    ognuna con vantaggi e svantaggi, e che sceglie il giudice arbitro
+    (esempi 64 e 65: stessi giocatori, due tabelloni diversi, tutti e due
+    giusti). Il programma puo':
+      1) proporre lui la scala migliore, secondo le raccomandazioni del
+         manuale, e mostrare le altre possibili; il giudice arbitro puo'
+         scrivere una scala diversa in dati/torneo.txt (come gia' succede
+         per il numero delle teste di serie)  <- consigliato;
+      2) oppure usare sempre la scala scritta dal giudice arbitro, e
+         limitarsi a costruire il tabellone e a controllarlo.
+    Domanda: quale delle due?
+    Risposta:
+
+ H. TABELLONE DI ESTRAZIONE O DI SELEZIONE?
+    Con gli stessi giocatori si puo' fare un tabellone di estrazione
+    (tutti entrano nel primo o nel secondo turno) oppure di selezione
+    (entrano in tre o piu' turni, come nel tabellone vero che ci ha
+    mandato). Il programma puo':
+      1) usare quello scritto in dati/torneo.txt (per esempio
+         "tipo = selezione"), e se manca fare quello di estrazione;
+      2) oppure scegliere da solo, e il giudice arbitro puo' cambiarlo.
+    Domanda: quale delle due? E nei tornei che prepara di solito, quale
+    tabellone usa piu' spesso?
+    Risposta:
