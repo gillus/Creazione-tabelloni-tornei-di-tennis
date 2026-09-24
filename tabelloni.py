@@ -1,7 +1,8 @@
 """Programma dei tabelloni dei tornei di tennis.
 
-Per ora legge i file nella cartella dati/, dice se sono scritti bene
-e fa i calcoli preliminari del tabellone di estrazione.
+Per ora legge i file nella cartella dati/, dice se sono scritti bene,
+fa i calcoli preliminari del tabellone di estrazione e il sorteggio.
+Il tabellone viene mostrato e salvato in risultati/tabellone.txt.
 Si avvia con:  py tabelloni.py
 """
 
@@ -10,10 +11,13 @@ import sys
 
 from programma.calcoli import calcola, conta_per_classifica, descrivi
 from programma.dati import ERRORE, leggi_classifiche, leggi_giocatori, leggi_torneo
+from programma.sorteggio import disegna, sorteggia
 
 FILE_CLASSIFICHE = os.path.join("dati", "classifiche.txt")
 FILE_GIOCATORI = os.path.join("dati", "giocatori.txt")
 FILE_TORNEO = os.path.join("dati", "torneo.txt")
+CARTELLA_RISULTATI = "risultati"
+FILE_TABELLONE = os.path.join(CARTELLA_RISULTATI, "tabellone.txt")
 
 
 def controlla_dati():
@@ -51,6 +55,19 @@ def controlla_dati():
         print(descrivi(calcoli))
         print()
         problemi += calcoli.problemi
+        if not any(p.gravita == ERRORE for p in calcoli.problemi):
+            tabellone = sorteggia(calcoli, giocatori)
+            problemi += tabellone.problemi
+            titolo = (f"{torneo.impostazioni['nome']} - {torneo.impostazioni['gara']}"
+                      + (f" - {torneo.impostazioni['date']}" if "date" in torneo.impostazioni else ""))
+            testo = disegna(tabellone, titolo)
+            print(testo)
+            print()
+            os.makedirs(CARTELLA_RISULTATI, exist_ok=True)
+            with open(FILE_TABELLONE, "w", encoding="utf-8") as f:
+                f.write(testo + "\n")
+            print(f"Tabellone salvato in {FILE_TABELLONE}")
+            print()
 
     if problemi:
         print("PROBLEMI TROVATI:")

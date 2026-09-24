@@ -4,3 +4,6 @@ Tabellone FITP - sola visualizzazione.pdf
 
 # File temporanei che Python crea da solo
 __pycache__/
+
+# Tabelloni prodotti dal programma: si rifanno quando servono
+risultati/
