@@ -119,4 +119,5 @@ DA CHIEDERE A CHI HA PROPOSTO IL PROGETTO, PRIMA DI COMINCIARE
         controlla qualche esercizio a campione (consigliato: e' piu'
         veloce);
       - oppure chi ha proposto il progetto, a mano.
-    Risposta:
+    Risposta: lo fa Claude; chi ha proposto il progetto controlla
+    qualche esercizio a campione.
