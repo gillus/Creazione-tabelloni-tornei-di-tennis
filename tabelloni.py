@@ -2,7 +2,8 @@
 
 Per ora legge i file nella cartella dati/, dice se sono scritti bene,
 fa i calcoli preliminari del tabellone di estrazione e il sorteggio.
-Il tabellone viene mostrato e salvato in risultati/tabellone.txt.
+Il tabellone viene mostrato e salvato in risultati/tabellone.txt; la pagina
+da stampare viene salvata in risultati/tabellone.html e aperta nel browser.
 
 Si avvia con:  py tabelloni.py
 Per controllare un tabellone gia' fatto (anche a mano):
@@ -11,12 +12,15 @@ Per controllare un tabellone gia' fatto (anche a mano):
 """
 
 import os
+import pathlib
 import sys
+import webbrowser
 
 from programma.calcoli import calcola, conta_per_classifica, descrivi
 from programma.controllo import controlla, leggi_tabellone
 from programma.dati import ERRORE, leggi_classifiche, leggi_giocatori, leggi_torneo
 from programma.sorteggio import disegna, sorteggia
+from programma.stampa import pagina
 
 FILE_CLASSIFICHE = os.path.join("dati", "classifiche.txt")
 FILE_GIOCATORI = os.path.join("dati", "giocatori.txt")
@@ -24,6 +28,7 @@ FILE_TORNEO = os.path.join("dati", "torneo.txt")
 FILE_DA_CONTROLLARE = os.path.join("dati", "tabellone-da-controllare.txt")
 CARTELLA_RISULTATI = "risultati"
 FILE_TABELLONE = os.path.join(CARTELLA_RISULTATI, "tabellone.txt")
+FILE_DA_STAMPARE = os.path.join(CARTELLA_RISULTATI, "tabellone.html")
 
 
 def leggi_dati():
@@ -58,6 +63,13 @@ def controlla_tabellone(giocatori, classifiche, torneo, posti):
                      qualificati_entranti=torneo.impostazioni.get("qualificati entranti", 0),
                      qualificati_uscenti=torneo.impostazioni.get("qualificati uscenti", 1),
                      teste_di_serie_impostate=torneo.impostazioni.get("teste di serie"))
+
+
+def apri_nel_browser(percorso):
+    try:
+        webbrowser.open(pathlib.Path(percorso).resolve().as_uri())
+    except Exception:
+        print(f"Non si e' aperto il browser: aprire a mano il file {percorso}")
 
 
 def fai_tabellone():
@@ -99,6 +111,11 @@ def fai_tabellone():
             with open(FILE_TABELLONE, "w", encoding="utf-8") as f:
                 f.write(testo + "\n")
             print(f"Tabellone salvato in {FILE_TABELLONE}")
+            with open(FILE_DA_STAMPARE, "w", encoding="utf-8") as f:
+                f.write(pagina(tabellone, torneo.impostazioni))
+            print(f"Tabellone da stampare salvato in {FILE_DA_STAMPARE}"
+                  " (si apre nel browser; per stampare premere il pulsante Stampa)")
+            apri_nel_browser(FILE_DA_STAMPARE)
             # Il programma controlla anche il suo tabellone, per sicurezza.
             if not any(p.gravita == ERRORE
                        for p in controlla_tabellone(giocatori, classifiche, torneo, tabellone.posti)):
