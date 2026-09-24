@@ -1,0 +1,105 @@
+PIANO DI LAVORO - PROGRAMMA DEI TABELLONI
+========================================
+
+Questo piano si basa su:
+- le risposte di chi ha proposto il progetto (file DOMANDE.txt);
+- i due manuali FIT (cartella manuali/ e i due PDF, che fanno fede).
+
+
+COSA ABBIAMO SCOPERTO NEI MANUALI
+---------------------------------
+
+- Il Volume I ha 7 capitoli, uno dopo l'altro:
+    1  regole generali (teste di serie, posti liberi, qualificati, raccomandazioni)
+    2  tabellone semplice, dove tutti partono dal primo turno
+    3  lo stesso tabellone diviso in sezioni
+    4  tabelloni di qualificazione, con giocatori che entrano in turni diversi
+       secondo la classifica
+    5  tabelloni finali
+    6  come dividere un torneo intero in piu' tabelloni collegati
+    7  il sorteggio e il programma delle partite
+
+- Il Volume II ha 56 esercizi risolti (34 del gruppo 1 e 22 del gruppo 2).
+  Ognuno ha i "calcoli preliminari" (dimensione del tabellone, numero dei
+  posti liberi, ecc.) e poi la soluzione disegnata.
+
+- PROBLEMA: le soluzioni sono tabelloni DISEGNATI e nella copia di testo
+  escono in disordine. Per usarle come prove bisogna ricopiarle a mano dal
+  PDF in un file di testo semplice.
+
+- DIFFERENZA SULLE REGOLE: chi ha proposto il progetto ha detto
+  "stesso circolo: non si incontrano AL PRIMO TURNO".
+  Il manuale (capitolo 7) e' piu' severo: due giocatori dello stesso
+  circolo non devono incontrarsi NEI PRIMI DUE INCONTRI, e un qualificato
+  non deve incontrare un giocatore dello stesso circolo ammesso
+  direttamente al tabellone successivo.
+
+
+I PASSI DEL LAVORO
+------------------
+
+Ogni passo produce qualcosa che si puo' vedere funzionare prima di
+passare al successivo.
+
+ 1. ELENCO GIOCATORI E IMPOSTAZIONI
+    Un file di testo per i giocatori (codice, classifica, circolo) e uno
+    per il torneo. Il programma li legge e segnala gli errori (per esempio
+    una classifica sconosciuta o un codice ripetuto).
+
+ 2. I CALCOLI DI BASE
+    Dai giocatori, calcolare dimensione del tabellone, posti liberi e
+    incontri del primo turno, come nei "calcoli preliminari" degli esercizi.
+    Questi numeri si ricopiano facilmente dal testo, quindi le prove con
+    gli esercizi del Volume II possono cominciare subito.
+
+ 3. UN TABELLONE SEMPLICE (capitolo 2)
+    Mettere teste di serie e posti liberi, sorteggiare gli altri,
+    rispettando la regola dello stesso circolo.
+
+ 4. CONTROLLO DEL TABELLONE
+    Controllare qualunque tabellone con le regole del manuale e spiegare
+    con parole semplici cosa non va.
+
+ 5. TABELLONE DA STAMPARE
+    Salvarlo nella cartella risultati/ come pagina da aprire e stampare
+    dal browser.
+
+ 6. FINESTRA
+    Pulsanti per scegliere i file, costruire il tabellone, controllarlo
+    e aprire il risultato.
+
+ 7. TABELLONI A SEZIONI E DI QUALIFICAZIONE (capitoli 3 e 4)
+    E' la parte piu' difficile.
+
+ 8. TABELLONI COLLEGATI E TABELLONE FINALE (capitoli 5 e 6)
+    Il torneo intero, dalle qualificazioni al tabellone finale.
+
+ 9. PROVE CON GLI ESERCIZI
+    Aggiungere le soluzioni del Volume II poco alla volta, capitolo per
+    capitolo, insieme ai passi da 3 a 8.
+
+Con i passi da 1 a 6 si ha un programma che funziona per i tornei
+semplici. I passi 7 e 8 sono la parte piu' grande.
+
+
+DA CHIEDERE A CHI HA PROPOSTO IL PROGETTO, PRIMA DI COMINCIARE
+--------------------------------------------------------------
+
+ A. Regola dello stesso circolo: solo AL PRIMO TURNO, oppure NEI PRIMI
+    DUE INCONTRI come dice il manuale?
+    Risposta:
+
+ B. Il manuale e' del 2011. Da allora sono cambiate le regole FITP o il
+    sistema delle classifiche? Se si', quale versione deve seguire il
+    programma?
+    Risposta:
+
+ C. Puo' mandare un tabellone vero fatto in Excel, con i codici dei
+    giocatori resi anonimi? Servirebbe a vedere la forma che si aspetta
+    e come prova vera.
+    Risposta:
+
+ D. Chi ricopia le soluzioni degli esercizi in file di testo: chi ha
+    proposto il progetto, oppure Claude partendo dai PDF, con un
+    controllo fatto dopo da chi ha proposto il progetto?
+    Risposta:
