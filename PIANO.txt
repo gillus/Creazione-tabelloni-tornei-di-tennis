@@ -27,12 +27,19 @@ COSA ABBIAMO SCOPERTO NEI MANUALI
   escono in disordine. Per usarle come prove bisogna ricopiarle a mano dal
   PDF in un file di testo semplice.
 
-- DIFFERENZA SULLE REGOLE: chi ha proposto il progetto ha detto
-  "stesso circolo: non si incontrano AL PRIMO TURNO".
-  Il manuale (capitolo 7) e' piu' severo: due giocatori dello stesso
-  circolo non devono incontrarsi NEI PRIMI DUE INCONTRI, e un qualificato
-  non deve incontrare un giocatore dello stesso circolo ammesso
-  direttamente al tabellone successivo.
+- DIFFERENZA SULLE REGOLE: il manuale (capitolo 7) dice che due giocatori
+  dello stesso circolo non devono incontrarsi NEI PRIMI DUE INCONTRI.
+  DECISO: il programma usa la regola SOLO AL PRIMO TURNO, e la puo' non
+  rispettare solo se non esiste nessun sorteggio possibile (vedi risposta A).
+
+- ESEMPIO VERO: chi ha proposto il progetto ha mandato un tabellone vero
+  (file "Tabellone FITP - sola visualizzazione.pdf"). E' un tabellone di
+  terza categoria: i giocatori 3.5 partono dal primo turno, i 3.4, 3.3 e
+  3.2 entrano nei turni dopo, e i 3.1 entrano per ultimi, con le teste di
+  serie numerate da (1) a (6). Le "q" sono i posti dei qualificati che
+  arrivano da un tabellone precedente.
+  ATTENZIONE: contiene NOMI VERI, quindi resta solo su questo computer e
+  NON va nel repository (che e' pubblico).
 
 
 I PASSI DEL LAVORO
@@ -87,19 +94,29 @@ DA CHIEDERE A CHI HA PROPOSTO IL PROGETTO, PRIMA DI COMINCIARE
 
  A. Regola dello stesso circolo: solo AL PRIMO TURNO, oppure NEI PRIMI
     DUE INCONTRI come dice il manuale?
-    Risposta:
+    Risposta: solo al primo turno. Si puo' non rispettare solo se non
+    esiste nessuna soluzione possibile.
 
  B. Il manuale e' del 2011. Da allora sono cambiate le regole FITP o il
     sistema delle classifiche? Se si', quale versione deve seguire il
     programma?
-    Risposta:
+    Risposta: il manuale e' l'ultima versione (si trova anche su internet).
 
  C. Puo' mandare un tabellone vero fatto in Excel, con i codici dei
     giocatori resi anonimi? Servirebbe a vedere la forma che si aspetta
     e come prova vera.
-    Risposta:
+    Risposta: si', mandato "Tabellone FITP - sola visualizzazione.pdf".
 
- D. Chi ricopia le soluzioni degli esercizi in file di testo: chi ha
-    proposto il progetto, oppure Claude partendo dai PDF, con un
-    controllo fatto dopo da chi ha proposto il progetto?
+ D. Le soluzioni degli esercizi del Volume II sono DISEGNI di tabelloni.
+    Per usarle come prove, il programma deve sapere per ogni esercizio
+    "chi va in quale posto del tabellone". Quindi qualcuno deve guardare
+    ogni disegno e scriverlo in un file di testo, per esempio:
+        posto 1: testa di serie 1
+        posto 2: posto libero (bye)
+        posto 3: giocatore 4.1
+    Chi lo fa?
+      - Claude, leggendo i PDF, e poi chi ha proposto il progetto
+        controlla qualche esercizio a campione (consigliato: e' piu'
+        veloce);
+      - oppure chi ha proposto il progetto, a mano.
     Risposta:
