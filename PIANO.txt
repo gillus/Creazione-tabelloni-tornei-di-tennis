@@ -137,3 +137,14 @@ DA CHIEDERE A CHI HA PROPOSTO IL PROGETTO, PRIMA DI COMINCIARE
     Domanda: va bene questa regola? Nei casi 1.27 e 43, perche' il manuale
     sceglie 18 e 6?
     Risposta:
+
+ F. REGOLA DELLO STESSO CIRCOLO E POSTI LIBERI. Chi ha un posto libero
+    (bye) non gioca il primo turno: il suo primo incontro e' al secondo
+    turno, contro il vincitore di un incontro del primo turno.
+    Oggi il programma controlla il circolo SOLO negli incontri del primo
+    turno, come deciso nella risposta A. Quindi puo' capitare che un
+    giocatore con il posto libero trovi al suo primo incontro un
+    compagno di circolo.
+    Domanda: va bene cosi', oppure la regola deve valere per il PRIMO
+    INCONTRO di ogni giocatore (anche per chi entra al secondo turno)?
+    Risposta:
