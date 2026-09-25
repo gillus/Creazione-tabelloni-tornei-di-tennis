@@ -125,7 +125,8 @@ def costruisci(scala, teste_di_serie, livello, sezioni=0, rng=None):
 
     I piu' forti di ogni turno vanno nei posti con i numeri piu' bassi; dopo gli
     incontri con un giocatore che entra (progressioni) vengono le compressioni,
-    e per ultime le coppie.
+    e per ultime le coppie (prima delle compressioni, se ci sono teste di serie
+    in coppia con un altro ammesso).
     """
     rng = rng or random.Random()
     R = len(scala.turni)
@@ -134,28 +135,61 @@ def costruisci(scala, teste_di_serie, livello, sezioni=0, rng=None):
     # Gli incontri di ogni turno, per posizione nel tabellone pieno.
     incontri = {posizione: Incontro(R, None, None) for posizione in range(Qu)}
     radici = [incontri[p] for p in range(Qu)]
+    diretti_dopo = 0  # giocatori ammessi che entrano nei turni dopo questo
     for r in range(R, 0, -1):
         turno = scala.turni[r - 1]
         numeri = posti.numeri(r)
         ordinati = sorted(incontri, key=lambda p: numeri[p])
         singoli = sorted(turno.singoli, key=_chiave_forza(livello))
-        coppie = sorted(turno.coppie, key=lambda c: (livello[c[0]], c[1] != QUALIFICATO))
-        n_prog, n_coppie = len(singoli), len(coppie)
-        n_comp = len(ordinati) - n_prog - n_coppie
+        coppie_q = sorted((c for c in turno.coppie if c[1] == QUALIFICATO), key=lambda c: livello[c[0]])
+        membri = sorted((x for c in turno.coppie if c[1] != QUALIFICATO for x in c),
+                        key=_chiave_forza(livello))
+        n_prog, n_uguali, n_q = len(singoli), len(membri) // 2, len(coppie_q)
+        n_comp = len(ordinati) - n_prog - n_uguali - n_q
+        # Le teste di serie che entrano qui; se alcune sono in coppia con un altro ammesso,
+        # le coppie vanno subito dopo le progressioni, perche' le teste di serie devono
+        # stare nei posti con i loro numeri (i piu' bassi).
+        teste_qui = max(0, min(teste_di_serie - diretti_dopo, len(singoli) + len(membri)))
+        teste_in_coppia = max(0, teste_qui - len(singoli))
+        tipi = ["prog"] * n_prog
+        if teste_in_coppia:
+            tipi += ["uguali"] * n_uguali + ["comp"] * n_comp + ["q"] * n_q
+        else:
+            tipi += ["comp"] * n_comp
+            # le altre coppie dalla piu' forte, come prima
+            coppie = sorted([("uguali", None)] * n_uguali + [("q", c) for c in coppie_q],
+                            key=lambda x: 0 if x[0] == "uguali" else 1)
+            tipi += [t for t, _ in coppie]
+        # I componenti delle coppie di due ammessi, per numero del posto.
+        posti_uguali = []
+        for indice, posizione in enumerate(ordinati):
+            if tipi[indice] == "uguali":
+                principale = 2 * posizione + posti.lato_principale(r, posizione)
+                posti_uguali += [principale, 4 * posizione + 1 - principale]
+        numeri_lati = posti.numeri(r - 1)
+        if teste_in_coppia:
+            posti_uguali.sort(key=lambda x: numeri_lati[x])
+        else:
+            posti_uguali.sort(key=lambda x: (numeri_lati[x // 2 * 2], x % 2))  # coppie vicine
+        chi_nel_posto = dict(zip(posti_uguali, membri))
+        coppie_q = iter(coppie_q)
+        singoli = iter(singoli)
         sotto = {}
         for indice, posizione in enumerate(ordinati):
             incontro = incontri[posizione]
             principale = 2 * posizione + posti.lato_principale(r, posizione)
             altro = 4 * posizione + 1 - principale
-            if indice < n_prog:
-                lati = {principale: Voce(GIOCATORE, r, singoli[indice]), altro: None}
-            elif indice < n_prog + n_comp:
+            if tipi[indice] == "prog":
+                lati = {principale: Voce(GIOCATORE, r, next(singoli)), altro: None}
+            elif tipi[indice] == "comp":
                 lati = {principale: None, altro: None}
+            elif tipi[indice] == "q":
+                a, _ = next(coppie_q)
+                lati = {principale: Voce(GIOCATORE, r, a, in_coppia=True),
+                        altro: Voce(QUALIFICATO_ENTRANTE, r, in_coppia=True)}
             else:
-                a, b = coppie[indice - n_prog - n_comp]
-                seconda = Voce(QUALIFICATO_ENTRANTE, r, in_coppia=True) if b == QUALIFICATO \
-                    else Voce(GIOCATORE, r, b, in_coppia=True)
-                lati = {principale: Voce(GIOCATORE, r, a, in_coppia=True), altro: seconda}
+                lati = {x: Voce(GIOCATORE, r, chi_nel_posto[x], in_coppia=True)
+                        for x in (principale, altro)}
             for posizione_lato, contenuto in lati.items():
                 if contenuto is None:
                     contenuto = Incontro(r - 1, None, None)
@@ -165,6 +199,7 @@ def costruisci(scala, teste_di_serie, livello, sezioni=0, rng=None):
                 else:
                     incontro.basso = contenuto
         incontri = sotto
+        diretti_dopo += n_prog + len(membri) + n_q
     tabellone = TabelloneSelezione(scala, Qu, sezioni, teste_di_serie, radici,
                                    N=sum(t.entranti() for t in scala.turni))
     _numera_le_teste_di_serie(tabellone, posti, livello, rng)
@@ -265,6 +300,8 @@ def _lati_scambiabili(tabellone):
                     tipo = ("singolo", incontro.turno)
                 elif figlio.tipo == GIOCATORE and QUALIFICATO_ENTRANTE in (x.tipo for x in incontro.lati):
                     tipo = ("compagno di un q", incontro.turno)
+                elif figlio.tipo == GIOCATORE:
+                    tipo = ("in coppia con un ammesso", incontro.turno)
                 else:
                     continue
                 gruppi.setdefault(tipo, []).append((incontro, lato))
@@ -516,3 +553,26 @@ def prepara(scala, teste_di_serie, giocatori, livello, sezioni=0, rng=None):
     orienta(tabellone, livello)
     sorteggia_giocatori(tabellone, giocatori, rng)
     return tabellone
+
+
+def teste_al_loro_posto(tabellone):
+    """Se ogni testa di serie n. k e' nel posto numero k, e le teste di serie entrano
+    in gara in un turno o in due turni consecutivi."""
+    teste = [v for v in tabellone.voci() if v.testa_di_serie]
+    if not teste:
+        return True
+    numeri = numeri_dei_lati(tabellone)
+    turni = {v.turno for v in teste}
+    return all(numeri[id(v)] == v.testa_di_serie for v in teste) and max(turni) - min(turni) <= 1
+
+
+def scegli_scala(scale, minimo, massimo, livello, sezioni=0, teste_scelte=None):
+    """La prima scala (dalla migliore) in cui le teste di serie possono stare al loro
+    posto; restituisce la scala e il numero delle teste di serie (o None, None)."""
+    for scala in scale:
+        if minimo is None:
+            return scala, 0
+        teste = teste_scelte or proposta_teste_di_serie(scala, minimo, massimo, livello, sezioni)
+        if teste_al_loro_posto(costruisci(scala, teste, livello, sezioni, random.Random(0))):
+            return scala, teste
+    return None, None

@@ -94,10 +94,19 @@ def fai_tabellone(file_dati=FILE_DATI):
     print(f"Circoli diversi: {len(circoli)}")
     print()
 
-    if giocatori and not any(p.gravita == ERRORE for p in problemi) \
-            and torneo.impostazioni.get("tipo", "selezione") == "selezione":
-        problemi += fai_selezione(giocatori, classifiche, torneo)
-    elif giocatori and not any(p.gravita == ERRORE for p in problemi):
+    estrazione = torneo.impostazioni.get("tipo", "selezione") == "estrazione"
+    if giocatori and not any(p.gravita == ERRORE for p in problemi) and not estrazione:
+        trovati, fatto = fai_selezione(giocatori, classifiche, torneo)
+        problemi += trovati
+        estrazione = not fatto and not any(p.gravita == ERRORE for p in trovati)
+        if estrazione:
+            print("Con questi giocatori non si trova nessun tabellone di selezione che rispetti "
+                  "le regole del manuale\n(per esempio perche' le classifiche sono solo una o due): "
+                  "il programma fa il tabellone di estrazione.\n")
+            problemi.append(Problema(AVVISO, "", 0,
+                                     "fatto il tabellone di estrazione al posto di quello di "
+                                     "selezione, che con questi giocatori non e' possibile"))
+    if giocatori and not any(p.gravita == ERRORE for p in problemi) and estrazione:
         calcoli = calcola(conta_per_classifica(giocatori, classifiche),
                           qualificati_entranti=torneo.impostazioni.get("qualificati entranti", 0),
                           qualificati_uscenti=torneo.impostazioni.get("qualificati uscenti", 1),
@@ -145,7 +154,10 @@ def salva_e_controlla(tabellone, testo, torneo, problemi_del_controllo):
 
 
 def fai_selezione(giocatori, classifiche, torneo):
-    """Il tabellone di selezione: scala, teste di serie, sorteggio. Restituisce i problemi."""
+    """Il tabellone di selezione: scala, teste di serie, sorteggio.
+
+    Restituisce i problemi e se il tabellone e' stato fatto (False senza errori vuol
+    dire che con questi giocatori un tabellone di selezione non si puo' fare)."""
     impostazioni = torneo.impostazioni
     q = impostazioni.get("qualificati entranti", 0)
     Qu = impostazioni.get("qualificati uscenti", 1)
@@ -154,7 +166,7 @@ def fai_selezione(giocatori, classifiche, torneo):
     # Dei calcoli del tabellone di estrazione servono solo gli errori e le teste di serie.
     problemi = [p for p in calcoli.problemi if p.gravita == ERRORE]
     if problemi:
-        return problemi
+        return problemi, False
     livello = {c: i for i, c in enumerate(classifiche)}
     diretti = sorted((g.classifica for g in giocatori), key=lambda c: livello[c])
 
@@ -162,39 +174,42 @@ def fai_selezione(giocatori, classifiche, torneo):
     print(f"Giocatori: {len(giocatori)} ammessi direttamente e {q} qualificati entranti, "
           f"in tutto {len(giocatori) + q}")
     print(f"Qualificati uscenti: {Qu}" + (f" (tabellone a {Qu} sezioni)" if calcoli.sezioni else ""))
+    minimo, massimo = calcoli.teste_di_serie_minimo, calcoli.teste_di_serie_massimo
+    scelte = impostazioni.get("teste di serie")
+    if minimo is not None and scelte is not None and (
+            not (minimo <= scelte <= massimo) or (calcoli.sezioni and scelte % calcoli.sezioni)):
+        return [p for p in calcola(conta_per_classifica(giocatori, classifiche), q, Qu,
+                                   teste_di_serie=scelte).problemi if p.gravita == ERRORE], False
     scala = scala_scritta(impostazioni, Qu)
     if scala is not None:
         errori = controlla_scala(scala, diretti, q, livello)
         if errori:
-            return [Problema(ERRORE, "", 0, f"la scala scritta in dati/torneo.txt: {e}") for e in errori]
-        print("Scala scritta dal giudice arbitro in dati/torneo.txt:")
-    else:
-        scala, tutte = scala_migliore(diretti, q, Qu, livello)
+            return [Problema(ERRORE, "", 0, f"la scala scritta in dati/torneo.txt: {e}")
+                    for e in errori], False
+        scala, teste = selezione_tabellone.scegli_scala([scala], minimo, massimo, livello,
+                                                        calcoli.sezioni, scelte)
         if scala is None:
             return [Problema(ERRORE, "", 0,
-                             "non si trova nessuna scala che rispetti le regole del manuale: "
-                             "provare un numero diverso di qualificati entranti o uscenti, "
-                             "oppure scrivere la scala in dati/torneo.txt")]
+                             "con la scala scritta in dati/torneo.txt le teste di serie non possono "
+                             "stare al loro posto (ogni testa di serie n. k nel posto numero k, e "
+                             "tutte in uno o due turni consecutivi): cambiare la scala o il numero "
+                             "delle teste di serie")], False
+        print("Scala scritta dal giudice arbitro in dati/torneo.txt:")
+    else:
+        _, tutte = scala_migliore(diretti, q, Qu, livello)
+        scala, teste = selezione_tabellone.scegli_scala(tutte, minimo, massimo, livello,
+                                                        calcoli.sezioni, scelte)
+        if scala is None:
+            return [], False
         print(f"Scala proposta dal programma (la migliore tra {len(tutte)} possibili):")
     for riga in descrivi_scala(scala):
         print(riga)
     print("  (per usarne una diversa, scriverla in dati/torneo.txt con le righe \"turno 1 = ...\")")
-
-    minimo, massimo = calcoli.teste_di_serie_minimo, calcoli.teste_di_serie_massimo
-    scelte = impostazioni.get("teste di serie")
     if minimo is None:
-        teste = 0
         print("Teste di serie: nessuna (giocano solo non classificati)")
-    elif scelte is not None:
-        if not (minimo <= scelte <= massimo) or (calcoli.sezioni and scelte % calcoli.sezioni):
-            return [p for p in calcola(conta_per_classifica(giocatori, classifiche), q, Qu,
-                                       teste_di_serie=scelte).problemi if p.gravita == ERRORE]
-        teste = scelte
-        print(f"Teste di serie (scelte dal giudice arbitro): {teste}, possibili da {minimo} a {massimo}")
     else:
-        teste = selezione_tabellone.proposta_teste_di_serie(scala, minimo, massimo, livello,
-                                                            calcoli.sezioni)
-        print(f"Teste di serie (proposta del programma): {teste}, possibili da {minimo} a {massimo}")
+        chi = "scelte dal giudice arbitro" if scelte is not None else "proposta del programma"
+        print(f"Teste di serie ({chi}): {teste}, possibili da {minimo} a {massimo}")
     print()
 
     tabellone = selezione_tabellone.prepara(scala, teste, giocatori, livello, calcoli.sezioni)
@@ -203,7 +218,7 @@ def fai_selezione(giocatori, classifiche, torneo):
                                               impostazioni.get("teste di serie"))
     salva_e_controlla(tabellone, selezione_tabellone.disegna(tabellone, titolo_del_torneo(torneo)),
                       torneo, controllo)
-    return problemi
+    return problemi, True
 
 
 def controlla_file(percorso, file_dati=FILE_DATI):
