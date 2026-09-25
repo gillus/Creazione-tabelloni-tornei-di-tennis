@@ -86,8 +86,8 @@ passare al successivo.
         vicina. La regola dello stesso circolo viene sempre prima.
     7b. DA FARE - Tabelloni di selezione (capitolo 4): i giocatori entrano
         in tre o piu' turni secondo la classifica, come nel tabellone vero
-        mandato da chi ha proposto il progetto. Prima servono le risposte
-        alle domande G e H qui sotto.
+        mandato da chi ha proposto il progetto. E' il tabellone usato
+        quasi sempre (risposte G e H qui sotto).
 
  8. TABELLONI COLLEGATI E TABELLONE FINALE (capitoli 5 e 6)
     Il torneo intero, dalle qualificazioni al tabellone finale.
@@ -158,7 +158,7 @@ DA CHIEDERE A CHI HA PROPOSTO IL PROGETTO, PRIMA DI COMINCIARE
     programma propone di piu' (12 invece di 6, 10 invece di 5).
     Domanda: va bene cosi'? Il giudice arbitro puo' sempre scrivere il
     numero che vuole in dati/torneo.txt.
-    Risposta:
+    Risposta: va bene cosi'.
 
  F. REGOLA DELLO STESSO CIRCOLO E POSTI LIBERI. Chi ha un posto libero
     (bye) non gioca il primo turno: il suo primo incontro e' al secondo
@@ -187,7 +187,8 @@ DA CHIEDERE A CHI HA PROPOSTO IL PROGETTO, PRIMA DI COMINCIARE
       2) oppure usare sempre la scala scritta dal giudice arbitro, e
          limitarsi a costruire il tabellone e a controllarlo.
     Domanda: quale delle due?
-    Risposta:
+    Risposta: la 1 (consigliata): il programma propone la scala migliore,
+    il giudice arbitro la puo' cambiare.
 
  H. TABELLONE DI ESTRAZIONE O DI SELEZIONE?
     Con gli stessi giocatori si puo' fare un tabellone di estrazione
@@ -199,4 +200,7 @@ DA CHIEDERE A CHI HA PROPOSTO IL PROGETTO, PRIMA DI COMINCIARE
       2) oppure scegliere da solo, e il giudice arbitro puo' cambiarlo.
     Domanda: quale delle due? E nei tornei che prepara di solito, quale
     tabellone usa piu' spesso?
-    Risposta:
+    Risposta: "assolutamente selezione, estrazione non fa quasi nessuno".
+    Quindi il programma fa il tabellone di selezione se non e' scritto
+    altro; il tabellone di estrazione solo se in dati/torneo.txt c'e'
+    "tipo = estrazione".
