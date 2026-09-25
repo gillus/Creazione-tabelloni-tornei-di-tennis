@@ -183,6 +183,15 @@ body { margin: 0; background: var(--sfondo); color: var(--inchiostro);
 .intestazione { font-size: 7.5pt; text-transform: uppercase; letter-spacing: .04em;
                 color: var(--grigio); padding-left: 2mm; }
 .voce { position: relative; }
+.albero { display: block; flex: none; }
+.albero line { stroke: var(--inchiostro); stroke-width: .25; }
+.albero text { font-family: "Segoe UI", Arial, Helvetica, sans-serif; fill: var(--inchiostro); }
+.albero .intestazione-svg { fill: var(--grigio); font-size: 2.6px; letter-spacing: .1px; }
+.albero .codice-svg { font-weight: 600; }
+.albero .circolo-svg, .albero .nota-svg { fill: var(--grigio); }
+.albero .nota-svg { font-style: italic; }
+.albero .uscita-svg { font-weight: 700; }
+.albero circle { fill: none; stroke: var(--inchiostro); stroke-width: .25; }
 .separatore { border-top: 1.2px dashed var(--grigio); margin-top: -.6mm; }
 .voce .linea { position: absolute; left: 0; right: 0;
                top: calc(50% + var(--riga) / 2); border-top: 1px solid var(--inchiostro); }
@@ -217,11 +226,9 @@ body { margin: 0; background: var(--sfondo); color: var(--inchiostro);
 
 def pagina(tabellone, impostazioni, adesso=None):
     """La pagina HTML completa, pronta da salvare."""
-    adesso = adesso or datetime.datetime.now()
+    if hasattr(tabellone, "radici"):
+        return pagina_selezione(tabellone, impostazioni, adesso)
     calcoli = tabellone.calcoli
-    nome = impostazioni.get("nome", "Tabellone")
-    gara = impostazioni.get("gara", "")
-    date = impostazioni.get("date", "")
     Qu = calcoli.qualificati_uscenti
     uscita = "il vincitore" if Qu == 1 else f"{Qu} qualificati"
     riassunto = (f"Tabellone di {len(tabellone.posti)} posti &middot; {calcoli.N} giocatori"
@@ -230,7 +237,15 @@ def pagina(tabellone, impostazioni, adesso=None):
         riassunto += f" &middot; {calcoli.sezioni} sezioni"
     if calcoli.teste_di_serie:
         riassunto += f" &middot; {calcoli.teste_di_serie} teste di serie"
-    griglie = fogli(tabellone)
+    return _documento(impostazioni, riassunto, fogli(tabellone), adesso)
+
+
+def _documento(impostazioni, riassunto, griglie, adesso=None):
+    """La pagina con un foglio per ogni griglia, con testata e piede."""
+    adesso = adesso or datetime.datetime.now()
+    nome = impostazioni.get("nome", "Tabellone")
+    gara = impostazioni.get("gara", "")
+    date = impostazioni.get("date", "")
     fogli_html = []
     for n, griglia in enumerate(griglie, start=1):
         numero = f"Foglio {n} di {len(griglie)}<br>" if len(griglie) > 1 else ""
@@ -259,3 +274,178 @@ def pagina(tabellone, impostazioni, adesso=None):
 </body>
 </html>
 """
+
+
+# --- Tabellone di selezione: un albero disegnato in SVG -----------------------------
+
+LARGHEZZA_MM = 273
+RIGHE_PER_FOGLIO = 32
+
+
+class _Segnaposto:
+    """Al posto di una parte disegnata in un altro foglio: 'vincente del foglio n'."""
+
+    def __init__(self, turno, testo):
+        self.turno = turno
+        self.testo = testo
+
+
+def _foglie(nodo):
+    from programma.selezione_tabellone import Voce
+    if isinstance(nodo, (Voce, _Segnaposto)):
+        return [nodo]
+    return _foglie(nodo.alto) + _foglie(nodo.basso)
+
+
+def _testo_voce(voce, x, y, dimensione):
+    """Il testo sopra la linea di un giocatore."""
+    from programma.sorteggio import QUALIFICATO_ENTRANTE
+    parti = []
+    if isinstance(voce, _Segnaposto):
+        return f'<text x="{x:.2f}" y="{y:.2f}" font-size="{dimensione:.2f}" class="nota-svg">{_e(voce.testo)}</text>'
+    if voce.testa_di_serie:
+        r = dimensione * 0.62
+        parti.append(f'<circle cx="{x + r:.2f}" cy="{y - dimensione * 0.34:.2f}" r="{r:.2f}"/>'
+                     f'<text x="{x + r:.2f}" y="{y:.2f}" font-size="{dimensione * 0.8:.2f}" '
+                     f'text-anchor="middle" font-weight="600">{voce.testa_di_serie}</text>')
+        x += 2 * r + 1
+    if voce.tipo == QUALIFICATO_ENTRANTE:
+        parti.append(f'<text x="{x:.2f}" y="{y:.2f}" font-size="{dimensione:.2f}">'
+                     f'<tspan class="codice-svg">q</tspan>'
+                     f'<tspan class="nota-svg" dx="1.5">qualificato</tspan></text>')
+    else:
+        g = voce.giocatore
+        codice = g.codice if g else "?"
+        circolo = g.circolo if g else ""
+        parti.append(f'<text x="{x:.2f}" y="{y:.2f}" font-size="{dimensione:.2f}">'
+                     f'<tspan class="codice-svg">{_e(codice)}</tspan>'
+                     f'<tspan dx="1.5">{_e(voce.classifica)}</tspan>'
+                     f'<tspan class="circolo-svg" dx="1.5">{_e(circolo)}</tspan></text>')
+    return "".join(parti)
+
+
+def _albero_svg(blocchi, primo_turno, ultimo_turno, etichette, titolo_uscita):
+    """Disegna dei pezzi di tabellone uno sotto l'altro.
+
+    blocchi      i nodi da disegnare (incontri o giocatori), dall'alto
+    etichette    la scritta alla fine di ogni blocco (Q1, "al foglio finale"...)
+    """
+    from programma.selezione_tabellone import Voce
+    righe = sum(len(_foglie(b)) for b in blocchi)
+    colonne = ultimo_turno - primo_turno + 2  # un turno per colonna, piu' l'uscita
+    larghezza = LARGHEZZA_MM / colonne
+    altezza_riga = min(9.0, ALTEZZA_UTILE_MM / max(righe, 1))
+    dimensione = min(3.0, altezza_riga * 0.55, larghezza / 14)
+    alto = 6.0
+    altezza = alto + righe * altezza_riga + 1
+    parti = [f'<svg class="albero" width="{LARGHEZZA_MM}mm" height="{altezza:.1f}mm" '
+             f'viewBox="0 0 {LARGHEZZA_MM} {altezza:.1f}" xmlns="http://www.w3.org/2000/svg">']
+    for c in range(colonne):
+        titolo = f"{primo_turno + c}&#176; TURNO" if c < colonne - 1 else _e(titolo_uscita).upper()
+        parti.append(f'<text x="{c * larghezza + 1.5:.2f}" y="3.5" class="intestazione-svg">{titolo}</text>')
+
+    def x(turno):
+        return (turno - primo_turno) * larghezza
+
+    riga = [0]
+
+    def disegna(nodo):
+        """Disegna il nodo e restituisce la y della sua linea d'uscita."""
+        if isinstance(nodo, (Voce, _Segnaposto)):
+            y = alto + (riga[0] + 1) * altezza_riga - 0.4
+            riga[0] += 1
+            parti.append(f'<line x1="{x(nodo.turno):.2f}" y1="{y:.2f}" x2="{x(nodo.turno + 1):.2f}" y2="{y:.2f}"/>')
+            parti.append(_testo_voce(nodo, x(nodo.turno) + 1.2, y - 0.8, dimensione))
+            return y
+        y1, y2 = disegna(nodo.alto), disegna(nodo.basso)
+        xm = x(nodo.turno + 1)
+        y = (y1 + y2) / 2
+        parti.append(f'<line x1="{xm:.2f}" y1="{y1:.2f}" x2="{xm:.2f}" y2="{y2:.2f}"/>')
+        parti.append(f'<line x1="{xm:.2f}" y1="{y:.2f}" x2="{x(nodo.turno + 2):.2f}" y2="{y:.2f}"/>')
+        return y
+
+    for blocco, etichetta in zip(blocchi, etichette):
+        y = disegna(blocco)
+        if etichetta:
+            parti.append(f'<text x="{LARGHEZZA_MM - 0.5:.2f}" y="{y - 0.8:.2f}" font-size="{dimensione:.2f}" '
+                         f'text-anchor="end" class="uscita-svg">{_e(etichetta)}</text>')
+    parti.append("</svg>")
+    return "\n".join(parti)
+
+
+def fogli_selezione(tabellone):
+    """Divide il tabellone di selezione nei fogli da stampare (al massimo 32 righe l'uno).
+
+    Se un qualificato viene da una parte troppo grande per un foglio, la parte si
+    divide in pezzi, e un foglio finale mostra gli ultimi turni con i vincenti
+    dei fogli.
+    """
+    from programma.selezione_tabellone import Voce
+    R = tabellone.turni
+    Qu = tabellone.qualificati_uscenti
+    vincitore = Qu == 1
+    titolo_uscita = "Vincitore" if vincitore else "Qualificati"
+    blocchi = list(tabellone.radici)
+    diviso = False
+    while any(len(_foglie(b)) > RIGHE_PER_FOGLIO for b in blocchi):
+        nuovi = []
+        for b in blocchi:
+            if len(_foglie(b)) > RIGHE_PER_FOGLIO and not isinstance(b, Voce):
+                # Un giocatore che entra qui resta nel foglio finale.
+                nuovi += [c for c in (b.alto, b.basso) if not isinstance(c, Voce)]
+                diviso = True
+            else:
+                nuovi.append(b)
+        blocchi = nuovi
+    # I blocchi si mettono nei fogli, uno dopo l'altro, finche' ci stanno.
+    fogli, corrente = [], []
+    for b in blocchi:
+        if corrente and sum(len(_foglie(x)) for x in corrente) + len(_foglie(b)) > RIGHE_PER_FOGLIO:
+            fogli.append(corrente)
+            corrente = []
+        corrente.append(b)
+    if corrente:
+        fogli.append(corrente)
+    primo = min(v.turno for v in tabellone.voci())
+    risultato = []
+    if not diviso:
+        k = 0
+        for foglio in fogli:
+            etichette = [""] * len(foglio) if vincitore else \
+                [f"Q{k + i + 1}" for i in range(len(foglio))]
+            k += len(foglio)
+            risultato.append(_albero_svg(foglio, primo, R, etichette, titolo_uscita))
+        return risultato
+    # Con parti divise: ogni foglio ha i suoi pezzi, e il foglio finale gli ultimi turni.
+    foglio_di = {}
+    for n, foglio in enumerate(fogli, start=1):
+        for b in foglio:
+            foglio_di[id(b)] = n
+        ultimo = max(getattr(b, "turno", 0) for b in foglio)
+        risultato.append(_albero_svg(foglio, primo, ultimo, ["al foglio finale"] * len(foglio),
+                                     f"Vincente foglio {n}"))
+
+    def copia(nodo):
+        if id(nodo) in foglio_di:
+            return _Segnaposto(nodo.turno + 1, f"vincente del foglio {foglio_di[id(nodo)]}")
+        if isinstance(nodo, Voce):
+            return nodo
+        return type(nodo)(nodo.turno, copia(nodo.alto), copia(nodo.basso))
+
+    finali = [copia(r) for r in tabellone.radici]
+    primo_finale = min(f.turno for r in finali for f in _foglie(r))
+    etichette = [""] * len(finali) if vincitore else [f"Q{k + 1}" for k in range(len(finali))]
+    risultato.append(_albero_svg(finali, primo_finale, R, etichette, titolo_uscita))
+    return risultato
+
+
+def pagina_selezione(tabellone, impostazioni, adesso=None):
+    Qu = tabellone.qualificati_uscenti
+    uscita = "il vincitore" if Qu == 1 else f"{Qu} qualificati"
+    riassunto = (f"Tabellone di selezione &middot; {tabellone.N} giocatori &middot; "
+                 f"{tabellone.turni} turni &middot; esce {uscita}")
+    if tabellone.sezioni:
+        riassunto += f" &middot; {tabellone.sezioni} sezioni"
+    if tabellone.teste_di_serie:
+        riassunto += f" &middot; {tabellone.teste_di_serie} teste di serie"
+    return _documento(impostazioni, riassunto, fogli_selezione(tabellone), adesso)
