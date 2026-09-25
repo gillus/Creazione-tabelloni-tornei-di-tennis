@@ -125,10 +125,11 @@ def controlla(voci, giocatori, classifiche, qualificati_entranti=0, qualificati_
         dopo = [b for b in diretti if livello[b.classifica] < livello[a.classifica]
                 and b.turno < a.turno]
         if dopo:
+            chi = "che ha una classifica piu' alta ed entra" if len(dopo) == 1 \
+                else "che hanno una classifica piu' alta ed entrano"
             errore(f"{a.giocatore.codice} ({a.classifica}) entra al turno {a.turno}, dopo "
-                   f"{_elenco(dopo)} che hanno una classifica piu' alta ed entrano prima: nessuno "
-                   f"puo' entrare in gara dopo un giocatore di classifica inferiore "
-                   f"(Volume II, pagina 4, regola b)")
+                   f"{_elenco(dopo)}, {chi} prima: nessuno puo' entrare in gara dopo un "
+                   f"giocatore di classifica inferiore (Volume II, pagina 4, regola b)")
             break
     gruppi = {}
     for v in voci:

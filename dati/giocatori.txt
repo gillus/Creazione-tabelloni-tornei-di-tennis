@@ -17,13 +17,18 @@
 #
 # Qui sotto ci sono giocatori DI FANTASIA, solo per provare il programma.
 
-G001 ; 3.1 ; TC Collina
-G002 ; 3.2 ; CT Lago Blu
-G003 ; 3.3 ; TC Collina
-G004 ; 3.4 ; Circolo Pineta
-G005 ; 3.4 ; CT Lago Blu
-G006 ; 3.5 ; Circolo Pineta
-G007 ; 3.5 ; TC Collina
-G008 ; 4.1 ; Tennis Valle
-G009 ; 4.1 ; CT Lago Blu
-G010 ; 4.2 ; Tennis Valle
+G001 ; 3.1 ; Tennis Valle
+G002 ; 3.1 ; Circolo Pineta
+G003 ; 3.1 ; CT Lago Blu
+G004 ; 3.2 ; TC Collina
+G005 ; 3.2 ; Tennis Valle
+G006 ; 3.3 ; Circolo Pineta
+G007 ; 3.3 ; CT Lago Blu
+G008 ; 3.3 ; TC Collina
+G009 ; 3.3 ; Tennis Valle
+G010 ; 3.4 ; Circolo Pineta
+G011 ; 3.4 ; CT Lago Blu
+G012 ; 3.4 ; TC Collina
+G013 ; 3.5 ; Tennis Valle
+G014 ; 3.5 ; Circolo Pineta
+G015 ; 3.5 ; CT Lago Blu

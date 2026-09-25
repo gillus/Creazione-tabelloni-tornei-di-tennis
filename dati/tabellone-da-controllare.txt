@@ -4,41 +4,54 @@
 # Qui si scrive un tabellone fatto (o corretto) a mano, per farlo
 # controllare dal programma con le regole del manuale.
 # Il controllo si avvia con:   py tabelloni.py controlla
+# (oppure con il pulsante "Controlla un tabellone..." della finestra).
+# Va bene anche copiare qui il file risultati/tabellone.txt e correggerlo.
 #
-# Un posto per riga, dall'alto in basso:
+# TABELLONE DI SELEZIONE: un giocatore per riga, dall'alto in basso, con il
+# turno in cui entra in gara:
+#     turno 4  (1) G001    la testa di serie n. 1, che entra al quarto turno
+#     turno 2      G007    il codice di un giocatore di dati/giocatori.txt
+#     turno 1      q       un qualificato entrante, al primo turno
+# Dopo il codice si puo' scrivere quello che si vuole (classifica, circolo).
+# Il programma ricostruisce gli incontri: due vicini pronti per lo stesso
+# turno si incontrano, e il vincitore e' pronto per il turno dopo.
+#
+# TABELLONE DI ESTRAZIONE: un posto per riga, dall'alto in basso:
 #     G001            il codice di un giocatore di dati/giocatori.txt
 #     (1) G001        un giocatore testa di serie numero 1
 #     posto libero    un posto libero (bye)
 #     q               il posto di un qualificato entrante
-# Prima si puo' scrivere il numero del posto, dopo il codice si puo'
-# scrivere quello che si vuole (per esempio classifica e circolo).
-# Le righe vuote servono solo a separare gli incontri.
-# Va bene anche copiare qui il file risultati/tabellone.txt e correggerlo.
+# Prima si puo' scrivere il numero del posto.
+#
+# Le righe vuote servono solo a separare le parti del tabellone.
 #
 # ESEMPIO CON DUE ERRORI MESSI APPOSTA, per vedere come funziona:
-#   - G003 (3.3) gioca il primo turno, mentre G007 (3.5) entra al secondo;
-#   - G008 e G010, dello stesso circolo, si incontrano al primo turno.
+#   - G010 (3.4) entra al primo turno, mentre G013 (3.5) entra al secondo;
+#   - le teste di serie n. 1 e n. 2 sono scambiate di posto.
 
- 1  (1) G001   3.1  TC Collina
- 2      posto libero
+# --- corridoio del qualificato Q1 ---
+turno 4   (2)  G003       3.1   CT Lago Blu
+turno 3        G005       3.2   Tennis Valle
+turno 2        G007       3.3   CT Lago Blu
+turno 1        G014       3.5   Circolo Pineta
+turno 1        q  (qualificato entrante)
 
- 3      G008   4.1  Tennis Valle
- 4      G010   4.2  Tennis Valle
+# --- corridoio del qualificato Q2 ---
+turno 4   (4)  G004       3.2   TC Collina
+turno 3        G008       3.3   TC Collina
+turno 2        G012       3.4   TC Collina
+turno 2        q  (qualificato entrante)
 
- 5      G005   3.4  CT Lago Blu
- 6      posto libero
+# --- corridoio del qualificato Q3 ---
+turno 1        q  (qualificato entrante)
+turno 1        G015       3.5   CT Lago Blu
+turno 2        G011       3.4   CT Lago Blu
+turno 3        G009       3.3   Tennis Valle
+turno 4   (3)  G001       3.1   Tennis Valle
 
- 7      G006   3.5  Circolo Pineta
- 8      posto libero
-
- 9      posto libero
-10      G004   3.4  Circolo Pineta
-
-11      posto libero
-12      G007   3.5  TC Collina
-
-13      G003   3.3  TC Collina
-14      G009   4.1  CT Lago Blu
-
-15      posto libero
-16  (2) G002   3.2  CT Lago Blu
+# --- corridoio del qualificato Q4 ---
+turno 1        q  (qualificato entrante)
+turno 1        G010       3.4   Circolo Pineta   <-- scambiato
+turno 2        G013       3.5   Tennis Valle     <-- scambiato
+turno 3        G006       3.3   Circolo Pineta
+turno 4   (1)  G002       3.1   Circolo Pineta

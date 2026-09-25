@@ -42,10 +42,12 @@
 # Il programma mostra sempre la scala che usa, scritta cosi': si puo' copiare
 # qui e cambiare.
 #
-# Qui sotto c'e' un torneo DI FANTASIA, solo per provare il programma.
+# Qui sotto c'e' un torneo DI FANTASIA, solo per provare il programma: un
+# tabellone di terza categoria che qualifica 4 giocatori, con 4 qualificati
+# entranti da un tabellone di quarta categoria.
 
 nome = Torneo di prova
 gara = Singolare maschile
 date = dal 1 al 10 ottobre
-qualificati entranti = 0
-qualificati uscenti = 1
+qualificati entranti = 4
+qualificati uscenti = 4
