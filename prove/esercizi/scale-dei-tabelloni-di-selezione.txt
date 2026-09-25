@@ -1,0 +1,345 @@
+# SCALE DEI TABELLONI DI SELEZIONE DEGLI ESERCIZI DEL MANUALE
+# ===========================================================
+#
+# Qui e' ricopiata, esercizio per esercizio, la "scala" scelta dal manuale
+# per i tabelloni di selezione (Volume I, capitolo IV): quanti giocatori,
+# e di quale classifica, entrano in ogni turno. Le prove automatiche
+# controllano che il programma scelga la stessa scala.
+#
+# Ogni esercizio comincia con il suo nome tra parentesi quadre.
+# "giocatori", "qualificati entranti", "qualificati uscenti" sono i dati
+# del problema. Le righe "turno N" sono la soluzione del manuale:
+#   - prima del punto e virgola, i giocatori che entrano in quel turno
+#     contro un vincitore del turno prima (per esempio "3 (2.2), 1 (2.3)");
+#   - dopo "coppie", le coppie che entrano insieme e giocano tra loro:
+#     "2 (2.7)+q" vuol dire due coppie, ognuna di un (2.7) e un qualificato
+#     entrante; "1 (4.6)+(4.6)" una coppia di due (4.6).
+# Quando il programma sceglie una scala diversa da quella del manuale, e'
+# scritta nelle righe "proposta turno N": il manuale stesso dice che spesso
+# ci sono piu' scale giuste, e che sceglie il giudice arbitro, che puo' sempre
+# scrivere la scala che vuole in dati/torneo.txt.
+#
+# "teste di serie" e' il numero scelto dal manuale. Quando il programma
+# proporrebbe un numero diverso, e' scritto in "proposta del programma".
+#
+# Per alcuni esercizi c'e' anche il "tabellone" disegnato dal manuale: i
+# giocatori dall'alto in basso, qualificato per qualificato (separati da |),
+# scritti come "3.3/3" (un 3.3 che entra al turno 3), "q/1" (un qualificato
+# entrante al turno 1) e "(1)3.3/3" per la testa di serie n. 1.
+#
+# Fonte: Volume I, esempi 57, 62, 63, 64, 65, 66, 67 (pagine 46-67);
+#        Volume II, esercizi da 3.01 a 3.16 e da 3.21 a 3.24 (pagine 76-119).
+
+[Volume I, esempio 57]
+giocatori = 3 (4.6), 1 (4.5), 2 (4.4), 2 (4.3), 1 (4.2)
+qualificati entranti = 4
+qualificati uscenti = 4
+turno 3 = 1 (4.2), 2 (4.3), 1 (4.4)
+turno 2 = 1 (4.4); coppie 1 (4.5)+q, 2 (4.6)+q
+turno 1 = coppie 1 (4.6)+q
+teste di serie = 4
+
+[Volume I, esempio 62]
+giocatori = 2 (2.8), 2 (2.7), 3 (2.6), 2 (2.5), 3 (2.4), 2 (2.3), 3 (2.2)
+qualificati entranti = 4
+qualificati uscenti = 4
+turno 5 = 3 (2.2), 1 (2.3)
+turno 4 = 1 (2.3), 3 (2.4)
+turno 3 = 2 (2.5), 2 (2.6)
+turno 2 = 1 (2.6); coppie 2 (2.7)+q, 1 (2.8)+q
+turno 1 = coppie 1 (2.8)+q
+teste di serie = 4
+
+[Volume I, esempio 63]
+giocatori = 3 (2.8), 7 (2.7), 2 (2.6), 3 (2.5), 2 (2.4), 3 (2.3)
+qualificati entranti = 8
+qualificati uscenti = 4
+turno 5 = 3 (2.3)
+turno 4 = 2 (2.4), 3 (2.5)
+turno 3 = 2 (2.6)
+turno 2 = 2 (2.7); coppie 5 (2.7)+q, 1 (2.8)+q
+turno 1 = coppie 2 (2.8)+q
+# Il manuale fa teste di serie anche i due (2.4); il programma propone 4.
+teste di serie = 5
+proposta del programma = 4
+
+# Esempi 64 e 65: stessi giocatori, due scale giuste. Il manuale le mette a
+# confronto: la 65 ha un turno di meno, la 64 una progressione migliore.
+[Volume I, esempio 64]
+giocatori = 5 (2.8), 4 (2.7), 3 (2.6), 2 (2.5), 3 (2.4), 2 (2.3)
+qualificati entranti = 7
+qualificati uscenti = 4
+turno 5 = 2 (2.3), 1 (2.4)
+turno 4 = 2 (2.4), 2 (2.5), 1 (2.6)
+turno 3 = 2 (2.6), 2 (2.7)
+turno 2 = coppie 2 (2.7)+q, 3 (2.8)+q
+turno 1 = coppie 2 (2.8)+q
+teste di serie = 5
+# Il programma sceglie la scala dell'esempio 65 (un turno di meno).
+proposta turno 4 = 2 (2.3), 1 (2.4)
+proposta turno 3 = 2 (2.4), 2 (2.5)
+proposta turno 2 = 3 (2.6), 2 (2.7)
+proposta turno 1 = coppie 2 (2.7)+q, 5 (2.8)+q
+
+[Volume I, esempio 65]
+giocatori = 5 (2.8), 4 (2.7), 3 (2.6), 2 (2.5), 3 (2.4), 2 (2.3)
+qualificati entranti = 7
+qualificati uscenti = 4
+turno 4 = 2 (2.3), 1 (2.4)
+turno 3 = 2 (2.4), 2 (2.5)
+turno 2 = 3 (2.6), 2 (2.7)
+turno 1 = coppie 2 (2.7)+q, 5 (2.8)+q
+teste di serie = 5
+
+[Volume I, esempio 66]
+giocatori = 2 (4.6), 2 (4.5), 5 (4.4), 2 (4.3), 3 (4.2), 2 (4.1)
+qualificati uscenti = 4
+turno 3 = 2 (4.1), 2 (4.2)
+turno 2 = 1 (4.2), 2 (4.3), 1 (4.4)
+turno 1 = coppie 2 (4.4)+(4.4), 1 (4.5)+(4.5), 1 (4.6)+(4.6)
+teste di serie = 4
+
+[Volume I, esempio 67]
+giocatori = 2 (4.6), 2 (4.5), 5 (4.4), 2 (4.3), 3 (4.2), 2 (4.1)
+qualificati uscenti = 2
+turno 6 = 2 (4.1)
+turno 5 = 1 (4.2)
+turno 4 = 2 (4.2)
+turno 3 = 2 (4.3); coppie 2 (4.4)+(4.4)
+turno 2 = 1 (4.4); coppie 1 (4.5)+(4.5)
+turno 1 = coppie 1 (4.6)+(4.6)
+# Il manuale fa teste di serie i tre giocatori degli ultimi due turni.
+teste di serie = 3
+proposta del programma = 2
+# Il programma sceglie una scala con una coppia di (4.4) in meno.
+proposta turno 5 = 2 (4.1)
+proposta turno 4 = 1 (4.2)
+proposta turno 3 = 2 (4.2)
+proposta turno 2 = 2 (4.3), 1 (4.4); coppie 1 (4.4)+(4.4)
+proposta turno 1 = coppie 1 (4.4)+(4.4), 1 (4.5)+(4.5), 1 (4.6)+(4.6)
+
+[Volume II, esercizio 3.01]
+giocatori = 4 (4.4), 4 (4.3), 1 (4.2), 3 (4.1)
+qualificati entranti = 4
+qualificati uscenti = 4
+turno 3 = 3 (4.1), 1 (4.2)
+turno 2 = 4 (4.3)
+turno 1 = coppie 4 (4.4)+q
+teste di serie = 4
+tabellone = (1)4.1/3 4.3/2 4.4/1 q/1 | (4)4.2/3 4.3/2 4.4/1 q/1 | q/1 4.4/1 4.3/2 (3)4.1/3 | q/1 4.4/1 4.3/2 (2)4.1/3
+
+[Volume II, esercizio 3.02]
+giocatori = 3 (4.5), 5 (4.4), 3 (4.3), 5 (4.2), 7 (4.1)
+qualificati entranti = 8
+qualificati uscenti = 8
+turno 3 = 7 (4.1), 1 (4.2)
+turno 2 = 4 (4.2), 3 (4.3); coppie 1 (4.4)+q
+turno 1 = coppie 4 (4.4)+q, 3 (4.5)+q
+teste di serie = 8
+
+[Volume II, esercizio 3.03]
+giocatori = 4 (3.5), 4 (3.4), 3 (3.3)
+qualificati entranti = 4
+qualificati uscenti = 4
+turno 3 = 3 (3.3), 1 (3.4)
+turno 2 = 3 (3.4); coppie 1 (3.5)+q
+turno 1 = coppie 3 (3.5)+q
+teste di serie = 4
+tabellone = (1)3.3/3 3.4/2 3.5/1 q/1 | (4)3.4/3 3.5/2 q/2 | q/1 3.5/1 3.4/2 (3)3.3/3 | q/1 3.5/1 3.4/2 (2)3.3/3
+
+[Volume II, esercizio 3.04]
+giocatori = 8 (3.5), 5 (3.4), 8 (3.3)
+qualificati entranti = 8
+qualificati uscenti = 8
+turno 3 = 8 (3.3)
+turno 2 = 5 (3.4); coppie 3 (3.5)+q
+turno 1 = coppie 5 (3.5)+q
+teste di serie = 8
+tabellone = (1)3.3/3 3.5/2 q/2 | (8)3.3/3 3.4/2 3.5/1 q/1 | (4)3.3/3 3.4/2 3.5/1 q/1 | (5)3.3/3 3.4/2 3.5/1 q/1 | q/1 3.5/1 3.4/2 (6)3.3/3 | q/2 3.5/2 (3)3.3/3 | q/1 3.5/1 3.4/2 (7)3.3/3 | q/2 3.5/2 (2)3.3/3
+
+[Volume II, esercizio 3.05]
+giocatori = 3 (3.5), 3 (3.4), 4 (3.3), 2 (3.2), 3 (3.1)
+qualificati entranti = 4
+qualificati uscenti = 4
+turno 4 = 3 (3.1), 1 (3.2)
+turno 3 = 1 (3.2), 3 (3.3)
+turno 2 = 1 (3.3), 2 (3.4); coppie 1 (3.4)+q
+turno 1 = coppie 3 (3.5)+q
+teste di serie = 4
+
+[Volume II, esercizio 3.06]
+giocatori = 5 (2.8), 3 (2.7), 2 (2.6), 3 (2.5), 3 (2.4), 1 (2.3)
+qualificati entranti = 5
+qualificati uscenti = 4
+turno 4 = 1 (2.3), 3 (2.4)
+turno 3 = 3 (2.5)
+turno 2 = 2 (2.6), 3 (2.7)
+turno 1 = coppie 5 (2.8)+q
+teste di serie = 4
+
+[Volume II, esercizio 3.07]
+giocatori = 4 (2.8), 4 (2.7), 4 (2.6), 4 (2.5), 1 (2.4), 2 (2.3)
+qualificati entranti = 8
+qualificati uscenti = 4
+turno 4 = 2 (2.3), 1 (2.4)
+turno 3 = 4 (2.5)
+turno 2 = 4 (2.6)
+turno 1 = coppie 4 (2.7)+q, 4 (2.8)+q
+teste di serie = 4
+
+[Volume II, esercizio 3.08]
+giocatori = 4 (2.8), 6 (2.7), 4 (2.6), 3 (2.5), 2 (2.4), 2 (2.3)
+qualificati entranti = 10
+qualificati uscenti = 4
+turno 5 = 2 (2.3), 2 (2.4)
+turno 4 = 1 (2.5)
+turno 3 = 2 (2.5), 4 (2.6)
+turno 2 = coppie 6 (2.7)+q
+turno 1 = coppie 4 (2.8)+q
+teste di serie = 4
+# Il programma tiene insieme i tre (2.5) nello stesso turno.
+proposta turno 5 = 2 (2.3), 2 (2.4)
+proposta turno 4 = 3 (2.5)
+proposta turno 3 = 4 (2.6)
+proposta turno 2 = coppie 2 (2.7)+q
+proposta turno 1 = coppie 4 (2.7)+q, 4 (2.8)+q
+
+[Volume II, esercizio 3.09]
+giocatori = 8 (4.6), 4 (4.5), 3 (4.4), 2 (4.3), 4 (4.2), 3 (4.1)
+qualificati uscenti = 4
+turno 5 = 3 (4.1), 1 (4.2)
+turno 4 = 3 (4.2), 1 (4.3)
+turno 3 = 1 (4.3), 3 (4.4)
+turno 2 = 4 (4.5)
+turno 1 = coppie 4 (4.6)+(4.6)
+teste di serie = 4
+
+[Volume II, esercizio 3.10]
+giocatori = 4 (4.6), 8 (4.5), 3 (4.4), 3 (4.3), 3 (4.2), 3 (4.1)
+qualificati uscenti = 4
+turno 4 = 3 (4.1)
+turno 3 = 3 (4.2), 1 (4.3)
+turno 2 = 2 (4.3), 3 (4.4); coppie 1 (4.5)+(4.5)
+turno 1 = coppie 3 (4.5)+(4.5), 2 (4.6)+(4.6)
+teste di serie = 4
+# Il programma fa due coppie di (4.5) in meno (sono necessarie solo 4 coppie).
+proposta turno 5 = 3 (4.1)
+proposta turno 4 = 3 (4.2), 2 (4.3)
+proposta turno 3 = 1 (4.3), 3 (4.4); coppie 1 (4.5)+(4.5)
+proposta turno 2 = 2 (4.5); coppie 2 (4.5)+(4.5)
+proposta turno 1 = coppie 2 (4.6)+(4.6)
+
+[Volume II, esercizio 3.11]
+giocatori = 4 (4.5), 4 (4.4), 6 (4.3), 6 (4.2), 6 (4.1)
+qualificati uscenti = 8
+turno 3 = 6 (4.1), 2 (4.2)
+turno 2 = 2 (4.2); coppie 1 (4.2)+(4.2), 3 (4.3)+(4.3), 2 (4.4)+(4.4)
+turno 1 = coppie 2 (4.5)+(4.5)
+teste di serie = 8
+
+[Volume II, esercizio 3.12]
+giocatori = 6 (4.5), 6 (4.4), 6 (4.3), 7 (4.2), 8 (4.1)
+qualificati entranti = 12
+qualificati uscenti = 8
+turno 4 = 8 (4.1)
+turno 3 = 7 (4.2)
+turno 2 = 6 (4.3)
+turno 1 = coppie 6 (4.4)+q, 6 (4.5)+q
+teste di serie = 8
+
+[Volume II, esercizio 3.13]
+giocatori = 7 (2.8), 9 (2.7), 8 (2.6), 7 (2.5), 9 (2.4), 3 (2.3)
+qualificati entranti = 16
+qualificati uscenti = 8
+turno 4 = 3 (2.3), 1 (2.4)
+turno 3 = 8 (2.4), 1 (2.5)
+turno 2 = 6 (2.5), 8 (2.6)
+turno 1 = coppie 9 (2.7)+q, 7 (2.8)+q
+teste di serie = 12
+# Il programma sceglie una scala piu' graduale, con un turno in piu'.
+proposta turno 5 = 3 (2.3), 4 (2.4)
+proposta turno 4 = 5 (2.4), 4 (2.5)
+proposta turno 3 = 3 (2.5), 5 (2.6)
+proposta turno 2 = 3 (2.6); coppie 1 (2.7)+q
+proposta turno 1 = coppie 8 (2.7)+q, 7 (2.8)+q
+
+[Volume II, esercizio 3.14]
+giocatori = 8 (3.5), 10 (3.4), 11 (3.3), 7 (3.2), 14 (3.1)
+qualificati entranti = 18
+qualificati uscenti = 16
+turno 3 = 14 (3.1)
+turno 2 = 7 (3.2), 11 (3.3)
+turno 1 = coppie 10 (3.4)+q, 8 (3.5)+q
+teste di serie = 16
+
+[Volume II, esercizio 3.15]
+giocatori = 7 (2.6), 8 (2.5), 4 (2.4), 7 (2.3), 6 (2.2), 2 (2.1)
+qualificati entranti = 8
+qualificati uscenti = 8
+turno 5 = 2 (2.1), 6 (2.2)
+turno 4 = 7 (2.3), 1 (2.4)
+turno 3 = 3 (2.4), 5 (2.5)
+turno 2 = 2 (2.5); coppie 1 (2.5)+q, 5 (2.6)+q
+turno 1 = coppie 2 (2.6)+q
+teste di serie = 8
+
+[Volume II, esercizio 3.16]
+giocatori = 15 (2.8), 10 (2.7), 6 (2.6), 10 (2.5), 7 (2.4), 10 (2.3), 8 (2.2), 5 (2.1)
+qualificati entranti = 16
+qualificati uscenti = 8
+turno 6 = 5 (2.1)
+turno 5 = 8 (2.2)
+turno 4 = 10 (2.3), 2 (2.4)
+turno 3 = 5 (2.4), 10 (2.5), 1 (2.6)
+turno 2 = 5 (2.6), 9 (2.7); coppie 1 (2.7)+q, 1 (2.8)+q
+turno 1 = coppie 14 (2.8)+q
+teste di serie = 11
+# Il programma sceglie una scala con un turno in piu', ma con meno classifiche divise tra due turni.
+proposta turno 7 = 5 (2.1), 3 (2.2)
+proposta turno 6 = 5 (2.2)
+proposta turno 5 = 10 (2.3)
+proposta turno 4 = 7 (2.4), 5 (2.5)
+proposta turno 3 = 5 (2.5), 6 (2.6)
+proposta turno 2 = 9 (2.7); coppie 1 (2.7)+q
+proposta turno 1 = coppie 15 (2.8)+q
+
+[Volume II, esercizio 3.21]
+giocatori = 3 (3.3), 1 (3.2), 6 (3.1)
+qualificati entranti = 3
+qualificati uscenti = 4
+turno 3 = 2 (3.1); coppie 2 (3.1)+(3.1)
+turno 2 = 1 (3.2)
+turno 1 = coppie 3 (3.3)+q
+teste di serie = 6
+
+[Volume II, esercizio 3.22]
+giocatori = 2 (3.5), 5 (3.4), 1 (3.3), 7 (3.2), 3 (3.1)
+qualificati uscenti = 4
+turno 4 = 3 (3.1)
+turno 3 = 3 (3.2); coppie 2 (3.2)+(3.2)
+turno 2 = 1 (3.3), 1 (3.4); coppie 1 (3.4)+(3.4)
+turno 1 = coppie 1 (3.4)+(3.4), 1 (3.5)+(3.5)
+teste di serie = 4
+
+[Volume II, esercizio 3.23]
+giocatori = 4 (4.6), 2 (4.5), 4 (4.4), 4 (4.3), 6 (4.2), 3 (4.1)
+qualificati uscenti = 4
+turno 5 = 3 (4.1)
+turno 4 = 4 (4.2); coppie 1 (4.2)+(4.2)
+turno 3 = 4 (4.3)
+turno 2 = 2 (4.4); coppie 1 (4.4)+(4.4), 1 (4.5)+(4.5)
+turno 1 = coppie 2 (4.6)+(4.6)
+teste di serie = 4
+
+[Volume II, esercizio 3.24]
+giocatori = 17 (3.5), 9 (3.4)
+qualificati entranti = 8
+qualificati uscenti = 8
+turno 3 = 7 (3.4)
+turno 2 = 2 (3.4), 1 (3.5); coppie 3 (3.5)+(3.5)
+turno 1 = coppie 1 (3.5)+(3.5), 8 (3.5)+q
+teste di serie = 9
+# Il programma fa i (3.4) in due turni (5 e 4) e una coppia di (3.5) in piu'.
+proposta turno 3 = 5 (3.4)
+proposta turno 2 = 4 (3.4), 1 (3.5); coppie 4 (3.5)+(3.5), 1 (3.5)+q
+proposta turno 1 = coppie 7 (3.5)+q
