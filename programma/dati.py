@@ -12,7 +12,12 @@ AVVISO = "AVVISO"
 
 # Impostazioni del torneo che il programma conosce, e quali sono obbligatorie.
 IMPOSTAZIONI_OBBLIGATORIE = ("nome", "gara")
-IMPOSTAZIONI_FACOLTATIVE = ("date", "qualificati entranti", "qualificati uscenti", "teste di serie")
+IMPOSTAZIONI_FACOLTATIVE = ("date", "tipo", "qualificati entranti", "qualificati uscenti",
+                            "teste di serie")
+# Valori ammessi per le impostazioni con una scelta tra poche parole.
+IMPOSTAZIONI_A_SCELTA = {"tipo": ("selezione", "estrazione")}
+# "turno 1", "turno 2"...: la scala di un tabellone di selezione scritta dal giudice arbitro.
+MASSIMO_TURNO = 12
 # Impostazioni che devono essere un numero intero, e il numero piu' piccolo ammesso.
 IMPOSTAZIONI_NUMERICHE = {"qualificati entranti": 0, "qualificati uscenti": 1, "teste di serie": 0}
 
@@ -159,7 +164,11 @@ def leggi_torneo(percorso):
         nome, valore = riga.split("=", 1)
         nome = " ".join(nome.split()).lower()
         valore = valore.strip()
-        if nome not in conosciute:
+        turno_della_scala = nome.startswith("turno ") and nome[6:].isdigit() \
+            and 1 <= int(nome[6:]) <= MASSIMO_TURNO
+        if turno_della_scala and nome not in torneo.impostazioni and valore:
+            torneo.impostazioni[nome] = valore
+        elif nome not in conosciute and not turno_della_scala:
             problemi.append(Problema(
                 AVVISO, percorso, numero,
                 f"l'impostazione \"{nome}\" non e' conosciuta e viene ignorata "
@@ -170,6 +179,14 @@ def leggi_torneo(percorso):
         elif not valore:
             problemi.append(Problema(ERRORE, percorso, numero,
                                      f"manca il valore dell'impostazione \"{nome}\""))
+        elif nome in IMPOSTAZIONI_A_SCELTA:
+            if valore.lower() not in IMPOSTAZIONI_A_SCELTA[nome]:
+                problemi.append(Problema(
+                    ERRORE, percorso, numero,
+                    f"l'impostazione \"{nome}\" puo' essere solo: "
+                    f"{', '.join(IMPOSTAZIONI_A_SCELTA[nome])}; invece e' \"{valore}\""))
+            else:
+                torneo.impostazioni[nome] = valore.lower()
         elif nome in IMPOSTAZIONI_NUMERICHE:
             minimo = IMPOSTAZIONI_NUMERICHE[nome]
             if not valore.isdigit() or int(valore) < minimo:

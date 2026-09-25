@@ -113,6 +113,19 @@ class ProveTorneo(ProvaFile):
         self.assertEqual(torneo.impostazioni["qualificati entranti"], 4)
         self.assertEqual([p.riga for p in problemi], [4, 5])
 
+    def test_tipo_e_scala(self):
+        percorso = self.file("nome = Uno\ngara = Due\ntipo = Selezione\n"
+                             "turno 2 = 4 (4.3)\nturno 1 = coppie 4 (4.4)+q\n")
+        torneo, problemi = leggi_torneo(percorso)
+        self.assertEqual(problemi, [])
+        self.assertEqual(torneo.impostazioni["tipo"], "selezione")
+        self.assertEqual(torneo.impostazioni["turno 1"], "coppie 4 (4.4)+q")
+
+    def test_tipo_sbagliato(self):
+        torneo, problemi = leggi_torneo(self.file("nome = Uno\ngara = Due\ntipo = misto\n"))
+        self.assertEqual([p.gravita for p in problemi], [ERRORE])
+        self.assertIn("selezione, estrazione", problemi[0].messaggio)
+
 
 if __name__ == "__main__":
     unittest.main()

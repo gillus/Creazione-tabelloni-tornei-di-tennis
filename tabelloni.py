@@ -17,9 +17,11 @@ import pathlib
 import sys
 import webbrowser
 
+from programma import controllo_selezione, selezione_tabellone
 from programma.calcoli import calcola, conta_per_classifica, descrivi
 from programma.controllo import controlla, leggi_tabellone
-from programma.dati import ERRORE, leggi_classifiche, leggi_giocatori, leggi_torneo
+from programma.dati import AVVISO, ERRORE, Problema, leggi_classifiche, leggi_giocatori, leggi_torneo
+from programma.selezione import controlla_scala, descrivi_scala, scala_migliore, scala_scritta
 from programma.sorteggio import disegna, sorteggia
 from programma.stampa import pagina
 
@@ -92,7 +94,10 @@ def fai_tabellone(file_dati=FILE_DATI):
     print(f"Circoli diversi: {len(circoli)}")
     print()
 
-    if giocatori and not any(p.gravita == ERRORE for p in problemi):
+    if giocatori and not any(p.gravita == ERRORE for p in problemi) \
+            and torneo.impostazioni.get("tipo", "selezione") == "selezione":
+        problemi += fai_selezione(giocatori, classifiche, torneo)
+    elif giocatori and not any(p.gravita == ERRORE for p in problemi):
         calcoli = calcola(conta_per_classifica(giocatori, classifiche),
                           qualificati_entranti=torneo.impostazioni.get("qualificati entranti", 0),
                           qualificati_uscenti=torneo.impostazioni.get("qualificati uscenti", 1),
@@ -104,30 +109,101 @@ def fai_tabellone(file_dati=FILE_DATI):
         if not any(p.gravita == ERRORE for p in calcoli.problemi):
             tabellone = sorteggia(calcoli, giocatori, classifiche=classifiche)
             problemi += tabellone.problemi
-            titolo = (f"{torneo.impostazioni['nome']} - {torneo.impostazioni['gara']}"
-                      + (f" - {torneo.impostazioni['date']}" if "date" in torneo.impostazioni else ""))
-            testo = disegna(tabellone, titolo)
-            print(testo)
-            print()
-            os.makedirs(CARTELLA_RISULTATI, exist_ok=True)
-            with open(FILE_TABELLONE, "w", encoding="utf-8") as f:
-                f.write(testo + "\n")
-            print(f"Tabellone salvato in {FILE_TABELLONE}")
-            with open(FILE_DA_STAMPARE, "w", encoding="utf-8") as f:
-                f.write(pagina(tabellone, torneo.impostazioni))
-            print(f"Tabellone da stampare salvato in {FILE_DA_STAMPARE}"
-                  " (si apre nel browser; per stampare premere il pulsante Stampa)")
-            apri_nel_browser(FILE_DA_STAMPARE)
-            # Il programma controlla anche il suo tabellone, per sicurezza.
-            if not any(p.gravita == ERRORE
-                       for p in controlla_tabellone(giocatori, classifiche, torneo, tabellone.posti)):
-                print("Controllo del tabellone con le regole del manuale: nessun errore.")
-            else:
-                print("ATTENZIONE: il controllo ha trovato errori nel tabellone fatto dal programma.")
-                print(f"Si vedono con:  py tabelloni.py controlla {FILE_TABELLONE}")
-            print()
+            salva_e_controlla(tabellone, disegna(tabellone, titolo_del_torneo(torneo)), torneo,
+                              controlla_tabellone(giocatori, classifiche, torneo, tabellone.posti))
 
     return stampa_problemi(problemi)
+
+
+def titolo_del_torneo(torneo):
+    return (f"{torneo.impostazioni['nome']} - {torneo.impostazioni['gara']}"
+            + (f" - {torneo.impostazioni['date']}" if "date" in torneo.impostazioni else ""))
+
+
+def salva_e_controlla(tabellone, testo, torneo, problemi_del_controllo):
+    """Mostra e salva il tabellone (testo e pagina da stampare), e dice se il controllo
+    con le regole del manuale ha trovato errori."""
+    print(testo)
+    print()
+    os.makedirs(CARTELLA_RISULTATI, exist_ok=True)
+    with open(FILE_TABELLONE, "w", encoding="utf-8") as f:
+        f.write(testo + "\n")
+    print(f"Tabellone salvato in {FILE_TABELLONE}")
+    with open(FILE_DA_STAMPARE, "w", encoding="utf-8") as f:
+        f.write(pagina(tabellone, torneo.impostazioni))
+    print(f"Tabellone da stampare salvato in {FILE_DA_STAMPARE}"
+          " (si apre nel browser; per stampare premere il pulsante Stampa)")
+    apri_nel_browser(FILE_DA_STAMPARE)
+    # Il programma controlla anche il suo tabellone, per sicurezza.
+    if not any(p.gravita == ERRORE for p in problemi_del_controllo):
+        print("Controllo del tabellone con le regole del manuale: nessun errore.")
+    else:
+        print("ATTENZIONE: il controllo ha trovato errori nel tabellone fatto dal programma:")
+        for problema in problemi_del_controllo:
+            print(f"  {problema}")
+    print()
+
+
+def fai_selezione(giocatori, classifiche, torneo):
+    """Il tabellone di selezione: scala, teste di serie, sorteggio. Restituisce i problemi."""
+    impostazioni = torneo.impostazioni
+    q = impostazioni.get("qualificati entranti", 0)
+    Qu = impostazioni.get("qualificati uscenti", 1)
+    calcoli = calcola(conta_per_classifica(giocatori, classifiche),
+                      qualificati_entranti=q, qualificati_uscenti=Qu)
+    # Dei calcoli del tabellone di estrazione servono solo gli errori e le teste di serie.
+    problemi = [p for p in calcoli.problemi if p.gravita == ERRORE]
+    if problemi:
+        return problemi
+    livello = {c: i for i, c in enumerate(classifiche)}
+    diretti = sorted((g.classifica for g in giocatori), key=lambda c: livello[c])
+
+    print("TABELLONE DI SELEZIONE")
+    print(f"Giocatori: {len(giocatori)} ammessi direttamente e {q} qualificati entranti, "
+          f"in tutto {len(giocatori) + q}")
+    print(f"Qualificati uscenti: {Qu}" + (f" (tabellone a {Qu} sezioni)" if calcoli.sezioni else ""))
+    scala = scala_scritta(impostazioni, Qu)
+    if scala is not None:
+        errori = controlla_scala(scala, diretti, q, livello)
+        if errori:
+            return [Problema(ERRORE, "", 0, f"la scala scritta in dati/torneo.txt: {e}") for e in errori]
+        print("Scala scritta dal giudice arbitro in dati/torneo.txt:")
+    else:
+        scala, tutte = scala_migliore(diretti, q, Qu, livello)
+        if scala is None:
+            return [Problema(ERRORE, "", 0,
+                             "non si trova nessuna scala che rispetti le regole del manuale: "
+                             "provare un numero diverso di qualificati entranti o uscenti, "
+                             "oppure scrivere la scala in dati/torneo.txt")]
+        print(f"Scala proposta dal programma (la migliore tra {len(tutte)} possibili):")
+    for riga in descrivi_scala(scala):
+        print(riga)
+    print("  (per usarne una diversa, scriverla in dati/torneo.txt con le righe \"turno 1 = ...\")")
+
+    minimo, massimo = calcoli.teste_di_serie_minimo, calcoli.teste_di_serie_massimo
+    scelte = impostazioni.get("teste di serie")
+    if minimo is None:
+        teste = 0
+        print("Teste di serie: nessuna (giocano solo non classificati)")
+    elif scelte is not None:
+        if not (minimo <= scelte <= massimo) or (calcoli.sezioni and scelte % calcoli.sezioni):
+            return [p for p in calcola(conta_per_classifica(giocatori, classifiche), q, Qu,
+                                       teste_di_serie=scelte).problemi if p.gravita == ERRORE]
+        teste = scelte
+        print(f"Teste di serie (scelte dal giudice arbitro): {teste}, possibili da {minimo} a {massimo}")
+    else:
+        teste = selezione_tabellone.proposta_teste_di_serie(scala, minimo, massimo, livello,
+                                                            calcoli.sezioni)
+        print(f"Teste di serie (proposta del programma): {teste}, possibili da {minimo} a {massimo}")
+    print()
+
+    tabellone = selezione_tabellone.prepara(scala, teste, giocatori, livello, calcoli.sezioni)
+    problemi += tabellone.problemi
+    controllo = controllo_selezione.controlla(tabellone.voci(), giocatori, classifiche, q, Qu,
+                                              impostazioni.get("teste di serie"))
+    salva_e_controlla(tabellone, selezione_tabellone.disegna(tabellone, titolo_del_torneo(torneo)),
+                      torneo, controllo)
+    return problemi
 
 
 def controlla_file(percorso, file_dati=FILE_DATI):
@@ -145,6 +221,17 @@ def controlla_file(percorso, file_dati=FILE_DATI):
     print(f"CONTROLLO DEL TABELLONE {percorso}")
     print(f"Torneo: {torneo.impostazioni['nome']} - {torneo.impostazioni['gara']}")
     print()
+    if controllo_selezione.e_di_selezione(percorso):
+        print("(tabellone di selezione)")
+        voci, problemi = controllo_selezione.leggi_tabellone(percorso, giocatori)
+        if not any(p.gravita == ERRORE for p in problemi):
+            problemi += controllo_selezione.controlla(
+                voci, giocatori, classifiche,
+                torneo.impostazioni.get("qualificati entranti", 0),
+                torneo.impostazioni.get("qualificati uscenti", 1),
+                torneo.impostazioni.get("teste di serie"))
+        return stampa_problemi(problemi, se_nessuno="Il tabellone rispetta le regole del manuale: "
+                                                    "nessun problema.")
     posti, problemi = leggi_tabellone(percorso, giocatori)
     if not any(p.gravita == ERRORE for p in problemi):
         problemi += controlla_tabellone(giocatori, classifiche, torneo, posti)

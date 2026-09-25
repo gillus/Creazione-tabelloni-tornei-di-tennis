@@ -11,6 +11,10 @@
 #                         (obbligatorio)
 #   gara                  la gara, per esempio "Singolare maschile" (obbligatorio)
 #   date                  le date del torneo, scritte come si vuole (facoltativo)
+#   tipo                  "selezione" (i giocatori entrano in tre o piu' turni,
+#                         secondo la classifica) oppure "estrazione" (tutti
+#                         entrano al primo o al secondo turno). Facoltativo;
+#                         se manca vale "selezione"
 #   qualificati entranti  quanti giocatori arrivano da un tabellone precedente
 #                         (facoltativo; se manca vale 0)
 #   qualificati uscenti   quanti giocatori escono da questo tabellone per andare
@@ -22,6 +26,21 @@
 #                         propone il programma, secondo le regole del manuale).
 #                         Con le sezioni deve essere un multiplo del numero delle
 #                         sezioni (lo stesso numero di teste di serie in ognuna)
+#
+# Solo per il tabellone di selezione, e solo se si vuole cambiare la "scala"
+# proposta dal programma (chi entra in ogni turno), una riga per turno:
+#
+#   turno 3 = 3 (4.1), 1 (4.2)
+#   turno 2 = 4 (4.3)
+#   turno 1 = coppie 4 (4.4)+q
+#
+# Prima del punto e virgola, i giocatori che entrano in quel turno contro un
+# vincitore del turno prima; dopo "coppie", le coppie che entrano insieme e
+# giocano tra loro: "4 (4.4)+q" sono quattro coppie di un (4.4) e un
+# qualificato entrante, "1 (4.6)+(4.6)" una coppia di due (4.6). Per esempio:
+#   turno 2 = 1 (2.6); coppie 2 (2.7)+q, 1 (2.8)+q
+# Il programma mostra sempre la scala che usa, scritta cosi': si puo' copiare
+# qui e cambiare.
 #
 # Qui sotto c'e' un torneo DI FANTASIA, solo per provare il programma.
 
