@@ -84,10 +84,28 @@ passare al successivo.
         2.10, 2.11, 2.22, 1.09, esempio 44): le classifiche del primo turno
         si dispongono in modo che si incontrino giocatori di classifica
         vicina. La regola dello stesso circolo viene sempre prima.
-    7b. DA FARE - Tabelloni di selezione (capitolo 4): i giocatori entrano
+    7b. FATTO - Tabelloni di selezione (capitolo 4): i giocatori entrano
         in tre o piu' turni secondo la classifica, come nel tabellone vero
         mandato da chi ha proposto il progetto. E' il tabellone usato
-        quasi sempre (risposte G e H qui sotto).
+        quasi sempre (risposte G e H qui sotto), quindi e' quello che il
+        programma fa se in dati/torneo.txt non c'e' "tipo = estrazione".
+        - La "scala" (chi entra in ogni turno) la propone il programma,
+          provando tutte le scale possibili; il giudice arbitro ne puo'
+          scrivere una diversa in dati/torneo.txt.
+        - Provato con le 27 scale degli esempi 57-67 e degli esercizi
+          3.01-3.24: la scala del programma e' uguale a quella del manuale
+          in 20 casi (21 contando l'esempio 64, per cui il programma
+          sceglie l'altra soluzione del manuale, l'esempio 65). Negli
+          altri casi vedi la domanda J.
+        - Il tabellone si stampa disegnato come nel manuale, con i
+          giocatori nella colonna del turno in cui entrano.
+        - Se con i giocatori iscritti non si puo' fare nessun tabellone di
+          selezione (per esempio con una o due classifiche soltanto), il
+          programma lo dice e fa quello di estrazione.
+        - DA FARE (passo 9): ricopiare le soluzioni dei tabelloni a sezioni
+          di selezione (esercizi 4.01-4.16). Il programma li fa gia' e il
+          controllo li trova giusti, ma non sono ancora confrontati con il
+          manuale.
 
  8. TABELLONI COLLEGATI E TABELLONE FINALE (capitoli 5 e 6)
     Il torneo intero, dalle qualificazioni al tabellone finale.
@@ -204,3 +222,31 @@ DA CHIEDERE A CHI HA PROPOSTO IL PROGETTO, PRIMA DI COMINCIARE
     Quindi il programma fa il tabellone di selezione se non e' scritto
     altro; il tabellone di estrazione solo se in dati/torneo.txt c'e'
     "tipo = estrazione".
+
+ I. REGOLA DELLO STESSO CIRCOLO NEI TABELLONI DI SELEZIONE. Nel tabellone
+    di selezione due giocatori ammessi direttamente possono entrare in gara
+    insieme e giocare tra loro anche dopo il primo turno (per esempio due
+    (3.1) che si incontrano al terzo turno, esercizio 3.21, o come nel
+    tabellone vero mandato). Per tutti e due e' il primo incontro.
+    Oggi il programma applica la regola dello stesso circolo a questi
+    incontri, come se fossero incontri del primo turno. Chi invece entra
+    contro un vincitore del turno prima puo' trovare un compagno di
+    circolo (come chi ha il posto libero, risposta F).
+    Domanda: va bene cosi'?
+    Risposta:
+
+ J. SCALE DIVERSE DA QUELLE DEL MANUALE. In 6 esercizi il programma
+    propone una scala diversa da quella del manuale (sono scritte nel file
+    prove/esercizi/scale-dei-tabelloni-di-selezione.txt, righe "proposta
+    turno"): esempio 67 ed esercizi 3.08, 3.10, 3.13, 3.16, 3.24.
+    In questi casi il manuale stesso dice che ci sono piu' soluzioni e
+    sceglie "secondo logica"; il programma sceglie la scala che segue
+    meglio le raccomandazioni (classifiche uguali nello stesso turno,
+    compressioni e progressioni tra classifiche vicine, meno turni).
+    Per esempio nell'esercizio 3.16 il programma fa un turno in piu', ma
+    con meno classifiche divise tra due turni.
+    Il giudice arbitro puo' sempre scrivere la scala del manuale in
+    dati/torneo.txt.
+    Domanda: va bene cosi'? Se in qualche caso la scelta del programma
+    non piace, quale regola usa il giudice arbitro per scegliere?
+    Risposta:
