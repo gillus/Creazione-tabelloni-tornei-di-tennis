@@ -21,9 +21,13 @@
 # Nei tabelloni a sezioni ogni sezione e' un piccolo tabellone: le sezioni
 # sono una dopo l'altra, dall'alto in basso.
 #
+# Quando il programma fa un tabellone diverso da quello del manuale, e'
+# scritto in "tabellone del programma", con il motivo.
+#
 # Fonte: Volume I, esempi da 39 a 47 (pagine 20-31) e, a sezioni, da 48 a 50
 #        (pagine 35-39);
-#        Volume II, esercizi 1.01 e 1.03 (pagine 9 e 13) e, a sezioni, da 2.01
+#        Volume II, esercizi 1.01 e 1.03 (pagine 9 e 13), tabelloni finali da
+#        5.01 a 5.09 (pagine 159-176; per il 5.04 la soluzione 1) e, a sezioni, da 2.01
 #        a 2.12 e da 2.21 a 2.23 (pagine 44-74; per il 2.23 la soluzione 2,
 #        quella giusta).
 
@@ -207,3 +211,71 @@ qualificati entranti = 16
 qualificati uscenti = 7
 teste di serie = 14
 tabellone = (1) - | q - | q x | q (14) | (2) - | q - | q x | q (13) | (3) - | x q | - q | - (12) | (4) - | x q | - q | - (11) | (5) - | x q | - q | - (10) | (6) - | x q | - q | - (9) | (7) - | q - | - q | - (8)
+
+[Volume II, esercizio 5.01]
+giocatori = 2 (2.2), 3 (2.1)
+qualificati entranti = 4
+qualificati uscenti = 1
+teste di serie = 4
+tabellone = (1) - | x q | (4) - | q - | - q | - (3) | - q | - (2)
+
+[Volume II, esercizio 5.02]
+giocatori = 3 (2.4), 1 (2.3), 1 (2.2), 1 (2.1)
+qualificati entranti = 4
+qualificati uscenti = 1
+teste di serie = 4
+tabellone = (1) - | x q | (4) - | q - | - q | - (3) | q x | - (2)
+
+[Volume II, esercizio 5.03]
+giocatori = 4 (2.2), 3 (2.1)
+qualificati entranti = 4
+qualificati uscenti = 1
+teste di serie = 4
+tabellone = (1) - | x q | (4) - | q - | q x | - (3) | q x | - (2)
+
+[Volume II, esercizio 5.04]
+giocatori = 2 (2.3), 4 (2.2), 3 (2.1)
+qualificati entranti = 4
+qualificati uscenti = 1
+teste di serie = 6
+tabellone = (1) - | x q | (4) x | (5) q | q (6) | - (3) | q x | - (2)
+
+[Volume II, esercizio 5.05]
+giocatori = 5 (2.3), 6 (2.2), 3 (2.1)
+qualificati entranti = 4
+qualificati uscenti = 1
+teste di serie = 9
+tabellone = (1) - | x q | (8) - | (9) - | (4) - | x - | (5) - | q - | - q | - (6) | - x | - (3) | - x | - (7) | q x | - (2)
+
+[Volume II, esercizio 5.06]
+giocatori = 2 (2.6), 4 (2.5), 1 (2.4), 4 (2.3), 2 (2.2), 1 (2.1)
+qualificati entranti = 4
+qualificati uscenti = 1
+teste di serie = 8
+tabellone = (1) - | x q | (8) - | x - | (4) - | x - | (5) - | q - | - q | - (6) | - x | - (3) | - x | - (7) | q x | - (2)
+
+[Volume II, esercizio 5.07]
+giocatori = 3 (2.3), 5 (2.2), 7 (2.1)
+qualificati entranti = 4
+qualificati uscenti = 1
+teste di serie = 8
+tabellone = (1) - | x q | (8) - | x - | (4) - | q - | (5) - | x - | - x | - (6) | q x | - (3) | - x | - (7) | q x | - (2)
+# Il manuale mette il q contro la testa di serie n. 4 (numero 13); il
+# programma, come negli esercizi 5.05 e 5.06, contro la n. 5 (numero 12), la
+# piu' debole nello stesso quarto. Il manuale stesso dice che il q si puo'
+# spostare "contro il (2.2) posto al n. 12".
+tabellone del programma = (1) - | x q | (8) - | x - | (4) - | x - | (5) - | q - | - x | - (6) | q x | - (3) | - x | - (7) | q x | - (2)
+
+[Volume II, esercizio 5.08]
+giocatori = 6 (2.2), 7 (2.1)
+qualificati entranti = 8
+qualificati uscenti = 1
+teste di serie = 8
+tabellone = (1) - | x q | (8) - | q - | (4) - | x q | (5) - | x q | - q | - (6) | q x | - (3) | - q | - (7) | q x | - (2)
+
+[Volume II, esercizio 5.09]
+giocatori = 6 (2.3), 4 (2.2), 4 (2.1)
+qualificati entranti = 8
+qualificati uscenti = 1
+teste di serie = 8
+tabellone = (1) - | x q | (8) - | q - | (4) - | x q | (5) - | x q | q x | - (6) | q x | - (3) | - q | - (7) | q x | - (2)

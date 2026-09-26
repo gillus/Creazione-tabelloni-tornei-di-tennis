@@ -24,6 +24,11 @@ from programma.dati import AVVISO, ERRORE, Problema
 QUALIFICATO = "q"
 NON_CLASSIFICATO = "4.NC"
 
+# Tipi di tabellone
+ESTRAZIONE = "estrazione"
+SELEZIONE = "selezione"
+INTEGRALE = "integrale"  # tabellone finale di estrazione a sorteggio integrale
+
 
 @dataclass
 class Calcoli:
@@ -130,13 +135,16 @@ def proposta_teste_di_serie_sezioni(aspettiti_diretti, minimo, massimo, sezioni)
     return massimo
 
 
-def calcola(ammessi, qualificati_entranti=0, qualificati_uscenti=1, teste_di_serie=None):
+def calcola(ammessi, qualificati_entranti=0, qualificati_uscenti=1, teste_di_serie=None,
+            tipo=ESTRAZIONE):
     """Fa i calcoli preliminari.
 
     ammessi               coppie (classifica, quanti), dalla classifica piu' alta
     qualificati_entranti  quanti q arrivano da un tabellone precedente
     qualificati_uscenti   quanti giocatori escono dal tabellone (1 = il vincitore)
     teste_di_serie        il numero scelto dal giudice arbitro; se manca lo propone il programma
+    tipo                  ESTRAZIONE, SELEZIONE oppure INTEGRALE (tabellone finale di
+                          estrazione a sorteggio integrale, Volume I, capitolo V, B)
     """
     ammessi = [(c, n) for c, n in ammessi if n > 0]
     q = qualificati_entranti
@@ -162,7 +170,7 @@ def calcola(ammessi, qualificati_entranti=0, qualificati_uscenti=1, teste_di_ser
             ERRORE, "", 0,
             f"troppi qualificati uscenti ({Qu}) per {N} giocatori: "
             f"possono essere al massimo la meta' dei giocatori"))
-    if q > diretti:
+    if q > diretti and tipo != INTEGRALE:
         problemi.append(Problema(
             ERRORE, "", 0,
             f"i qualificati entranti ({q}) sono piu' dei giocatori ammessi direttamente ({diretti}): "
@@ -194,6 +202,11 @@ def calcola(ammessi, qualificati_entranti=0, qualificati_uscenti=1, teste_di_ser
         return calcoli
 
     minimo = max(-(-N // 8), Qu)  # un ottavo dei giocatori, arrotondato per eccesso
+    if Qu == 1 and tipo != SELEZIONE:
+        # Tabellone finale di estrazione: almeno un quarto della dimensione del tabellone
+        # (Volume I, capitolo V, B; negli esercizi del Volume II, da 5.01 a 5.24, anche
+        # per il tabellone finale di estrazione classico).
+        minimo = max(minimo, D // 4)
     massimo = min(N // 2, diretti)  # la meta' dei giocatori; i q non possono essere teste di serie
     if S:
         # Ogni sezione deve avere lo stesso numero di teste di serie.

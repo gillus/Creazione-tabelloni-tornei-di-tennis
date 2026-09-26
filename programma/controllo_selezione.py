@@ -16,7 +16,7 @@ Il controllo segnala:
 
 import re
 
-from programma.calcoli import calcola, conta_per_classifica
+from programma.calcoli import SELEZIONE, calcola, conta_per_classifica
 from programma.dati import AVVISO, ERRORE, Problema, leggi_righe
 from programma.selezione_tabellone import (Incontro, Posti, TabelloneSelezione, Voce,
                                            albero_dalle_voci, coppie_di_ammessi, incontri_di,
@@ -184,7 +184,8 @@ def controlla(voci, giocatori, classifiche, qualificati_entranti=0, qualificati_
         errore(f"le teste di serie devono essere numerate da 1 a {T} senza salti")
         return problemi
     calcoli = calcola(conta_per_classifica([v.giocatore for v in diretti], classifiche),
-                      qualificati_entranti=q, qualificati_uscenti=Qu, teste_di_serie=T or None)
+                      qualificati_entranti=q, qualificati_uscenti=Qu, teste_di_serie=T or None,
+                      tipo=SELEZIONE)
     minimo, massimo = calcoli.teste_di_serie_minimo, calcoli.teste_di_serie_massimo
     if minimo is None:
         if T:

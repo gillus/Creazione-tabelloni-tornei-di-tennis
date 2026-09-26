@@ -82,14 +82,15 @@ class ProveOrdine(unittest.TestCase):
 
 class ProveSchemiDelManuale(unittest.TestCase):
     def test_ci_sono_tutti_gli_esempi(self):
-        self.assertEqual(len(leggi_schemi()), 28)
+        self.assertEqual(len(leggi_schemi()), 37)
 
     def test_schemi_come_nel_manuale(self):
         for nome, esempio in leggi_schemi().items():
             with self.subTest(esempio=nome):
                 calcoli = calcoli_esempio(esempio)
                 self.assertEqual([p for p in calcoli.problemi if p.gravita == ERRORE], [])
-                self.assertEqual(come_testo(schema(calcoli, random.Random(0))), esempio["tabellone"])
+                atteso = esempio.get("tabellone del programma", esempio["tabellone"])
+                self.assertEqual(come_testo(schema(calcoli, random.Random(0))), atteso)
 
     def test_sorteggio_degli_esempi(self):
         # Il sorteggio mette ogni giocatore in un posto, e le teste di serie
@@ -103,7 +104,8 @@ class ProveSchemiDelManuale(unittest.TestCase):
                 tabellone = sorteggia(calcoli, giocatori, random.Random(1))
                 messi = [p.giocatore for p in tabellone.posti if p.giocatore]
                 self.assertCountEqual([g.codice for g in messi], [g.codice for g in giocatori])
-                self.assertEqual(come_testo(tabellone.posti), esempio["tabellone"])
+                self.assertEqual(come_testo(tabellone.posti),
+                                 esempio.get("tabellone del programma", esempio["tabellone"]))
                 teste = sorted((p.testa_di_serie, CLASSIFICHE.index(p.giocatore.classifica))
                                for p in tabellone.posti if p.testa_di_serie)
                 self.assertEqual([c for _, c in teste], sorted(c for _, c in teste))

@@ -17,7 +17,11 @@
 # Nei tabelloni a sezioni (qualificati uscenti diversi da 1, 2, 4, 8...)
 # "teste di serie possibili" sono solo i multipli del numero delle sezioni.
 #
+# Nei tabelloni finali (qualificati uscenti = 1) le teste di serie sono almeno
+# un quarto della dimensione del tabellone (come negli esercizi 5.01-5.09).
+#
 # Fonte: Volume II (esercizi da 1.01 a 1.27, pagine 8-41;
+#        tabelloni finali, esercizi da 5.01 a 5.09, pagine 158-176;
 #        tabelloni a sezioni, esercizi da 2.01 a 2.12 e da 2.21 a 2.23, pagine 44-74)
 #        e Volume I (esempi da 39 a 43, pagine 20-27; a sezioni, esempi da 48 a 50,
 #        pagine 34-39).
@@ -573,3 +577,132 @@ primo turno = 5 q, 5 (4.2)
 secondo turno = 2 q, 2 (4.2), 3 (4.1)
 teste di serie possibili = da 3 a 6
 teste di serie = 3 (4.1), 3 (4.2)
+
+[Volume II, esercizio 5.01]
+giocatori = 2 (2.2), 3 (2.1)
+qualificati entranti = 4
+qualificati uscenti = 1
+N = 9
+D = 16
+A = 7
+NA = 2
+I1 = 1
+primo turno = 1 q, 1 (2.2)
+secondo turno = 3 q, 1 (2.2), 3 (2.1)
+teste di serie possibili = da 4 a 4
+teste di serie = 3 (2.1), 1 (2.2)
+
+[Volume II, esercizio 5.02]
+giocatori = 3 (2.4), 1 (2.3), 1 (2.2), 1 (2.1)
+qualificati entranti = 4
+qualificati uscenti = 1
+N = 10
+D = 16
+A = 6
+NA = 4
+I1 = 2
+primo turno = 2 q, 2 (2.4)
+secondo turno = 2 q, 1 (2.4), 1 (2.3), 1 (2.2), 1 (2.1)
+teste di serie possibili = da 4 a 5
+teste di serie = 1 (2.1), 1 (2.2), 1 (2.3), 1 (2.4)
+
+[Volume II, esercizio 5.03]
+giocatori = 4 (2.2), 3 (2.1)
+qualificati entranti = 4
+qualificati uscenti = 1
+N = 11
+D = 16
+A = 5
+NA = 6
+I1 = 3
+primo turno = 3 q, 3 (2.2)
+secondo turno = 1 q, 1 (2.2), 3 (2.1)
+teste di serie possibili = da 4 a 5
+teste di serie = 3 (2.1), 1 (2.2)
+
+[Volume II, esercizio 5.04]
+giocatori = 2 (2.3), 4 (2.2), 3 (2.1)
+qualificati entranti = 4
+qualificati uscenti = 1
+N = 13
+D = 16
+A = 3
+NA = 10
+I1 = 5
+primo turno = 4 q, 2 (2.3), 4 (2.2)
+secondo turno = 3 (2.1)
+teste di serie possibili = da 4 a 6
+# Il manuale sceglie 6 "per prendere anche quasi tutti i (2.2)".
+teste di serie = 3 (2.1), 3 (2.2)
+proposta del programma = 4
+
+[Volume II, esercizio 5.05]
+giocatori = 5 (2.3), 6 (2.2), 3 (2.1)
+qualificati entranti = 4
+qualificati uscenti = 1
+N = 18
+D = 32
+A = 14
+NA = 4
+I1 = 2
+primo turno = 2 q, 2 (2.3)
+secondo turno = 2 q, 3 (2.3), 6 (2.2), 3 (2.1)
+teste di serie possibili = da 8 a 9
+teste di serie = 3 (2.1), 6 (2.2)
+
+[Volume II, esercizio 5.06]
+giocatori = 2 (2.6), 4 (2.5), 1 (2.4), 4 (2.3), 2 (2.2), 1 (2.1)
+qualificati entranti = 4
+qualificati uscenti = 1
+N = 18
+D = 32
+A = 14
+NA = 4
+I1 = 2
+primo turno = 2 q, 2 (2.6)
+secondo turno = 2 q, 4 (2.5), 1 (2.4), 4 (2.3), 2 (2.2), 1 (2.1)
+teste di serie possibili = da 8 a 9
+teste di serie = 1 (2.1), 2 (2.2), 4 (2.3), 1 (2.4)
+
+[Volume II, esercizio 5.07]
+giocatori = 3 (2.3), 5 (2.2), 7 (2.1)
+qualificati entranti = 4
+qualificati uscenti = 1
+N = 19
+D = 32
+A = 13
+NA = 6
+I1 = 3
+primo turno = 3 q, 3 (2.3)
+secondo turno = 1 q, 5 (2.2), 7 (2.1)
+teste di serie possibili = da 8 a 9
+teste di serie = 7 (2.1), 1 (2.2)
+
+[Volume II, esercizio 5.08]
+giocatori = 6 (2.2), 7 (2.1)
+qualificati entranti = 8
+qualificati uscenti = 1
+N = 21
+D = 32
+A = 11
+NA = 10
+I1 = 5
+primo turno = 5 q, 5 (2.2)
+secondo turno = 3 q, 1 (2.2), 7 (2.1)
+# Il manuale scrive "tra 3 e 10" e poi "la scelta e' tra 8 e 9".
+teste di serie possibili = da 8 a 10
+teste di serie = 7 (2.1), 1 (2.2)
+
+[Volume II, esercizio 5.09]
+giocatori = 6 (2.3), 4 (2.2), 4 (2.1)
+qualificati entranti = 8
+qualificati uscenti = 1
+N = 22
+D = 32
+A = 10
+NA = 12
+I1 = 6
+primo turno = 6 q, 6 (2.3)
+secondo turno = 2 q, 4 (2.2), 4 (2.1)
+teste di serie possibili = da 8 a 11
+teste di serie = 4 (2.1), 4 (2.2)

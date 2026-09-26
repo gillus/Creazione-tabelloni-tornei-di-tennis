@@ -8,7 +8,7 @@ import os
 import re
 import unittest
 
-from programma.calcoli import QUALIFICATO, calcola, descrivi
+from programma.calcoli import INTEGRALE, QUALIFICATO, SELEZIONE, calcola, descrivi
 from programma.dati import AVVISO, ERRORE, leggi_classifiche, leggi_righe
 
 CARTELLA = os.path.dirname(os.path.abspath(__file__))
@@ -50,7 +50,7 @@ def calcola_esercizio(esercizio, teste_di_serie=None):
 
 class ProveEserciziDelManuale(unittest.TestCase):
     def test_ci_sono_tutti_gli_esercizi(self):
-        self.assertEqual(len(leggi_esercizi()), 40)
+        self.assertEqual(len(leggi_esercizi()), 49)
 
     def test_calcoli_come_nel_manuale(self):
         for nome, esercizio in leggi_esercizi().items():
@@ -125,9 +125,19 @@ class ProveCasiParticolari(unittest.TestCase):
 
     def test_vincitore_del_tabellone(self):
         # Senza qualificati uscenti indicati, il tabellone da' il vincitore: Qu = 1.
+        # Nel tabellone finale di estrazione le teste di serie sono almeno un quarto
+        # della dimensione (8 / 4 = 2); in quello di selezione no.
         calcoli = calcola([("3.1", 1), ("3.2", 4)])
         self.assertEqual(calcoli.problemi, [])
+        self.assertEqual((calcoli.teste_di_serie_minimo, calcoli.teste_di_serie_massimo), (2, 2))
+        calcoli = calcola([("3.1", 1), ("3.2", 4)], tipo=SELEZIONE)
         self.assertEqual((calcoli.teste_di_serie_minimo, calcoli.teste_di_serie_massimo), (1, 2))
+
+    def test_sorteggio_integrale_con_piu_qualificati_che_ammessi(self):
+        # Solo nel tabellone finale a sorteggio integrale i q possono essere piu' degli
+        # ammessi direttamente (Volume I, capitolo I, lettera G, esempio 25).
+        self.assertTrue(calcola([("3.1", 3)], qualificati_entranti=5).problemi)
+        self.assertEqual(calcola([("3.1", 3)], qualificati_entranti=5, tipo=INTEGRALE).problemi, [])
 
     def test_descrizione(self):
         esercizio = leggi_esercizi()["Volume II, esercizio 1.08"]

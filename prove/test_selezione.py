@@ -11,7 +11,7 @@ import tempfile
 import unittest
 
 from programma import controllo_selezione
-from programma.calcoli import QUALIFICATO, calcola
+from programma.calcoli import QUALIFICATO, SELEZIONE, calcola
 from programma.dati import ERRORE, leggi_righe
 from programma.selezione import (Scala, _calcola_posti, controlla_scala, leggi_turno,
                                  scala_migliore, scala_scritta, scrivi_turno)
@@ -119,7 +119,7 @@ class ProveScala(unittest.TestCase):
             with self.subTest(esercizio=nome):
                 diretti, q, Qu = dati(esercizio)
                 calcoli = calcola([(c, diretti.count(c)) for c in CLASSIFICHE if c in diretti],
-                                  q, Qu)
+                                  q, Qu, tipo=SELEZIONE)
                 attesa = int(esercizio.get("proposta del programma", esercizio["teste di serie"]))
                 self.assertEqual(proposta_teste_di_serie(
                     scala_del_manuale(esercizio), calcoli.teste_di_serie_minimo,
@@ -170,7 +170,7 @@ class ProveTabellone(unittest.TestCase):
                 if "proposta turno 1" in esercizio:
                     # La scala del programma e' diversa: le sue teste di serie.
                     calcoli = calcola([(c, diretti.count(c)) for c in CLASSIFICHE if c in diretti],
-                                      q, Qu)
+                                      q, Qu, tipo=SELEZIONE)
                     teste = proposta_teste_di_serie(migliore, calcoli.teste_di_serie_minimo,
                                                     calcoli.teste_di_serie_massimo, LIVELLO)
                 tabellone = prepara(migliore, teste, giocatori, LIVELLO, 0, random.Random(4))

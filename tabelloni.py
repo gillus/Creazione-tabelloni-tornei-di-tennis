@@ -18,7 +18,7 @@ import sys
 import webbrowser
 
 from programma import controllo_selezione, selezione_tabellone
-from programma.calcoli import calcola, conta_per_classifica, descrivi
+from programma.calcoli import SELEZIONE, calcola, conta_per_classifica, descrivi
 from programma.controllo import controlla, leggi_tabellone
 from programma.dati import AVVISO, ERRORE, Problema, leggi_classifiche, leggi_giocatori, leggi_torneo
 from programma.selezione import controlla_scala, descrivi_scala, scala_migliore, scala_scritta
@@ -162,7 +162,7 @@ def fai_selezione(giocatori, classifiche, torneo):
     q = impostazioni.get("qualificati entranti", 0)
     Qu = impostazioni.get("qualificati uscenti", 1)
     calcoli = calcola(conta_per_classifica(giocatori, classifiche),
-                      qualificati_entranti=q, qualificati_uscenti=Qu)
+                      qualificati_entranti=q, qualificati_uscenti=Qu, tipo=SELEZIONE)
     # Dei calcoli del tabellone di estrazione servono solo gli errori e le teste di serie.
     problemi = [p for p in calcoli.problemi if p.gravita == ERRORE]
     if problemi:
@@ -179,7 +179,8 @@ def fai_selezione(giocatori, classifiche, torneo):
     if minimo is not None and scelte is not None and (
             not (minimo <= scelte <= massimo) or (calcoli.sezioni and scelte % calcoli.sezioni)):
         return [p for p in calcola(conta_per_classifica(giocatori, classifiche), q, Qu,
-                                   teste_di_serie=scelte).problemi if p.gravita == ERRORE], False
+                                   teste_di_serie=scelte, tipo=SELEZIONE).problemi
+                if p.gravita == ERRORE], False
     scala = scala_scritta(impostazioni, Qu)
     if scala is not None:
         errori = controlla_scala(scala, diretti, q, livello)
