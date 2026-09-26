@@ -204,17 +204,22 @@ def _costo_progressione(differenza):
     return differenza - 1
 
 
-def _vince(a, b):
-    """Chi vince tra due giocatori (livello, incontri a favore): il piu' forte."""
+def _vince(a, b, finale=False):
+    """Chi vince tra due giocatori (livello, incontri a favore): il piu' forte.
+
+    Nel tabellone finale la raccomandazione 5 (mai piu' di due incontri di fila
+    "in favore di pronostico") non vale (Volume I, capitolo I, H.5): non costa niente."""
     (livello_a, favore_a), (livello_b, favore_b) = a, b
     if livello_b < livello_a:
         (livello_a, favore_a), (livello_b, favore_b) = (livello_b, favore_b), (livello_a, favore_a)
     favore = favore_a + (livello_b > livello_a)
+    if finale:
+        return (livello_a, favore), 0
     costo = PESO_DUE_A_FAVORE * (favore == 2) + PESO_TRE_A_FAVORE * (favore >= 3)
     return (livello_a, favore), costo
 
 
-def _turno_migliore(singoli, vincitori):
+def _turno_migliore(singoli, vincitori, finale=False):
     """Chi incontra chi in un turno, con il costo piu' basso.
 
     Si scorrono i vincitori del turno prima, dal piu' forte: ognuno o incontra
@@ -237,7 +242,7 @@ def _turno_migliore(singoli, vincitori):
 
         for (j, aperto), (costo, _, _) in strati[-1].items():
             if j < m:
-                _, extra = _vince((singoli[j], 0), vincitori[i])
+                _, extra = _vince((singoli[j], 0), vincitori[i], finale)
                 metti((j + 1, aperto),
                       costo + _costo_progressione(vincitori[i][0] - singoli[j]) + extra,
                       (j, aperto), ("singolo", j))
@@ -245,7 +250,7 @@ def _turno_migliore(singoli, vincitori):
                 metti((j, i), costo, (j, aperto), ("aspetta",))
             else:
                 a, b = vincitori[aperto], vincitori[i]
-                _, extra = _vince(a, b)
+                _, extra = _vince(a, b, finale)
                 metti((j, None), costo + PESO_COMPRESSIONE * abs(a[0] - b[0]) + extra,
                       (j, aperto), ("compressione", aperto))
         strati.append(nuovo)
@@ -273,8 +278,15 @@ def costo_della_scala(scala, livello, qualificati_entranti=None, memoria=None):
     tante scale diverse.
     """
     livello_q = max(livello.values()) + 1
+    finale = scala.qualificati_uscenti == 1
     costo = PESO_TURNO * len(scala.turni)
-    costo += PESO_TURNO_VUOTO * sum(1 for t in scala.turni if not t.singoli and not t.coppie)
+    vuoti = [not t.singoli and not t.coppie for t in scala.turni]
+    if finale:
+        # Nel tabellone finale gli ultimi turni senza nessuno che entra (la finale,
+        # le semifinali...) sono normali turni di compressione (Volume I, capitolo V, C).
+        while vuoti and vuoti[-1]:
+            vuoti.pop()
+    costo += PESO_TURNO_VUOTO * sum(vuoti)
     turni_di = {}   # classifica -> turni in cui entrano i suoi giocatori (non compagni dei q)
     modi_di = {}    # classifica -> "singolo" e/o "coppia"
     coppie_uguali = 0
@@ -300,11 +312,11 @@ def costo_della_scala(scala, livello, qualificati_entranti=None, memoria=None):
                 continue
             if b != QUALIFICATO:
                 parziale += PESO_COPPIA_DIVERSA * abs(la - lb)
-            vincitore, extra = _vince((la, 0), (lb, 0))
+            vincitore, extra = _vince((la, 0), (lb, 0), finale)
             nuovi.append(vincitore)
             parziale += extra
         if not conti_fatti:
-            extra, passano = _turno_migliore([livello[c] for c in turno.singoli], vincitori)
+            extra, passano = _turno_migliore([livello[c] for c in turno.singoli], vincitori, finale)
             parziale += extra
             vincitori = nuovi + passano
             if memoria is not None:
@@ -397,7 +409,16 @@ def scala_scritta(impostazioni, qualificati_uscenti):
              if nome.startswith("turno ")}
     if not turni:
         return None
-    return Scala([turni.get(n, Turno()) for n in range(1, max(turni) + 1)], qualificati_uscenti)
+    scala = Scala([turni.get(n, Turno()) for n in range(1, max(turni) + 1)], qualificati_uscenti)
+    # Dopo l'ultimo turno scritto, i turni in cui non entra nessuno (nel tabellone
+    # finale la semifinale, la finale...) il programma li aggiunge da solo.
+    vincitori = 0
+    for turno in scala.turni:
+        vincitori = (vincitori + turno.entranti()) // 2
+    while vincitori > qualificati_uscenti and vincitori % 2 == 0:
+        scala.turni.append(Turno())
+        vincitori //= 2
+    return scala
 
 
 def controlla_scala(scala, diretti, qualificati_entranti, livello):
@@ -415,9 +436,16 @@ def controlla_scala(scala, diretti, qualificati_entranti, livello):
             errori.append("nella scala ci sono in piu' " + _elenco(sorted(troppi.items(), key=lambda x: livello[x[0]])))
     if q != qualificati_entranti:
         errori.append(f"nella scala ci sono {q} qualificati entranti, ma sono {qualificati_entranti}")
-    for numero, turno in enumerate(scala.turni, start=1):
-        if not turno.singoli and not turno.coppie:
-            errori.append(f"al turno {numero} della scala non entra nessuno")
+    vuoti = [numero for numero, turno in enumerate(scala.turni, start=1)
+             if not turno.singoli and not turno.coppie]
+    if scala.qualificati_uscenti == 1:
+        # Nel tabellone finale gli ultimi turni possono essere senza nessuno che entra.
+        ultimo = len(scala.turni)
+        while vuoti and vuoti[-1] == ultimo:
+            vuoti.pop()
+            ultimo -= 1
+    for numero in vuoti:
+        errori.append(f"al turno {numero} della scala non entra nessuno")
     if not errori and not _calcola_posti(scala.turni, scala.qualificati_uscenti):
         errori.append(f"i numeri della scala non tornano: all'ultimo turno ci devono essere "
                       f"{2 * scala.qualificati_uscenti} posti, e in ogni turno i giocatori che entrano "

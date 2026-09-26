@@ -146,13 +146,16 @@ def costruisci(scala, teste_di_serie, livello, sezioni=0, rng=None):
                         key=_chiave_forza(livello))
         n_prog, n_uguali, n_q = len(singoli), len(membri) // 2, len(coppie_q)
         n_comp = len(ordinati) - n_prog - n_uguali - n_q
-        # Le teste di serie che entrano qui; se alcune sono in coppia con un altro ammesso,
-        # le coppie vanno subito dopo le progressioni, perche' le teste di serie devono
-        # stare nei posti con i loro numeri (i piu' bassi).
-        teste_qui = max(0, min(teste_di_serie - diretti_dopo, len(singoli) + len(membri)))
+        # Le teste di serie che entrano qui; se alcune sono in coppia con un altro ammesso
+        # (o con un qualificato entrante), le coppie vanno subito dopo le progressioni,
+        # perche' le teste di serie devono stare nei posti con i loro numeri (i piu' bassi).
+        teste_qui = max(0, min(teste_di_serie - diretti_dopo, len(singoli) + len(membri) + n_q))
         teste_in_coppia = max(0, teste_qui - len(singoli))
+        teste_con_q = max(0, teste_in_coppia - len(membri))
         tipi = ["prog"] * n_prog
-        if teste_in_coppia:
+        if teste_con_q:
+            tipi += ["uguali"] * n_uguali + ["q"] * n_q + ["comp"] * n_comp
+        elif teste_in_coppia:
             tipi += ["uguali"] * n_uguali + ["comp"] * n_comp + ["q"] * n_q
         else:
             tipi += ["comp"] * n_comp
@@ -242,14 +245,14 @@ def _numera_le_teste_di_serie(tabellone, posti, livello, rng):
 
 # --- Costo della disposizione e sorteggio mirato -----------------------------------------
 
-def _valuta(nodo, livello, livello_q):
+def _valuta(nodo, livello, livello_q, finale=False):
     """(vincitore previsto, costo, quanti q, quanti giocatori, e' un giocatore appena entrato)."""
     if isinstance(nodo, Voce):
         if nodo.tipo == QUALIFICATO_ENTRANTE:
             return (livello_q, 0), 0, 1, 1, True
         return (livello[nodo.classifica], 0), 0, 0, 1, True
-    a, costo_a, q_a, n_a, fresco_a = _valuta(nodo.alto, livello, livello_q)
-    b, costo_b, q_b, n_b, fresco_b = _valuta(nodo.basso, livello, livello_q)
+    a, costo_a, q_a, n_a, fresco_a = _valuta(nodo.alto, livello, livello_q, finale)
+    b, costo_b, q_b, n_b, fresco_b = _valuta(nodo.basso, livello, livello_q, finale)
     costo = costo_a + costo_b
     differenza = abs(a[0] - b[0])
     if fresco_a and fresco_b:
@@ -261,7 +264,7 @@ def _valuta(nodo, livello, livello_q):
     else:
         costo += PESO_COMPRESSIONE * differenza
         costo += PESO_Q_SBILANCIATI * max(0, abs(q_a - q_b) - 1)
-    passa, extra = _vince(a, b)
+    passa, extra = _vince(a, b, finale)
     return passa, costo + extra, q_a + q_b, n_a + n_b, False
 
 
@@ -270,7 +273,7 @@ def costo_del_tabellone(tabellone, livello):
     costo = 0
     q_parti, giocatori_parti = [], []
     for radice in tabellone.radici:
-        _, c, q, n, _ = _valuta(radice, livello, livello_q)
+        _, c, q, n, _ = _valuta(radice, livello, livello_q, len(tabellone.radici) == 1)
         costo += c
         q_parti.append(q)
         giocatori_parti.append(n)
@@ -527,9 +530,21 @@ def proposta_teste_di_serie(scala, minimo, massimo, livello, sezioni=0):
     se allora l'ultima testa di serie ha la stessa classifica di altri giocatori,
     e questa classifica entra anche all'ultimo turno, si prendono tutti i
     giocatori di quella classifica (per non dividerla).
+
+    Nel tabellone finale gli ultimi turni (la finale, le semifinali...) sono spesso
+    senza nessuno che entra: le teste di serie proposte sono i giocatori che entrano
+    negli ultimi due turni in cui entra qualcuno (esercizi 5.31, 5.32, 5.33).
     """
+    def entranti_in(turno):
+        return len(turno.singoli) + sum(1 + (b != QUALIFICATO) for _, b in turno.coppie)
+
     ultimo = scala.turni[-1]
-    entranti = len(ultimo.singoli) + sum(1 + (b != QUALIFICATO) for _, b in ultimo.coppie)
+    entranti = entranti_in(ultimo)
+    if scala.qualificati_uscenti == 1:
+        pieni = [t for t in scala.turni if entranti_in(t)]
+        ultimo = pieni[-1]
+        entranti = sum(entranti_in(t) - sum(1 for _, b in t.coppie if b == QUALIFICATO)
+                       for t in pieni[-2:])
     diretti = sorted((c for t in scala.turni for c in t.singoli + [x for coppia in t.coppie
                                                                   for x in coppia if x != QUALIFICATO]),
                      key=lambda c: livello[c])

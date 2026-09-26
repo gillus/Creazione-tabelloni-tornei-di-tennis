@@ -14,7 +14,7 @@ from programma import controllo_selezione
 from programma.calcoli import QUALIFICATO, calcola
 from programma.dati import ERRORE, leggi_righe
 from programma.selezione import (Scala, _calcola_posti, controlla_scala, leggi_turno,
-                                 scala_migliore, scrivi_turno)
+                                 scala_migliore, scala_scritta, scrivi_turno)
 from programma.selezione_tabellone import (Voce, disegna, prepara, proposta_teste_di_serie,
                                            voci_di)
 from programma.sorteggio import GIOCATORE, QUALIFICATO_ENTRANTE
@@ -89,7 +89,7 @@ def come_testo(radici):
 
 class ProveScala(unittest.TestCase):
     def test_ci_sono_tutti_gli_esercizi(self):
-        self.assertEqual(len(leggi_scale()), 27)
+        self.assertEqual(len(leggi_scale()), 32)
 
     def test_scrivere_e_rileggere_un_turno(self):
         testo = "1 (2.6); coppie 2 (2.7)+q, 1 (2.8)+(2.8)"
@@ -125,6 +125,20 @@ class ProveScala(unittest.TestCase):
                     scala_del_manuale(esercizio), calcoli.teste_di_serie_minimo,
                     calcoli.teste_di_serie_massimo, LIVELLO), attesa)
 
+    def test_scala_scritta_di_un_tabellone_finale(self):
+        # Esercizio 5.31: il giudice arbitro scrive solo i turni in cui entra qualcuno;
+        # la finale (turno 5, senza nessuno che entra) la aggiunge il programma.
+        esercizio = leggi_scale()["Volume II, esercizio 5.31"]
+        diretti, q, Qu = dati(esercizio)
+        impostazioni = {f"turno {n}": esercizio[f"turno {n}"] for n in range(1, 5)}
+        scala = scala_scritta(impostazioni, Qu)
+        self.assertEqual(firma(scala), firma(scala_del_manuale(esercizio)))
+        self.assertEqual(controlla_scala(scala, diretti, q, LIVELLO), [])
+        # Un turno vuoto in mezzo invece e' un errore anche nel tabellone finale.
+        impostazioni["turno 6"] = impostazioni.pop("turno 4")
+        errori = controlla_scala(scala_scritta(impostazioni, Qu), diretti, q, LIVELLO)
+        self.assertIn("al turno 4 della scala non entra nessuno", errori)
+
     def test_scala_sbagliata(self):
         esercizio = leggi_scale()["Volume II, esercizio 3.01"]
         diretti, q, Qu = dati(esercizio)
@@ -153,6 +167,12 @@ class ProveTabellone(unittest.TestCase):
                 migliore, _ = scala_migliore(diretti, q, Qu, LIVELLO)
                 giocatori = giocatori_per(diretti)
                 teste = int(esercizio["teste di serie"])
+                if "proposta turno 1" in esercizio:
+                    # La scala del programma e' diversa: le sue teste di serie.
+                    calcoli = calcola([(c, diretti.count(c)) for c in CLASSIFICHE if c in diretti],
+                                      q, Qu)
+                    teste = proposta_teste_di_serie(migliore, calcoli.teste_di_serie_minimo,
+                                                    calcoli.teste_di_serie_massimo, LIVELLO)
                 tabellone = prepara(migliore, teste, giocatori, LIVELLO, 0, random.Random(4))
                 self.assertEqual(tabellone.problemi, [])
                 problemi = controllo_selezione.controlla(tabellone.voci(), giocatori, CLASSIFICHE,
