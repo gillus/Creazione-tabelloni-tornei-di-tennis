@@ -34,7 +34,10 @@ from programma.calcoli import QUALIFICATO
 # Oltre questo numero di turni una scala non ha senso.
 MASSIMO_TURNI = 9
 # Quante coppie di due ammessi si possono fare, al massimo, oltre a quelle necessarie.
-MASSIMO_COPPIE_IN_PIU = 4
+# Senza qualificati entranti possono servirne molte (Volume II, esercizio 4.16: 11
+# coppie per 3 qualificati uscenti); ma si cercano solo finche' le scale trovate
+# sono poche (SCALE_DA_CONFRONTARE).
+MASSIMO_COPPIE_IN_PIU = 10
 # Quante scale confrontare, almeno, prima di smettere di aggiungere coppie di due ammessi.
 SCALE_DA_CONFRONTARE = 1_000
 # Oltre questo numero di scale il programma smette di cercarne altre.
@@ -438,12 +441,13 @@ def controlla_scala(scala, diretti, qualificati_entranti, livello):
         errori.append(f"nella scala ci sono {q} qualificati entranti, ma sono {qualificati_entranti}")
     vuoti = [numero for numero, turno in enumerate(scala.turni, start=1)
              if not turno.singoli and not turno.coppie]
-    if scala.qualificati_uscenti == 1:
-        # Nel tabellone finale gli ultimi turni possono essere senza nessuno che entra.
-        ultimo = len(scala.turni)
-        while vuoti and vuoti[-1] == ultimo:
-            vuoti.pop()
-            ultimo -= 1
+    # Gli ultimi turni possono essere senza nessuno che entra: turni di compressione
+    # (Volume I, esempio 67; Volume II, esercizi 4.11, 4.12, 4.16), e nel tabellone
+    # finale la semifinale, la finale...
+    ultimo = len(scala.turni)
+    while vuoti and vuoti[-1] == ultimo:
+        vuoti.pop()
+        ultimo -= 1
     for numero in vuoti:
         errori.append(f"al turno {numero} della scala non entra nessuno")
     if not errori and not _calcola_posti(scala.turni, scala.qualificati_uscenti):

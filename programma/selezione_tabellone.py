@@ -277,9 +277,16 @@ def costo_del_tabellone(tabellone, livello):
         costo += c
         q_parti.append(q)
         giocatori_parti.append(n)
-    costo += PESO_Q_SBILANCIATI * max(0, max(q_parti) - min(q_parti) - 1)
-    costo += PESO_PARTI_SBILANCIATE * max(0, max(giocatori_parti) - min(giocatori_parti) - 2)
+    # Ogni coppia di parti troppo diverse conta: cosi' anche uno scambio che avvicina
+    # una parte alle altre abbassa il costo (esercizio 4.04).
+    costo += PESO_Q_SBILANCIATI * _squilibrio(q_parti, 1)
+    costo += PESO_PARTI_SBILANCIATE * _squilibrio(giocatori_parti, 2)
     return costo
+
+
+def _squilibrio(numeri, tolleranza):
+    """Di quanto, sommando su tutte le coppie, le differenze superano la tolleranza."""
+    return sum(max(0, abs(a - b) - tolleranza) for i, a in enumerate(numeri) for b in numeri[i + 1:])
 
 
 def _contiene_teste(nodo):
@@ -529,7 +536,8 @@ def proposta_teste_di_serie(scala, minimo, massimo, livello, sezioni=0):
     che entrano all'ultimo turno. Se sono meno del minimo, si arriva al minimo; e
     se allora l'ultima testa di serie ha la stessa classifica di altri giocatori,
     e questa classifica entra anche all'ultimo turno, si prendono tutti i
-    giocatori di quella classifica (per non dividerla).
+    giocatori di quella classifica (per non dividerla). Con le sezioni il numero
+    e' un multiplo delle sezioni (Volume II, capitolo 4).
 
     Nel tabellone finale gli ultimi turni (la finale, le semifinali...) sono spesso
     senza nessuno che entra: le teste di serie proposte sono i giocatori che entrano
@@ -553,7 +561,9 @@ def proposta_teste_di_serie(scala, minimo, massimo, livello, sezioni=0):
         classifica = diretti[T - 1]
         in_ultimo = classifica in ultimo.singoli or any(classifica in c for c in ultimo.coppie)
         tutti = sum(1 for c in diretti if livello[c] <= livello[classifica])
-        if in_ultimo and tutti <= massimo:
+        # Con le sezioni solo se resta un multiplo delle sezioni: se no il manuale
+        # divide la classifica (esercizi 4.05 e 4.15).
+        if in_ultimo and tutti <= massimo and not (sezioni and tutti % sezioni):
             T = tutti
     if sezioni and T % sezioni:
         T = min(-(-T // sezioni) * sezioni, massimo)
@@ -570,24 +580,49 @@ def prepara(scala, teste_di_serie, giocatori, livello, sezioni=0, rng=None):
     return tabellone
 
 
-def teste_al_loro_posto(tabellone):
+def teste_al_loro_posto(tabellone, minimo=None):
     """Se ogni testa di serie n. k e' nel posto numero k, e le teste di serie entrano
-    in gara in un turno o in due turni consecutivi."""
+    in gara in un turno o in due turni consecutivi. In tre turni solo se anche le
+    'minimo' teste di serie minime entrano in tre turni (Volume II, esercizio 4.14)."""
     teste = [v for v in tabellone.voci() if v.testa_di_serie]
     if not teste:
         return True
     numeri = numeri_dei_lati(tabellone)
+    if not all(numeri[id(v)] == v.testa_di_serie for v in teste):
+        return False
     turni = {v.turno for v in teste}
-    return all(numeri[id(v)] == v.testa_di_serie for v in teste) and max(turni) - min(turni) <= 1
+    if max(turni) - min(turni) <= 1:
+        return True
+    prime = sorted(teste, key=lambda v: v.testa_di_serie)[:minimo or len(teste)]
+    turni_minimo = {v.turno for v in prime}
+    return max(turni_minimo) - min(turni_minimo) > 1
+
+
+def sezioni_equilibrate(tabellone):
+    """Se le sezioni hanno lo stesso numero di giocatori (differenza di due al massimo)
+    e di qualificati entranti (differenza di uno al massimo). Volume II, esercizio 4.07:
+    con la prima scala una sezione ha 8 giocatori e un'altra 5, "il tabellone e' errato"
+    e si cerca un'altra scala."""
+    if not tabellone.sezioni:
+        return True
+    giocatori = [len(voci_di(r)) for r in tabellone.radici]
+    q = [sum(1 for v in voci_di(r) if v.tipo == QUALIFICATO_ENTRANTE) for r in tabellone.radici]
+    return max(giocatori) - min(giocatori) <= 2 and max(q) - min(q) <= 1
 
 
 def scegli_scala(scale, minimo, massimo, livello, sezioni=0, teste_scelte=None):
     """La prima scala (dalla migliore) in cui le teste di serie possono stare al loro
-    posto; restituisce la scala e il numero delle teste di serie (o None, None)."""
+    posto e le sezioni sono equilibrate; restituisce la scala e il numero delle teste
+    di serie (o None, None)."""
     for scala in scale:
-        if minimo is None:
-            return scala, 0
-        teste = teste_scelte or proposta_teste_di_serie(scala, minimo, massimo, livello, sezioni)
-        if teste_al_loro_posto(costruisci(scala, teste, livello, sezioni, random.Random(0))):
-            return scala, teste
+        teste = 0 if minimo is None else (
+            teste_scelte or proposta_teste_di_serie(scala, minimo, massimo, livello, sezioni))
+        tabellone = costruisci(scala, teste, livello, sezioni, random.Random(0))
+        if not teste_al_loro_posto(tabellone, minimo):
+            continue
+        if sezioni:
+            migliora(tabellone, livello, random.Random(0))
+            if not sezioni_equilibrate(tabellone):
+                continue
+        return scala, teste
     return None, None

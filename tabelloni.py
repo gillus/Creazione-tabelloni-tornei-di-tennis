@@ -326,8 +326,10 @@ def fai_selezione(giocatori, classifiche, impostazioni, titolo):
             return [Problema(ERRORE, "", 0,
                              "con la scala scritta in dati/torneo.txt le teste di serie non possono "
                              "stare al loro posto (ogni testa di serie n. k nel posto numero k, e "
-                             "tutte in uno o due turni consecutivi): cambiare la scala o il numero "
-                             "delle teste di serie")], None
+                             "tutte in uno o due turni consecutivi), oppure le sezioni non possono "
+                             "avere lo stesso numero di giocatori (due di differenza al massimo) e "
+                             "di qualificati entranti (uno di differenza al massimo): cambiare la "
+                             "scala o il numero delle teste di serie")], None
         print("Scala scritta dal giudice arbitro in dati/torneo.txt:")
     else:
         _, tutte = scala_migliore(diretti, q, Qu, livello)
