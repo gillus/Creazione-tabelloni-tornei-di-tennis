@@ -174,9 +174,10 @@ def controlla(voci, giocatori, classifiche, qualificati_entranti=0, qualificati_
     if sezioni:
         per_sezione = [len(voci_di(r)) for r in radici]
         if max(per_sezione) - min(per_sezione) > 2:
-            avviso(f"le sezioni hanno un numero di giocatori troppo diverso (da {min(per_sezione)} "
-                   f"a {max(per_sezione)}): la differenza dovrebbe essere di due al massimo "
-                   f"(Volume I, capitolo III, lettera B)")
+            # Per il manuale il tabellone e' sbagliato (Volume II, esercizio 4.07).
+            errore(f"le sezioni hanno un numero di giocatori troppo diverso (da {min(per_sezione)} "
+                   f"a {max(per_sezione)}): la differenza puo' essere di due al massimo "
+                   f"(Volume I, capitolo III, lettera B; Volume II, esercizio 4.07)")
 
     # --- Teste di serie ----------------------------------------------------------------
     teste = {}
@@ -222,8 +223,18 @@ def controlla(voci, giocatori, classifiche, qualificati_entranti=0, qualificati_
                    f"serie: {_elenco(piu_forti)} (Volume I, capitolo I, lettera D)")
         turni_teste = {v.turno for v in teste.values()}
         if max(turni_teste) - min(turni_teste) > 1:
-            errore("le teste di serie devono entrare in gara nello stesso turno o in due turni "
-                   "consecutivi (Volume I, capitolo IV, lettera E)")
+            # Si puo' solo se anche il numero minimo di teste di serie entra in tre turni
+            # (Volume II, esercizi 4.13 e 4.14: "e' obbligatorio collocare le teste di
+            # serie negli ultimi tre turni").
+            piu_forti = sorted(diretti, key=lambda v: (livello[v.classifica], -v.turno))[:minimo]
+            turni_minimo = {v.turno for v in piu_forti}
+            if max(turni_minimo) - min(turni_minimo) > 1:
+                avviso(f"le teste di serie entrano in gara in {len(turni_teste)} turni diversi: "
+                       f"si deve, perche' anche le {minimo} teste di serie minime entrano in "
+                       f"piu' di due turni (Volume II, esercizio 4.14)")
+            else:
+                errore("le teste di serie devono entrare in gara nello stesso turno o in due "
+                       "turni consecutivi (Volume I, capitolo IV, lettera E)")
         tabellone = TabelloneSelezione(None, Qu, 0 if _potenza_di_due(Qu) else Qu, T, radici)
         numeri = numeri_dei_lati(tabellone, Posti(R, Qu, tabellone.sezioni))
         for k, v in sorted(teste.items()):
