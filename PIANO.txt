@@ -109,6 +109,33 @@ passare al successivo.
 
  8. TABELLONI COLLEGATI E TABELLONE FINALE (capitoli 5 e 6)
     Il torneo intero, dalle qualificazioni al tabellone finale.
+    8a. FATTO - Tabelloni finali (capitolo 5):
+        - di estrazione classico: teste di serie almeno un quarto del
+          tabellone (domanda K); i q contro le teste di serie piu' deboli e
+          divisi tra i quarti. Esercizi 5.01-5.09: calcoli tutti uguali al
+          manuale, teste di serie proposte uguali in 8 casi su 9 (nel 5.04 il
+          manuale sceglie 6, il programma propone 4), tabellone uguale in 8
+          casi su 9 (5.07: vedi domanda J);
+        - a sorteggio integrale ("tipo = integrale" in dati/torneo.txt):
+          sorteggio e controllo, esercizi 5.21-5.24;
+        - di selezione: la raccomandazione 5 non vale, la finale e la
+          semifinale possono essere senza nessuno che entra, le teste di
+          serie sono chi entra negli ultimi due turni. Esercizi 5.31-5.33 e
+          6.06: la scala e' uguale al manuale in 3 casi su 5 (domanda J).
+    8b. FATTO - Tabelloni collegati (capitolo 6):
+        - la divisione si scrive in dati/torneo.txt ("tabellone 1 = 4.NC",
+          "tabellone 2 = 4.6, 4.5 ; qualificati uscenti = 4"...); se non c'e'
+          e i giocatori sono di categorie diverse, il programma propone un
+          tabellone per categoria (domanda L);
+        - i qualificati uscenti, se non sono scritti, li propone il programma
+          (domanda M): uguali al manuale negli esercizi 6.01-6.04 e nel
+          capitolo VI del Volume I;
+        - il programma fa tutti i tabelloni uno dopo l'altro e li mette in una
+          sola pagina da stampare; ogni tabellone si puo' controllare
+          (risultati/tabellone-1.txt, tabellone-2.txt...);
+        - se la scala migliore fa entrare i giocatori in due turni soltanto,
+          il programma fa il tabellone di estrazione (per il manuale il
+          tabellone di selezione ha l'ingresso in tre o piu' turni).
 
  9. PROVE CON GLI ESERCIZI
     Aggiungere le soluzioni del Volume II poco alla volta, capitolo per
@@ -249,4 +276,54 @@ DA CHIEDERE A CHI HA PROPOSTO IL PROGETTO, PRIMA DI COMINCIARE
     dati/torneo.txt.
     Domanda: va bene cosi'? Se in qualche caso la scelta del programma
     non piace, quale regola usa il giudice arbitro per scegliere?
+    Risposta:
+
+    J2. (aggiunta con il passo 8) Nei TABELLONI FINALI di selezione la scala
+    e' uguale al manuale in 3 casi su 5. Negli esercizi 5.33 e 6.06
+    (ipotesi 3) il manuale fa incontrare due giocatori ammessi (due (2.5), o
+    due (2.4)) per avere un turno in meno; il programma fa un turno in piu'
+    ma senza quella coppia. Nel 5.31 il manuale stesso dice che far entrare
+    un giocatore in semifinale e' un "inconveniente", ma nel 6.06 lo fa.
+    Nell'esercizio 5.07 (tabellone finale di estrazione) il manuale mette il
+    qualificato contro la testa di serie n. 4, poi dice che si puo'
+    spostare; il programma lo mette contro la n. 5, come negli esercizi
+    5.05 e 5.06 (contro la testa di serie piu' debole).
+    Domanda: nel tabellone finale conta di piu' avere meno turni o evitare
+    le coppie di due ammessi?
+    Risposta:
+
+ K. TESTE DI SERIE NEL TABELLONE FINALE DI ESTRAZIONE. Il Volume I
+    (capitolo V) dice che le teste di serie devono essere almeno un quarto
+    del tabellone solo nel tabellone a sorteggio integrale. Il Volume II
+    (esercizi 5.01-5.09) lo fa anche nel tabellone finale di estrazione
+    classico. Il programma segue il Volume II (solo nei tabelloni finali di
+    estrazione; nel tabellone finale di selezione no, come nell'esercizio
+    5.31).
+    Domanda: e' una regola anche per il tabellone finale classico?
+    Risposta:
+
+ L. DIVISIONE IN PIU' TABELLONI. Se in dati/torneo.txt non e' scritta la
+    divisione e i giocatori sono di categorie diverse, il programma
+    propone un tabellone per categoria (non classificati, quarta, terza,
+    seconda), come la conclusione del capitolo VI del Volume I e la
+    raccomandazione 7 (giocatori di categorie diverse non nello stesso
+    tabellone). Una categoria con meno di 4 giocatori va nel tabellone
+    della categoria sotto. Negli esercizi 6.01-6.05 invece il manuale
+    divide la stessa categoria in piu' tabelloni di estrazione piu'
+    piccoli (per esempio 6.01: (4.6)(4.5), poi (4.4)(4.3), poi (4.2)(4.1)).
+    Il giudice arbitro puo' sempre scrivere la divisione che vuole.
+    Domanda: nei tornei veri, come si dividono i giocatori? Un tabellone
+    per categoria va bene come proposta?
+    Risposta:
+
+ M. QUANTI QUALIFICATI DA UN TABELLONE AL SEGUENTE. Se non e' scritto, il
+    programma propone la potenza di due (1, 2, 4, 8...) piu' grande che non
+    supera ne' la meta' dei giocatori del tabellone, ne' i giocatori del
+    tabellone seguente con classifica al massimo due gruppi sopra (i
+    qualificati li incontrano). Cosi' e' uguale al manuale negli esercizi
+    6.01-6.04 e nel capitolo VI del Volume I. Negli esercizi 6.05 e 6.06 il
+    manuale sceglie invece 7, 5 o 3 (tabelloni a sezioni), per far
+    incontrare ai qualificati proprio i giocatori della classifica piu'
+    bassa del tabellone seguente.
+    Domanda: va bene? Il giudice arbitro puo' sempre scrivere il numero.
     Risposta:
