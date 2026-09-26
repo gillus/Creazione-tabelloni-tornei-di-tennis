@@ -102,10 +102,18 @@ passare al successivo.
         - Se con i giocatori iscritti non si puo' fare nessun tabellone di
           selezione (per esempio con una o due classifiche soltanto), il
           programma lo dice e fa quello di estrazione.
-        - DA FARE (passo 9): ricopiare le soluzioni dei tabelloni a sezioni
-          di selezione (esercizi 4.01-4.16). Il programma li fa gia' e il
-          controllo li trova giusti, ma non sono ancora confrontati con il
-          manuale.
+        - FATTO (passo 9): tabelloni a sezioni di selezione, esercizi
+          4.01-4.16. Teste di serie uguali al manuale in 16 casi su 16; scala
+          uguale in 10 casi su 16 (negli altri 6 la scala del programma segue
+          le raccomandazioni come quella del manuale o un po' meglio; per il
+          4.15 vedi la domanda N). Come nel manuale (esercizio 4.07), il
+          programma scarta una scala se le sezioni non possono avere lo
+          stesso numero di giocatori (due di differenza al massimo) e di
+          qualificati entranti (uno di differenza al massimo). Le teste di
+          serie possono entrare in tre turni solo se anche il loro numero
+          minimo entra in tre turni (esercizi 4.13 e 4.14). L'ultimo turno
+          puo' essere senza nessuno che entra (turno di compressione,
+          esercizi 4.11, 4.12, 4.16).
 
  8. TABELLONI COLLEGATI E TABELLONE FINALE (capitoli 5 e 6)
     Il torneo intero, dalle qualificazioni al tabellone finale.
@@ -326,4 +334,14 @@ DA CHIEDERE A CHI HA PROPOSTO IL PROGETTO, PRIMA DI COMINCIARE
     incontrare ai qualificati proprio i giocatori della classifica piu'
     bassa del tabellone seguente.
     Domanda: va bene? Il giudice arbitro puo' sempre scrivere il numero.
+    Risposta:
+
+ N. PROGRESSIONE A PARI CLASSIFICA O UN TURNO IN PIU'? Nell'esercizio 4.15
+    il manuale cambia la sua prima scala per evitare che un (4.3), vinto il
+    primo incontro, trovi un altro (4.3) (raccomandazione 3): aggiunge una
+    coppia di (4.5). Il programma invece propone una scala di quattro turni
+    in cui questo succede una volta, perche' nel complesso segue le
+    raccomandazioni un po' meglio (per esempio meno coppie di due ammessi).
+    Domanda: la raccomandazione 3 conta piu' delle altre? Se si', il
+    programma le dara' piu' peso.
     Risposta:
