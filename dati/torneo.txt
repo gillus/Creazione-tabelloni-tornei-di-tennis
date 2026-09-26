@@ -13,8 +13,12 @@
 #   date                  le date del torneo, scritte come si vuole (facoltativo)
 #   tipo                  "selezione" (i giocatori entrano in tre o piu' turni,
 #                         secondo la classifica) oppure "estrazione" (tutti
-#                         entrano al primo o al secondo turno). Facoltativo;
-#                         se manca vale "selezione"
+#                         entrano al primo o al secondo turno) oppure
+#                         "integrale" (tabellone finale di estrazione a sorteggio
+#                         integrale: dopo le teste di serie tutto si decide per
+#                         sorteggio, anche i posti dei qualificati entranti, che si
+#                         possono incontrare tra loro; solo con qualificati
+#                         uscenti = 1). Facoltativo; se manca vale "selezione"
 #   qualificati entranti  quanti giocatori arrivano da un tabellone precedente
 #                         (facoltativo; se manca vale 0)
 #   qualificati uscenti   quanti giocatori escono da questo tabellone per andare

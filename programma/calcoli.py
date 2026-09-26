@@ -52,6 +52,7 @@ class Calcoli:
     teste_di_serie_proposta: int = None
     teste_di_serie: int = 0
     teste_di_serie_scelte_dal_giudice: bool = False
+    tipo: str = ESTRAZIONE
     # Terne (classifica, quante sono teste di serie, quanti giocatori hanno quella classifica).
     composizione_teste_di_serie: list = field(default_factory=list)
     problemi: list = field(default_factory=list)
@@ -149,7 +150,7 @@ def calcola(ammessi, qualificati_entranti=0, qualificati_uscenti=1, teste_di_ser
     ammessi = [(c, n) for c, n in ammessi if n > 0]
     q = qualificati_entranti
     Qu = qualificati_uscenti
-    calcoli = Calcoli(Qu, q, ammessi)
+    calcoli = Calcoli(Qu, q, ammessi, tipo=tipo)
     problemi = calcoli.problemi
 
     diretti = sum(n for _, n in ammessi)
@@ -275,9 +276,17 @@ def descrivi(calcoli):
         f"Aspettiti (entrano al 2 turno) A  = {calcoli.D} - {calcoli.N} = {calcoli.A}",
         f"Non aspettiti (primo turno)    NA = {calcoli.N} - {calcoli.A} = {calcoli.NA}",
         f"Incontri del primo turno       I1 = {calcoli.NA} / 2 = {calcoli.I1}",
-        f"Giocano il primo turno:        {_elenco(calcoli.non_aspettiti)}",
-        f"Entrano al secondo turno:      {_elenco(calcoli.aspettiti)}",
     ]
+    if calcoli.tipo == INTEGRALE:
+        righe += [
+            "Chi gioca il primo turno:      lo decide il sorteggio: i qualificati entranti in",
+            "                               qualsiasi posto, gli altri giocatori dal piu' debole",
+        ]
+    else:
+        righe += [
+            f"Giocano il primo turno:        {_elenco(calcoli.non_aspettiti)}",
+            f"Entrano al secondo turno:      {_elenco(calcoli.aspettiti)}",
+        ]
     if calcoli.teste_di_serie_minimo is None:
         righe.append("Teste di serie:                nessuna (giocano solo non classificati)")
         return "\n".join(righe)

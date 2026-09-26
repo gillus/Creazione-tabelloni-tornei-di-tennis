@@ -15,7 +15,7 @@ IMPOSTAZIONI_OBBLIGATORIE = ("nome", "gara")
 IMPOSTAZIONI_FACOLTATIVE = ("date", "tipo", "qualificati entranti", "qualificati uscenti",
                             "teste di serie")
 # Valori ammessi per le impostazioni con una scelta tra poche parole.
-IMPOSTAZIONI_A_SCELTA = {"tipo": ("selezione", "estrazione")}
+IMPOSTAZIONI_A_SCELTA = {"tipo": ("selezione", "estrazione", "integrale")}
 # "turno 1", "turno 2"...: la scala di un tabellone di selezione scritta dal giudice arbitro.
 MASSIMO_TURNO = 12
 # Impostazioni che devono essere un numero intero, e il numero piu' piccolo ammesso.

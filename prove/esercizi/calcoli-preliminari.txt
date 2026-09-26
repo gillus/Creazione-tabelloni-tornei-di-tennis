@@ -19,9 +19,12 @@
 #
 # Nei tabelloni finali (qualificati uscenti = 1) le teste di serie sono almeno
 # un quarto della dimensione del tabellone (come negli esercizi 5.01-5.09).
+# "tipo = integrale" e' il tabellone finale a sorteggio integrale: li' chi gioca
+# il primo turno lo decide il sorteggio, quindi non ci sono le righe "primo
+# turno" e "secondo turno".
 #
 # Fonte: Volume II (esercizi da 1.01 a 1.27, pagine 8-41;
-#        tabelloni finali, esercizi da 5.01 a 5.09, pagine 158-176;
+#        tabelloni finali, esercizi da 5.01 a 5.09 e da 5.21 a 5.24, pagine 158-184;
 #        tabelloni a sezioni, esercizi da 2.01 a 2.12 e da 2.21 a 2.23, pagine 44-74)
 #        e Volume I (esempi da 39 a 43, pagine 20-27; a sezioni, esempi da 48 a 50,
 #        pagine 34-39).
@@ -706,3 +709,55 @@ primo turno = 6 q, 6 (2.3)
 secondo turno = 2 q, 4 (2.2), 4 (2.1)
 teste di serie possibili = da 8 a 11
 teste di serie = 4 (2.1), 4 (2.2)
+
+[Volume II, esercizio 5.21]
+tipo = integrale
+giocatori = 2 (2.2), 3 (2.1)
+qualificati entranti = 4
+qualificati uscenti = 1
+N = 9
+D = 16
+A = 7
+NA = 2
+I1 = 1
+teste di serie possibili = da 4 a 4
+teste di serie = 3 (2.1), 1 (2.2)
+
+[Volume II, esercizio 5.22]
+tipo = integrale
+giocatori = 3 (2.4), 1 (2.3), 1 (2.2), 1 (2.1)
+qualificati entranti = 4
+qualificati uscenti = 1
+N = 10
+D = 16
+A = 6
+NA = 4
+I1 = 2
+teste di serie possibili = da 4 a 5
+teste di serie = 1 (2.1), 1 (2.2), 1 (2.3), 1 (2.4)
+
+[Volume II, esercizio 5.23]
+tipo = integrale
+giocatori = 3 (2.3), 5 (2.2), 7 (2.1)
+qualificati entranti = 4
+qualificati uscenti = 1
+N = 19
+D = 32
+A = 13
+NA = 6
+I1 = 3
+teste di serie possibili = da 8 a 9
+teste di serie = 7 (2.1), 1 (2.2)
+
+[Volume II, esercizio 5.24]
+tipo = integrale
+giocatori = 3 (2.4), 2 (2.3), 6 (2.2), 3 (2.1)
+qualificati entranti = 4
+qualificati uscenti = 1
+N = 18
+D = 32
+A = 14
+NA = 4
+I1 = 2
+teste di serie possibili = da 8 a 9
+teste di serie = 3 (2.1), 6 (2.2)

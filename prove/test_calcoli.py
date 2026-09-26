@@ -8,7 +8,7 @@ import os
 import re
 import unittest
 
-from programma.calcoli import INTEGRALE, QUALIFICATO, SELEZIONE, calcola, descrivi
+from programma.calcoli import ESTRAZIONE, INTEGRALE, QUALIFICATO, SELEZIONE, calcola, descrivi
 from programma.dati import AVVISO, ERRORE, leggi_classifiche, leggi_righe
 
 CARTELLA = os.path.dirname(os.path.abspath(__file__))
@@ -45,12 +45,13 @@ def calcola_esercizio(esercizio, teste_di_serie=None):
     return calcola(ammessi,
                    qualificati_entranti=int(esercizio.get("qualificati entranti", 0)),
                    qualificati_uscenti=int(esercizio["qualificati uscenti"]),
-                   teste_di_serie=teste_di_serie)
+                   teste_di_serie=teste_di_serie,
+                   tipo=esercizio.get("tipo", ESTRAZIONE))
 
 
 class ProveEserciziDelManuale(unittest.TestCase):
     def test_ci_sono_tutti_gli_esercizi(self):
-        self.assertEqual(len(leggi_esercizi()), 49)
+        self.assertEqual(len(leggi_esercizi()), 53)
 
     def test_calcoli_come_nel_manuale(self):
         for nome, esercizio in leggi_esercizi().items():
@@ -60,8 +61,11 @@ class ProveEserciziDelManuale(unittest.TestCase):
                 self.assertEqual([p for p in calcoli.problemi if p.gravita == ERRORE], [])
                 for sigla in ("N", "D", "A", "NA", "I1"):
                     self.assertEqual(getattr(calcoli, sigla), int(esercizio[sigla]), sigla)
-                self.assertEqual(dict(calcoli.non_aspettiti), leggi_elenco(esercizio["primo turno"]))
-                self.assertEqual(dict(calcoli.aspettiti), leggi_elenco(esercizio["secondo turno"]))
+                if "primo turno" in esercizio:
+                    self.assertEqual(dict(calcoli.non_aspettiti),
+                                     leggi_elenco(esercizio["primo turno"]))
+                    self.assertEqual(dict(calcoli.aspettiti),
+                                     leggi_elenco(esercizio["secondo turno"]))
                 self.assertEqual({c: prese for c, prese, _ in calcoli.composizione_teste_di_serie},
                                  teste)
                 if "teste di serie possibili" in esercizio:

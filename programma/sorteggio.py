@@ -597,6 +597,106 @@ def sorteggia(calcoli, giocatori, rng=None, classifiche=None):
     return migliore
 
 
+# Quante volte si rifa' il sorteggio integrale per rispettare la regola dello stesso circolo.
+PROVE_DEL_SORTEGGIO_INTEGRALE = 300
+
+
+def sorteggia_integrale(calcoli, giocatori, rng=None, classifiche=None):
+    """Il tabellone finale di estrazione a sorteggio integrale (Volume I, capitolo V, B).
+
+    Le teste di serie sono al loro posto, come negli altri tabelloni; poi tutto e'
+    deciso dal sorteggio:
+      - se le teste di serie sono meno degli aspettiti, i posti degli incontri del
+        primo turno (pre-turno) si sorteggiano tra gli altri, divisi tra le due meta'
+        del tabellone con una differenza di uno al massimo;
+      - i qualificati entranti si sorteggiano tra tutti i posti rimasti (due q
+        possono incontrarsi: solo in questo tabellone e' permesso);
+      - gli altri giocatori si sorteggiano nei posti rimasti, ma nessuno puo' entrare
+        in gara dopo un giocatore di classifica piu' alta: i piu' deboli giocano il
+        primo turno.
+    La regola dello stesso circolo al primo turno: si rifa' il sorteggio finche' e'
+    rispettata (al massimo PROVE_DEL_SORTEGGIO_INTEGRALE volte).
+    """
+    rng = rng or random.Random()
+    livello = {c: i for i, c in enumerate(classifiche or [c for c, _ in calcoli.ammessi])}
+    migliore = None
+    for _ in range(PROVE_DEL_SORTEGGIO_INTEGRALE):
+        tabellone = _sorteggio_integrale(calcoli, giocatori, rng, livello)
+        if migliore is None or (len(incontri_stesso_circolo(tabellone))
+                                < len(incontri_stesso_circolo(migliore))):
+            migliore = tabellone
+        if not incontri_stesso_circolo(migliore):
+            break
+    incontri = incontri_stesso_circolo(migliore)
+    if incontri:
+        coppie = [f"{a.giocatore.codice} e {b.giocatore.codice} ({a.giocatore.circolo})"
+                  for a, b in incontri]
+        migliore.problemi.append(Problema(
+            AVVISO, "", 0,
+            f"regola dello stesso circolo al primo turno non rispettata: il programma ha "
+            f"rifatto il sorteggio {PROVE_DEL_SORTEGGIO_INTEGRALE} volte senza trovarne uno "
+            f"che la rispetti. Incontri tra giocatori dello stesso circolo: {'; '.join(coppie)}"))
+    return migliore
+
+
+def _sorteggio_integrale(calcoli, giocatori, rng, livello):
+    D = calcoli.D
+    numero_coppie = D // 2
+    T = calcoli.teste_di_serie
+    A = calcoli.A
+    ordine = numeri_delle_coppie(D)
+    indice_del_numero = {numero: indice for indice, numero in enumerate(ordine)}
+
+    def righe(numero):
+        indice = indice_del_numero[numero]
+        principale = 2 * indice + _riga_principale(indice, numero_coppie)
+        return principale, 4 * indice + 1 - principale
+
+    posti = [None] * D
+    # Le teste di serie: le prime min(T, A) con il posto libero, le altre al primo turno.
+    for numero in range(1, T + 1):
+        principale, altro = righe(numero)
+        posti[principale] = Posto(GIOCATORE, numero)
+        posti[altro] = Posto(LIBERO if numero <= A else GIOCATORE)
+    # I posti degli incontri del primo turno, per sorteggio (meta' e meta').
+    altri = list(range(T + 1, numero_coppie + 1))
+    if T < A:
+        incontri = calcoli.I1
+        alto = [n for n in altri if indice_del_numero[n] < numero_coppie // 2]
+        basso = [n for n in altri if indice_del_numero[n] >= numero_coppie // 2]
+        in_alto = incontri // 2 + (incontri % 2) * rng.randint(0, 1)
+        in_alto = min(max(in_alto, incontri - len(basso)), len(alto))
+        pre_turno = set(rng.sample(alto, in_alto) + rng.sample(basso, incontri - in_alto))
+    else:
+        pre_turno = set(altri)
+    for numero in altri:
+        principale, altro = righe(numero)
+        if numero in pre_turno:
+            posti[principale], posti[altro] = Posto(GIOCATORE), Posto(GIOCATORE)
+        else:
+            posti[principale], posti[altro] = Posto(GIOCATORE), Posto(LIBERO)
+    # Chi e' testa di serie: i giocatori piu' forti, a parita' di classifica per sorteggio.
+    mescolati = list(giocatori)
+    rng.shuffle(mescolati)
+    mescolati.sort(key=lambda g: livello[g.classifica])
+    for posto in posti:
+        if posto.testa_di_serie:
+            posto.giocatore = mescolati[posto.testa_di_serie - 1]
+    intermedi = mescolati[T:]
+    # I posti rimasti: prima i q, per sorteggio su tutti.
+    liberi = [j for j, p in enumerate(posti) if p.tipo == GIOCATORE and not p.testa_di_serie]
+    for j in rng.sample(liberi, calcoli.qualificati_entranti):
+        posti[j] = Posto(QUALIFICATO_ENTRANTE)
+    # Poi gli altri: i piu' deboli al primo turno, gli altri al secondo.
+    al_primo = [j for j in liberi if posti[j].tipo == GIOCATORE and posti[j ^ 1].tipo != LIBERO]
+    al_secondo = [j for j in liberi if posti[j].tipo == GIOCATORE and posti[j ^ 1].tipo == LIBERO]
+    rng.shuffle(al_primo)
+    rng.shuffle(al_secondo)
+    for j, giocatore in zip(al_secondo + al_primo, intermedi):
+        posti[j].giocatore = giocatore
+    return Tabellone(calcoli, posti)
+
+
 def _classifiche_fisse(calcoli, posti):
     """La classifica dei posti gia' decisi: le teste di serie e gli aspettiti.
 

@@ -11,7 +11,8 @@ import unittest
 from programma.calcoli import calcola, conta_per_classifica
 from programma.dati import AVVISO, ERRORE, Giocatore, leggi_righe
 from programma.sorteggio import (GIOCATORE, LIBERO, QUALIFICATO_ENTRANTE, disegna,
-                                 incontri_stesso_circolo, ordine_delle_coppie, schema, sorteggia)
+                                 incontri_stesso_circolo, ordine_delle_coppie, schema, sorteggia,
+                                 sorteggia_integrale)
 from prove.test_calcoli import CLASSIFICHE, leggi_elenco
 
 FILE_SCHEMI = os.path.join(os.path.dirname(os.path.abspath(__file__)), "esercizi",
@@ -243,3 +244,74 @@ def come_testo_codici(tabellone):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class ProveSorteggioIntegrale(unittest.TestCase):
+    """Il tabellone finale di estrazione a sorteggio integrale (Volume II, esercizi 5.21-5.24)."""
+
+    def tabellone(self, esercizio, seme):
+        from prove.test_calcoli import calcola_esercizio, leggi_esercizi
+        dati = leggi_esercizi()[f"Volume II, esercizio {esercizio}"]
+        teste = sum(leggi_elenco(dati["teste di serie"]).values())
+        calcoli = calcola_esercizio(dati, teste)
+        elenco = [(c, f"Circolo {i}")
+                  for i, c in enumerate(c for c, n in calcoli.ammessi for _ in range(n))]
+        giocatori = giocatori_di_prova(elenco)
+        return sorteggia_integrale(calcoli, giocatori, random.Random(seme), CLASSIFICHE), giocatori
+
+    def test_regole_del_sorteggio_integrale(self):
+        for esercizio in ("5.21", "5.22", "5.23", "5.24"):
+            for seme in range(20):
+                with self.subTest(esercizio=esercizio, seme=seme):
+                    tabellone, giocatori = self.tabellone(esercizio, seme)
+                    calcoli = tabellone.calcoli
+                    posti = tabellone.posti
+                    self.assertEqual(tabellone.problemi, [])
+                    messi = [p.giocatore.codice for p in posti if p.giocatore]
+                    self.assertCountEqual(messi, [g.codice for g in giocatori])
+                    self.assertEqual(sum(1 for p in posti if p.tipo == QUALIFICATO_ENTRANTE),
+                                     calcoli.qualificati_entranti)
+                    # Le teste di serie hanno tutte il posto libero, e sono al loro posto.
+                    atteso = schema(calcoli, random.Random(0))
+                    for i, p in enumerate(posti):
+                        if p.testa_di_serie:
+                            self.assertEqual(atteso[i].testa_di_serie, p.testa_di_serie)
+                            self.assertEqual(posti[i ^ 1].tipo, LIBERO)
+                    # Gli incontri del primo turno: I1, divisi tra le due meta'.
+                    incontri = [i for i in range(0, len(posti), 2)
+                                if LIBERO not in (posti[i].tipo, posti[i + 1].tipo)]
+                    self.assertEqual(len(incontri), calcoli.I1)
+                    su = sum(1 for i in incontri if i < len(posti) // 2)
+                    self.assertLessEqual(abs(su - (len(incontri) - su)), 1)
+                    # Nessuno entra dopo un giocatore di classifica piu' alta.
+                    al_primo = [CLASSIFICHE.index(posti[i].giocatore.classifica)
+                                for i in range(len(posti)) if posti[i].giocatore
+                                and posti[i ^ 1].tipo != LIBERO]
+                    al_secondo = [CLASSIFICHE.index(posti[i].giocatore.classifica)
+                                  for i in range(len(posti)) if posti[i].giocatore
+                                  and posti[i ^ 1].tipo == LIBERO]
+                    if al_primo:
+                        self.assertLessEqual(max(al_secondo), min(al_primo))
+
+    def test_i_qualificati_sono_sorteggiati(self):
+        # Esercizio 5.22: 4 q e 2 incontri al primo turno. Il sorteggio a volte fa
+        # incontrare due q al primo turno, a volte li mette tutti in aspettito.
+        q_contro_q = q_in_aspettito = 0
+        for seme in range(60):
+            posti = self.tabellone("5.22", seme)[0].posti
+            for i in range(0, len(posti), 2):
+                tipi = (posti[i].tipo, posti[i + 1].tipo)
+                q_contro_q += tipi == (QUALIFICATO_ENTRANTE, QUALIFICATO_ENTRANTE)
+                q_in_aspettito += QUALIFICATO_ENTRANTE in tipi and LIBERO in tipi
+        self.assertGreater(q_contro_q, 0)
+        self.assertGreater(q_in_aspettito, 0)
+
+    def test_regola_dello_stesso_circolo(self):
+        from prove.test_calcoli import calcola_esercizio, leggi_esercizi
+        calcoli = calcola_esercizio(leggi_esercizi()["Volume II, esercizio 5.23"], 8)
+        elenco = [(c, "AB"[i % 2]) for i, c in enumerate(c for c, n in calcoli.ammessi
+                                                         for _ in range(n))]
+        giocatori = giocatori_di_prova(elenco)
+        for seme in range(10):
+            tabellone = sorteggia_integrale(calcoli, giocatori, random.Random(seme), CLASSIFICHE)
+            self.assertEqual(incontri_stesso_circolo(tabellone), [])

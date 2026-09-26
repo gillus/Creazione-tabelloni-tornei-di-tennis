@@ -20,12 +20,12 @@ Il controllo segue il manuale (Volume I, capitoli I, II e III) e segnala:
 import random
 import re
 
-from programma.calcoli import (calcola, conta_per_classifica, dimensione_del_tabellone,
-                               e_potenza_di_due)
+from programma.calcoli import (ESTRAZIONE, INTEGRALE, calcola, conta_per_classifica,
+                               dimensione_del_tabellone, e_potenza_di_due)
 from programma.dati import AVVISO, ERRORE, Problema, leggi_righe
 from programma.sorteggio import (GIOCATORE, LIBERO, QUALIFICATO_ENTRANTE, Posto, Tabellone,
                                  giocatori_per_sezione, incontri_stesso_circolo, schema,
-                                 sorteggia)
+                                 sorteggia, sorteggia_integrale)
 
 _RIGA = re.compile(r"^(?:(\d+)\s+)?(?:\(\s*(\d+)\s*\)\s*)?(\S+)(.*)$")
 
@@ -87,14 +87,39 @@ def _descrivi(posto):
     return f"{g.codice} ({g.classifica})"
 
 
+def _controlla_sorteggio_integrale(posti, teste, calcoli, errore):
+    """Le regole proprie del tabellone a sorteggio integrale (Volume I, capitolo V, B):
+    le prime teste di serie hanno il posto libero, e gli incontri del primo turno sono
+    divisi tra le due meta' del tabellone con una differenza di uno al massimo."""
+    con_libero = sorted(k for k, i in teste.items() if posti[i ^ 1].tipo == LIBERO)
+    quante = min(len(teste), calcoli.A)
+    if con_libero != list(range(1, quante + 1)):
+        errore(f"con {calcoli.A} posti liberi le teste di serie dalla n. 1 alla n. {quante} "
+               f"devono avere il posto libero (Volume I, capitolo V, B)")
+    if len(teste) < calcoli.A:
+        meta = len(posti) // 2
+        incontri = [i for i in range(0, len(posti), 2)
+                    if LIBERO not in (posti[i].tipo, posti[i + 1].tipo)]
+        su = sum(1 for i in incontri if i < meta)
+        giu = len(incontri) - su
+        if abs(su - giu) > 1:
+            errore(f"gli incontri del primo turno sono {su} nella meta' superiore e {giu} in "
+                   f"quella inferiore: la differenza puo' essere al massimo di uno "
+                   f"(Volume I, capitolo V, B)")
+
+
 def controlla(posti, giocatori, classifiche, qualificati_entranti=0, qualificati_uscenti=1,
-              teste_di_serie_impostate=None):
+              teste_di_serie_impostate=None, tipo=ESTRAZIONE):
     """Controlla un tabellone e restituisce l'elenco dei problemi trovati.
 
     posti          i posti del tabellone, dall'alto in basso (oggetti Posto)
     giocatori      i giocatori iscritti (tutti devono essere nel tabellone)
     classifiche    le classifiche, dalla piu' alta alla piu' bassa
+    tipo           ESTRAZIONE, oppure INTEGRALE per il tabellone finale di estrazione a
+                   sorteggio integrale (Volume I, capitolo V, B): li' i posti liberi e i q
+                   sono sorteggiati, e due q si possono incontrare
     """
+    integrale = tipo == INTEGRALE
     problemi = []
 
     def errore(messaggio):
@@ -172,7 +197,7 @@ def controlla(posti, giocatori, classifiche, qualificati_entranti=0, qualificati
 
     calcoli = calcola(conta_per_classifica([p.giocatore for p in diretti], classifiche),
                       qualificati_entranti=q, qualificati_uscenti=qualificati_uscenti,
-                      teste_di_serie=T)
+                      teste_di_serie=T, tipo=tipo)
     if calcoli.teste_di_serie_minimo is None:
         if T:
             errore("con soli giocatori non classificati (4.NC) non si fanno teste di serie")
@@ -214,9 +239,13 @@ def controlla(posti, giocatori, classifiche, qualificati_entranti=0, qualificati
     def aspettito(lista, i):
         return lista[i ^ 1].tipo == LIBERO
 
+    if integrale:
+        _controlla_sorteggio_integrale(posti, teste, calcoli, errore)
     liberi_attesi = [i + 1 for i, p in enumerate(atteso) if p.tipo == LIBERO]
     liberi = [i + 1 for i, p in enumerate(posti) if p.tipo == LIBERO]
-    if liberi != liberi_attesi:
+    if integrale:
+        pass  # posti liberi e q sono sorteggiati
+    elif liberi != liberi_attesi:
         errore(f"i posti liberi sono {_elenco_posti(liberi)}, ma secondo il manuale devono "
                f"essere {_elenco_posti(liberi_attesi)}: gli aspettiti vanno messi come se "
                f"fossero teste di serie (Volume I, capitolo II)")
@@ -255,7 +284,7 @@ def controlla(posti, giocatori, classifiche, qualificati_entranti=0, qualificati
         return (indice_posto // 2) % coppie_per_sezione < max(1, coppie_per_sezione // 2)
 
     di_cosa = "della sua sezione" if sezioni else "del tabellone"
-    for alto, basso in coppie:
+    for alto, basso in ([] if integrale else coppie):
         tipi = (posti[alto].tipo, posti[basso].tipo)
         if tipi == (QUALIFICATO_ENTRANTE, QUALIFICATO_ENTRANTE):
             errore(f"ai posti {alto + 1} e {basso + 1} due qualificati entranti si incontrano "
@@ -270,7 +299,7 @@ def controlla(posti, giocatori, classifiche, qualificati_entranti=0, qualificati
                        f"deve stare {dove} nel suo incontro (al posto {giusto + 1}), perche' e' "
                        f"nella meta' {meta_nome} {di_cosa} (Volume I, capitolo I, lettera F)")
     # Un q che entra al secondo turno non deve trovare un altro q al suo primo incontro.
-    for i, posto in enumerate(posti):
+    for i, posto in enumerate([] if integrale else posti):
         if posto.tipo == QUALIFICATO_ENTRANTE and aspettito(posti, i):
             vicini = range(((i // 4) * 4), (i // 4) * 4 + 4)
             altri = [j for j in vicini if j // 2 != i // 2 and posti[j].tipo == QUALIFICATO_ENTRANTE]
@@ -283,7 +312,7 @@ def controlla(posti, giocatori, classifiche, qualificati_entranti=0, qualificati
                     if p.tipo == QUALIFICATO_ENTRANTE and aspettito(posti, i)]
     tra_ammessi = [(a, b) for a, b in coppie
                    if posti[a].tipo == GIOCATORE and posti[b].tipo == GIOCATORE]
-    if q_al_secondo and tra_ammessi:
+    if q_al_secondo and tra_ammessi and not integrale:
         errore(f"il qualificato entrante {_elenco_posti(q_al_secondo)} entra al secondo turno, "
                f"mentre al primo turno ci sono incontri tra giocatori ammessi direttamente: "
                f"i qualificati vanno messi prima al primo turno (Volume I, capitolo I, lettera G)")
@@ -298,7 +327,7 @@ def controlla(posti, giocatori, classifiche, qualificati_entranti=0, qualificati
                    f"{min(q_sezioni)}; la differenza puo' essere al massimo di uno "
                    f"(Volume I, capitolo III, lettera B)")
     # Distribuzione dei q nelle frazioni del tabellone (o di ogni sezione): meta', quarti...
-    larghezza = larghezza_sezione
+    larghezza = 0 if integrale else larghezza_sezione
     squilibrio = None
     while larghezza >= 4 and squilibrio is None:
         for inizio in range(0, D, larghezza):
@@ -328,7 +357,12 @@ def controlla(posti, giocatori, classifiche, qualificati_entranti=0, qualificati
     if stessi:
         elenco = "; ".join(f"{a.giocatore.codice} e {b.giocatore.codice} ({a.giocatore.circolo})"
                            for a, b in stessi)
-        prova = sorteggia(calcoli, [p.giocatore for p in diretti], random.Random(0), classifiche)
+        if integrale:
+            prova = sorteggia_integrale(calcoli, [p.giocatore for p in diretti], random.Random(0),
+                                        classifiche)
+        else:
+            prova = sorteggia(calcoli, [p.giocatore for p in diretti], random.Random(0),
+                              classifiche)
         migliore = len(incontri_stesso_circolo(prova))
         if migliore < len(stessi):
             quanti = "senza incontri" if migliore == 0 else f"con solo {migliore} incontri"

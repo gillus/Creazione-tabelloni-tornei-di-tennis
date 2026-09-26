@@ -11,11 +11,11 @@ import random
 import tempfile
 import unittest
 
-from programma.calcoli import calcola, conta_per_classifica
+from programma.calcoli import ESTRAZIONE, INTEGRALE, calcola, conta_per_classifica
 from programma.controllo import controlla, leggi_tabellone
 from programma.dati import ERRORE, Giocatore
 from programma.sorteggio import (GIOCATORE, LIBERO, QUALIFICATO_ENTRANTE, Posto, disegna,
-                                 sorteggia)
+                                 sorteggia, sorteggia_integrale)
 from prove.test_calcoli import CLASSIFICHE
 from prove.test_sorteggio import calcoli_esempio, giocatori_di_prova, leggi_schemi
 
@@ -285,3 +285,60 @@ class ProveLetturaDelFile(ProvaTabellone):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class ProveSorteggioIntegrale(unittest.TestCase):
+    """Il controllo del tabellone finale a sorteggio integrale (Volume II, esercizio 5.23:
+    4 q, 3 (2.3), 5 (2.2), 7 (2.1), 8 teste di serie)."""
+
+    def setUp(self):
+        elenco = [(c, f"Circolo {i}") for i, c in
+                  enumerate(["2.1"] * 7 + ["2.2"] * 5 + ["2.3"] * 3)]
+        self.giocatori = giocatori_di_prova(elenco)
+        self.calcoli = calcola(conta_per_classifica(self.giocatori, CLASSIFICHE),
+                               qualificati_entranti=4, teste_di_serie=8, tipo=INTEGRALE)
+
+    def tabellone(self, seme):
+        return sorteggia_integrale(self.calcoli, self.giocatori, random.Random(seme),
+                                   CLASSIFICHE).posti
+
+    def controlla(self, posti, tipo=INTEGRALE):
+        return errori(controlla(posti, self.giocatori, CLASSIFICHE, 4, 1, tipo=tipo))
+
+    def test_nessun_errore(self):
+        for seme in range(20):
+            self.assertEqual(self.controlla(self.tabellone(seme)), [])
+
+    def test_due_q_si_incontrano_solo_nel_sorteggio_integrale(self):
+        seme = next(s for s in range(100) if any(
+            (a.tipo, b.tipo) == (QUALIFICATO_ENTRANTE, QUALIFICATO_ENTRANTE)
+            for a, b in zip(self.tabellone(s)[::2], self.tabellone(s)[1::2])))
+        posti = self.tabellone(seme)
+        self.assertEqual(self.controlla(posti), [])
+        self.assertTrue(any("due qualificati entranti si incontrano" in e
+                            for e in self.controlla(posti, ESTRAZIONE)))
+
+    def test_giocatore_che_entra_dopo_uno_piu_forte(self):
+        # Come nella fase 2 dell'esercizio 5.23: un (2.3) entra al secondo turno
+        # mentre un (2.2) gioca il primo.
+        posti = self.tabellone(0)
+        primo = next(i for i, p in enumerate(posti) if p.giocatore and posti[i ^ 1].tipo != LIBERO
+                     and p.giocatore.classifica == "2.3")
+        secondo = next(i for i, p in enumerate(posti) if p.giocatore and not p.testa_di_serie
+                       and posti[i ^ 1].tipo == LIBERO and p.giocatore.classifica == "2.2")
+        posti[primo], posti[secondo] = posti[secondo], posti[primo]
+        self.assertTrue(any("dopo un giocatore di classifica inferiore" in e
+                            for e in self.controlla(posti)))
+
+    def test_incontri_del_primo_turno_tutti_in_una_meta(self):
+        posti = self.tabellone(0)
+        meta = len(posti) // 2
+        incontri = [i for i in range(0, len(posti), 2)
+                    if LIBERO not in (posti[i].tipo, posti[i + 1].tipo)]
+        # Si spostano nella meta' superiore quelli della meta' inferiore, al posto di
+        # aspettiti che non sono teste di serie.
+        aspettiti = [i for i in range(0, meta, 2) if LIBERO in (posti[i].tipo, posti[i + 1].tipo)
+                     and not posti[i].testa_di_serie and not posti[i + 1].testa_di_serie]
+        for da, a in zip([i for i in incontri if i >= meta], aspettiti):
+            posti[da:da + 2], posti[a:a + 2] = posti[a:a + 2], posti[da:da + 2]
+        self.assertTrue(any("nella meta' superiore" in e for e in self.controlla(posti)))

@@ -18,11 +18,12 @@ import sys
 import webbrowser
 
 from programma import controllo_selezione, selezione_tabellone
-from programma.calcoli import SELEZIONE, calcola, conta_per_classifica, descrivi
+from programma.calcoli import (ESTRAZIONE, INTEGRALE, SELEZIONE, calcola, conta_per_classifica,
+                               descrivi)
 from programma.controllo import controlla, leggi_tabellone
 from programma.dati import AVVISO, ERRORE, Problema, leggi_classifiche, leggi_giocatori, leggi_torneo
 from programma.selezione import controlla_scala, descrivi_scala, scala_migliore, scala_scritta
-from programma.sorteggio import disegna, sorteggia
+from programma.sorteggio import disegna, sorteggia, sorteggia_integrale
 from programma.stampa import pagina
 
 FILE_CLASSIFICHE = os.path.join("dati", "classifiche.txt")
@@ -66,7 +67,8 @@ def controlla_tabellone(giocatori, classifiche, torneo, posti):
     return controlla(posti, giocatori, classifiche,
                      qualificati_entranti=torneo.impostazioni.get("qualificati entranti", 0),
                      qualificati_uscenti=torneo.impostazioni.get("qualificati uscenti", 1),
-                     teste_di_serie_impostate=torneo.impostazioni.get("teste di serie"))
+                     teste_di_serie_impostate=torneo.impostazioni.get("teste di serie"),
+                     tipo=INTEGRALE if torneo.impostazioni.get("tipo") == INTEGRALE else ESTRAZIONE)
 
 
 def apri_nel_browser(percorso):
@@ -94,7 +96,12 @@ def fai_tabellone(file_dati=FILE_DATI):
     print(f"Circoli diversi: {len(circoli)}")
     print()
 
-    estrazione = torneo.impostazioni.get("tipo", "selezione") == "estrazione"
+    tipo = torneo.impostazioni.get("tipo", SELEZIONE)
+    estrazione = tipo in (ESTRAZIONE, INTEGRALE)
+    if tipo == INTEGRALE and torneo.impostazioni.get("qualificati uscenti", 1) != 1:
+        problemi.append(Problema(ERRORE, FILE_TORNEO, 0,
+                                 "il tabellone a sorteggio integrale si fa solo come tabellone "
+                                 "finale (qualificati uscenti = 1): Volume I, capitolo V, B"))
     if giocatori and not any(p.gravita == ERRORE for p in problemi) and not estrazione:
         trovati, fatto = fai_selezione(giocatori, classifiche, torneo)
         problemi += trovati
@@ -110,13 +117,19 @@ def fai_tabellone(file_dati=FILE_DATI):
         calcoli = calcola(conta_per_classifica(giocatori, classifiche),
                           qualificati_entranti=torneo.impostazioni.get("qualificati entranti", 0),
                           qualificati_uscenti=torneo.impostazioni.get("qualificati uscenti", 1),
-                          teste_di_serie=torneo.impostazioni.get("teste di serie"))
+                          teste_di_serie=torneo.impostazioni.get("teste di serie"),
+                          tipo=ESTRAZIONE if tipo == SELEZIONE else tipo)
+        if tipo == INTEGRALE:
+            print("TABELLONE FINALE DI ESTRAZIONE A SORTEGGIO INTEGRALE")
         print("CALCOLI PRELIMINARI")
         print(descrivi(calcoli))
         print()
         problemi += calcoli.problemi
         if not any(p.gravita == ERRORE for p in calcoli.problemi):
-            tabellone = sorteggia(calcoli, giocatori, classifiche=classifiche)
+            if tipo == INTEGRALE:
+                tabellone = sorteggia_integrale(calcoli, giocatori, classifiche=classifiche)
+            else:
+                tabellone = sorteggia(calcoli, giocatori, classifiche=classifiche)
             problemi += tabellone.problemi
             salva_e_controlla(tabellone, disegna(tabellone, titolo_del_torneo(torneo)), torneo,
                               controlla_tabellone(giocatori, classifiche, torneo, tabellone.posti))
