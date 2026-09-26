@@ -160,11 +160,23 @@ def controlla(voci, giocatori, classifiche, qualificati_entranti=0, qualificati_
             errore(f"il qualificato entrante al posto {posto} puo' incontrare un altro qualificato "
                    f"entrante al suo primo incontro (Volume II, pagina 4, regola c)")
     q_parti = [sum(1 for x in voci_di(r) if x.tipo == QUALIFICATO_ENTRANTE) for r in radici]
-    if q and max(q_parti) - min(q_parti) > 1:
+    sezioni = not _potenza_di_due(Qu)
+    if q and sezioni and max(q_parti) - min(q_parti) > 1:
+        # Nel tabellone a sezioni e' una regola (Volume II, pagina 4, regola f.b).
+        errore(f"i qualificati entranti non sono distribuiti in modo uguale tra le sezioni: "
+               f"da {min(q_parti)} a {max(q_parti)}; la differenza puo' essere al massimo di uno "
+               f"(Volume I, capitolo III, lettera B)")
+    elif q and max(q_parti) - min(q_parti) > 1:
         # Nei tabelloni di selezione e' una raccomandazione del metodo: a volte non si puo'
         # (per esempio se alcuni corridoi hanno solo coppie di ammessi, esercizio 3.21).
         avviso(f"i qualificati entranti non sono divisi in modo uguale tra i qualificati uscenti: "
                f"da {min(q_parti)} a {max(q_parti)} (Volume I, capitolo IV, punto 3.9)")
+    if sezioni:
+        per_sezione = [len(voci_di(r)) for r in radici]
+        if max(per_sezione) - min(per_sezione) > 2:
+            avviso(f"le sezioni hanno un numero di giocatori troppo diverso (da {min(per_sezione)} "
+                   f"a {max(per_sezione)}): la differenza dovrebbe essere di due al massimo "
+                   f"(Volume I, capitolo III, lettera B)")
 
     # --- Teste di serie ----------------------------------------------------------------
     teste = {}
@@ -236,7 +248,94 @@ def controlla(voci, giocatori, classifiche, qualificati_entranti=0, qualificati_
                "loro primo incontro: " + "; ".join(f"{i.alto.giocatore.codice} ({i.alto.classifica}) "
                                                    f"e {i.basso.giocatore.codice} ({i.basso.classifica})"
                                                    for i in uguali))
+    for messaggio in raccomandazioni(radici, livello, finale=Qu == 1):
+        avviso(messaggio)
     return problemi
+
+
+def raccomandazioni(radici, livello, finale=False):
+    """Le raccomandazioni 2, 3, 5 e 6 (Volume I, capitolo I, lettera H) non seguite.
+
+    Si immagina che vinca sempre il giocatore di classifica piu' alta (a parita',
+    quello in alto); un q vale come il giocatore piu' debole, e le sue partite non
+    contano per le raccomandazioni sulla differenza di classifica.
+    Restituisce i messaggi, uno per raccomandazione."""
+    livello_q = max(livello.values()) + 1
+    progressioni_pari, salti, compressioni = [], [], []
+    a_favore = {}  # id della voce -> [voce, incontri in favore di pronostico, primo avversario]
+
+    def nome(voce):
+        return f"{voce.giocatore.codice} ({voce.classifica})" if voce.giocatore else f"({voce.classifica})"
+
+    def visita(nodo):
+        """(voce del vincitore previsto oppure None per un q, livello, incontri giocati)."""
+        if isinstance(nodo, Voce):
+            if nodo.tipo == QUALIFICATO_ENTRANTE:
+                return None, livello_q, 0
+            a_favore[id(nodo)] = [nodo, 0, None]
+            return nodo, livello[nodo.classifica], 0
+        a, b = visita(nodo.alto), visita(nodo.basso)
+        for (voce, _, giocati), (_, livello_altro, _) in ((a, b), (b, a)):
+            if voce and giocati == 0:
+                a_favore[id(voce)][2] = livello_altro
+        (voce_a, livello_a, giocati_a), (voce_b, livello_b, giocati_b) = a, b
+        if voce_a and voce_b and (giocati_a == 0) != (giocati_b == 0):
+            # Progressione: chi entra contro il vincitore dei turni prima.
+            (entra, livello_e, _), (vinc, livello_v, giocati_v) = (a, b) if giocati_a == 0 else (b, a)
+            if livello_e == livello_v and giocati_v == 1:
+                progressioni_pari.append(f"{nome(vinc)} contro {nome(entra)}")
+        elif voce_a and voce_b and giocati_a == giocati_b == 1 and livello_a != livello_b:
+            # Compressione: due ammessi che si incontrano dopo aver vinto il primo incontro.
+            compressioni.append(f"{nome(voce_a)} contro {nome(voce_b)}")
+        vince, perde = (a, b) if a[1] <= b[1] else (b, a)
+        # Raccomandazione 6: chi ha gia' vinto due incontri non dovrebbe trovare un
+        # avversario di piu' di due gruppi piu' forte.
+        if vince[0] and perde[0] and perde[2] >= 2 and perde[1] - vince[1] > 2:
+            salti.append(f"{nome(perde[0])} contro {nome(vince[0])}")
+        if vince[0] and perde[1] > vince[1]:
+            a_favore[id(vince[0])][1] += 1
+        return vince[0], vince[1], vince[2] + 1
+
+    for radice in radici:
+        visita(radice)
+
+    messaggi = []
+    if compressioni:
+        messaggi.append("compressioni tra giocatori di classifica diversa (si raccomanda la stessa "
+                        "classifica): " + "; ".join(compressioni)
+                        + " (Volume I, capitolo I, H.2)")
+    if progressioni_pari:
+        messaggi.append("giocatori che, vinto il primo incontro, incontrano un ammesso della stessa "
+                        "classifica: " + "; ".join(progressioni_pari)
+                        + " (Volume I, capitolo I, H.3)")
+    if not finale:
+        troppi = [nome(v) for v, n, _ in a_favore.values() if n > 2]
+        if troppi:
+            messaggi.append("giocatori che devono giocare piu' di due incontri in favore di "
+                            "pronostico (mai piu' di due): " + ", ".join(troppi)
+                            + " (Volume I, capitolo I, H.5)")
+        # Tutti dovrebbero giocare un incontro in favore di pronostico. Il manuale accetta
+        # le coppie di pari classifica (esempio 67), ma non che alcuni giocatori comincino
+        # contro un piu' forte mentre altri della stessa classifica contro un piu' debole
+        # (esempi 33 e 34).
+        in_favore, contro = set(), {}
+        for voce, _, primo in a_favore.values():
+            if primo is None:
+                continue
+            if primo > livello[voce.classifica]:
+                in_favore.add(voce.classifica)
+            elif primo < livello[voce.classifica]:
+                contro.setdefault(voce.classifica, []).append(nome(voce))
+        diversi = [c for c in sorted(contro, key=livello.get) if c in in_favore]
+        if diversi:
+            messaggi.append("giocatori che cominciano contro un giocatore di classifica piu' alta, "
+                            "mentre altri della stessa classifica cominciano in favore di "
+                            "pronostico: " + ", ".join(n for c in diversi for n in contro[c])
+                            + " (Volume I, capitolo I, H.5)")
+    if salti:
+        messaggi.append("incontri con piu' di due gruppi di differenza di classifica: "
+                        + "; ".join(salti) + " (Volume I, capitolo I, H.6)")
+    return messaggi
 
 
 def _potenza_di_due(n):

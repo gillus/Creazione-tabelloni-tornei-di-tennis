@@ -15,7 +15,7 @@ from programma.calcoli import QUALIFICATO, SELEZIONE, calcola
 from programma.dati import ERRORE, leggi_righe
 from programma.selezione import (Scala, _calcola_posti, controlla_scala, leggi_turno,
                                  scala_migliore, scala_scritta, scrivi_turno)
-from programma.selezione_tabellone import (Voce, disegna, prepara, proposta_teste_di_serie,
+from programma.selezione_tabellone import (Incontro, Voce, disegna, prepara, proposta_teste_di_serie,
                                            voci_di)
 from programma.sorteggio import GIOCATORE, QUALIFICATO_ENTRANTE
 from programma.stampa import pagina
@@ -303,3 +303,90 @@ class ProveStampa(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+def _v(classifica, codice=""):
+    """Un ammesso (per le prove delle raccomandazioni)."""
+    from programma.dati import Giocatore
+    return Voce(GIOCATORE, 1, classifica, giocatore=Giocatore(codice or classifica, classifica, ""))
+
+
+def _q():
+    return Voce(QUALIFICATO_ENTRANTE, 1)
+
+
+class ProveRaccomandazioni(unittest.TestCase):
+    """Le raccomandazioni 2, 3, 5 e 6 del manuale (Volume I, capitolo I, lettera H)."""
+
+    def messaggi(self, radici, finale=False):
+        return " | ".join(controllo_selezione.raccomandazioni(radici, LIVELLO, finale))
+
+    def test_compressione_tra_classifiche_diverse(self):
+        diverse = Incontro(2, Incontro(1, _v("4.3"), _q()), Incontro(1, _v("4.4"), _q()))
+        uguali = Incontro(2, Incontro(1, _v("4.4", "A"), _q()), Incontro(1, _v("4.4", "B"), _q()))
+        self.assertIn("compressioni", self.messaggi([diverse]))
+        self.assertEqual(self.messaggi([uguali]), "")
+
+    def test_progressione_tra_pari_classifica(self):
+        radice = Incontro(2, Incontro(1, _v("4.4", "A"), _q()), _v("4.4", "B"))
+        self.assertIn("incontrano un ammesso della stessa classifica", self.messaggi([radice]))
+
+    def test_piu_di_due_incontri_in_favore(self):
+        radice = Incontro(3, Incontro(2, Incontro(1, _v("4.1"), _q()), Incontro(1, _v("4.4", "A"), _q())),
+                          Incontro(2, Incontro(1, _v("4.4", "B"), _q()), Incontro(1, _v("4.4", "C"), _q())))
+        self.assertIn("piu' di due incontri in favore", self.messaggi([radice]))
+        # Nel tabellone finale la raccomandazione non vale.
+        self.assertNotIn("in favore", self.messaggi([radice], finale=True))
+
+    def test_piu_di_due_gruppi_di_differenza(self):
+        # Il (4.6) ha vinto due incontri (un q e un pari classifica) e trova un (4.2).
+        radice = Incontro(3, Incontro(2, Incontro(1, _v("4.6", "A"), _q()),
+                                      Incontro(1, _v("4.6", "B"), _q())), _v("4.2"))
+        self.assertIn("piu' di due gruppi", self.messaggi([radice]))
+        # Al primo incontro no: il (4.6) contro un q e poi il (4.3).
+        radice = Incontro(2, Incontro(1, _v("4.6"), _q()), _v("4.2"))
+        self.assertNotIn("piu' di due gruppi", self.messaggi([radice]))
+
+    def test_trattamento_diverso_a_pari_classifica(self):
+        # Un (4.5) comincia contro un q, l'altro contro un (4.3).
+        radici = [Incontro(1, _v("4.5", "A"), _q()), Incontro(1, _v("4.3"), _v("4.5", "B"))]
+        self.assertIn("cominciano contro un giocatore di classifica piu' alta", self.messaggi(radici))
+        # Le coppie di pari classifica vanno bene (Volume I, esempio 67).
+        radici = [Incontro(1, _v("4.5", "A"), _q()), Incontro(1, _v("4.5", "B"), _v("4.5", "C"))]
+        self.assertEqual(self.messaggi(radici), "")
+
+    def test_i_tabelloni_disegnati_nel_manuale_non_hanno_avvisi(self):
+        for nome, esercizio in leggi_scale().items():
+            if "tabellone" not in esercizio:
+                continue
+            with self.subTest(esercizio=nome):
+                tabellone, _ = tabellone_dell_esercizio(esercizio)
+                _, _, Qu = dati(esercizio)
+                self.assertEqual(self.messaggi(tabellone.radici, Qu == 1), "")
+
+
+class ProveSezioni(unittest.TestCase):
+    """Tabellone di selezione a 3 sezioni (Volume I, capitolo III, lettera B)."""
+
+    def setUp(self):
+        self.diretti = ["4.3"] * 3 + ["4.4"] * 6 + ["4.5"] * 6
+        scala, _ = scala_migliore(self.diretti, 6, 3, LIVELLO)
+        self.giocatori = giocatori_per(self.diretti)
+        self.tabellone = prepara(scala, 3, self.giocatori, LIVELLO, 3, random.Random(0))
+        self.voci = self.tabellone.voci()
+
+    def problemi(self):
+        return controllo_selezione.controlla(self.voci, self.giocatori, CLASSIFICHE, 6, 3, 3)
+
+    def test_nessun_errore(self):
+        self.assertEqual([str(p) for p in self.problemi() if p.gravita == ERRORE], [])
+
+    def test_qualificati_non_divisi_tra_le_sezioni(self):
+        # Il q di una sezione si scambia con un ammesso dello stesso turno di un'altra sezione.
+        sezione = {id(v): k for k, r in enumerate(self.tabellone.radici) for v in voci_di(r)}
+        i = next(i for i, v in enumerate(self.voci) if v.tipo == QUALIFICATO_ENTRANTE)
+        j = next(j for j, v in enumerate(self.voci) if v.tipo == GIOCATORE and not v.testa_di_serie
+                 and v.turno == self.voci[i].turno and sezione[id(v)] != sezione[id(self.voci[i])])
+        self.voci[i], self.voci[j] = self.voci[j], self.voci[i]
+        errori = [p.messaggio for p in self.problemi() if p.gravita == ERRORE]
+        self.assertTrue(any("tra le sezioni" in e for e in errori), errori)
