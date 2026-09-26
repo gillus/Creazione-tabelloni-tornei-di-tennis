@@ -16,6 +16,7 @@ from programma.dati import ERRORE, leggi_righe
 from programma.selezione import (Scala, _calcola_posti, controlla_scala, leggi_turno,
                                  scala_migliore, scala_scritta, scrivi_turno)
 from programma.selezione_tabellone import (Incontro, Voce, disegna, prepara, proposta_teste_di_serie,
+                                           scegli_scala,
                                            voci_di)
 from programma.sorteggio import GIOCATORE, QUALIFICATO_ENTRANTE
 from programma.stampa import pagina
@@ -58,6 +59,11 @@ def scala_del_manuale(esercizio, prefisso="turno "):
     return scala
 
 
+def sezioni_di(Qu):
+    """Il numero delle sezioni: 0 se i qualificati uscenti sono 1, 2, 4, 8..."""
+    return 0 if Qu & (Qu - 1) == 0 else Qu
+
+
 def firma(scala):
     return [scrivi_turno(t) for t in scala.turni]
 
@@ -70,7 +76,7 @@ def tabellone_dell_esercizio(esercizio, seme=1):
     diretti, q, Qu = dati(esercizio)
     scala = scala_del_manuale(esercizio)
     giocatori = giocatori_per(diretti)
-    return prepara(scala, int(esercizio["teste di serie"]), giocatori, LIVELLO, 0,
+    return prepara(scala, int(esercizio["teste di serie"]), giocatori, LIVELLO, sezioni_di(Qu),
                    random.Random(seme)), giocatori
 
 
@@ -89,7 +95,7 @@ def come_testo(radici):
 
 class ProveScala(unittest.TestCase):
     def test_ci_sono_tutti_gli_esercizi(self):
-        self.assertEqual(len(leggi_scale()), 32)
+        self.assertEqual(len(leggi_scale()), 48)
 
     def test_scrivere_e_rileggere_un_turno(self):
         testo = "1 (2.6); coppie 2 (2.7)+q, 1 (2.8)+(2.8)"
@@ -110,9 +116,13 @@ class ProveScala(unittest.TestCase):
         for nome, esercizio in leggi_scale().items():
             with self.subTest(esercizio=nome):
                 diretti, q, Qu = dati(esercizio)
-                migliore, _ = scala_migliore(diretti, q, Qu, LIVELLO)
+                calcoli = calcola([(c, diretti.count(c)) for c in CLASSIFICHE if c in diretti],
+                                  q, Qu, tipo=SELEZIONE)
+                _, tutte = scala_migliore(diretti, q, Qu, LIVELLO)
+                scelta, _ = scegli_scala(tutte, calcoli.teste_di_serie_minimo,
+                                         calcoli.teste_di_serie_massimo, LIVELLO, sezioni_di(Qu))
                 attesa = "proposta turno " if "proposta turno 1" in esercizio else "turno "
-                self.assertEqual(firma(migliore), firma(scala_del_manuale(esercizio, attesa)))
+                self.assertEqual(firma(scelta), firma(scala_del_manuale(esercizio, attesa)))
 
     def test_proposta_delle_teste_di_serie(self):
         for nome, esercizio in leggi_scale().items():
@@ -123,7 +133,7 @@ class ProveScala(unittest.TestCase):
                 attesa = int(esercizio.get("proposta del programma", esercizio["teste di serie"]))
                 self.assertEqual(proposta_teste_di_serie(
                     scala_del_manuale(esercizio), calcoli.teste_di_serie_minimo,
-                    calcoli.teste_di_serie_massimo, LIVELLO), attesa)
+                    calcoli.teste_di_serie_massimo, LIVELLO, sezioni_di(Qu)), attesa)
 
     def test_scala_scritta_di_un_tabellone_finale(self):
         # Esercizio 5.31: il giudice arbitro scrive solo i turni in cui entra qualcuno;
@@ -164,16 +174,15 @@ class ProveTabellone(unittest.TestCase):
         for nome, esercizio in leggi_scale().items():
             with self.subTest(esercizio=nome):
                 diretti, q, Qu = dati(esercizio)
-                migliore, _ = scala_migliore(diretti, q, Qu, LIVELLO)
+                calcoli = calcola([(c, diretti.count(c)) for c in CLASSIFICHE if c in diretti],
+                                  q, Qu, tipo=SELEZIONE)
+                _, tutte = scala_migliore(diretti, q, Qu, LIVELLO)
+                migliore, teste = scegli_scala(tutte, calcoli.teste_di_serie_minimo,
+                                               calcoli.teste_di_serie_massimo, LIVELLO,
+                                               sezioni_di(Qu))
                 giocatori = giocatori_per(diretti)
-                teste = int(esercizio["teste di serie"])
-                if "proposta turno 1" in esercizio:
-                    # La scala del programma e' diversa: le sue teste di serie.
-                    calcoli = calcola([(c, diretti.count(c)) for c in CLASSIFICHE if c in diretti],
-                                      q, Qu, tipo=SELEZIONE)
-                    teste = proposta_teste_di_serie(migliore, calcoli.teste_di_serie_minimo,
-                                                    calcoli.teste_di_serie_massimo, LIVELLO)
-                tabellone = prepara(migliore, teste, giocatori, LIVELLO, 0, random.Random(4))
+                tabellone = prepara(migliore, teste, giocatori, LIVELLO, sezioni_di(Qu),
+                                    random.Random(4))
                 self.assertEqual(tabellone.problemi, [])
                 problemi = controllo_selezione.controlla(tabellone.voci(), giocatori, CLASSIFICHE,
                                                          q, Qu, teste)
