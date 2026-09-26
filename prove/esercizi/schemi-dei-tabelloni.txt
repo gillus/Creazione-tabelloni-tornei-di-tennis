@@ -26,7 +26,7 @@
 #
 # Fonte: Volume I, esempi da 39 a 47 (pagine 20-31) e, a sezioni, da 48 a 50
 #        (pagine 35-39);
-#        Volume II, esercizi 1.01 e 1.03 (pagine 9 e 13), tabelloni finali da
+#        Volume II, esercizi da 1.01 a 1.10 e da 1.21 a 1.27 (pagine 9-41), tabelloni finali da
 #        5.01 a 5.09 (pagine 159-176; per il 5.04 la soluzione 1) e, a sezioni, da 2.01
 #        a 2.12 e da 2.21 a 2.23 (pagine 44-74; per il 2.23 la soluzione 2,
 #        quella giusta).
@@ -92,6 +92,103 @@ tabellone = x - | x x | x - | x x | x x | - x | x x | - x
 giocatori = 25 (4.NC)
 qualificati uscenti = 8
 tabellone = x - | x x | x x | x x | x - | x x | x - | x x | x x | - x | x x | - x | x x | - x | x x | - x
+
+[Volume II, esercizio 1.02]
+giocatori = 21 (4.NC)
+qualificati uscenti = 8
+tabellone = x - | x x | x - | x - | x - | x x | x - | x x | - x | - x | x x | - x | - x | - x | x x | - x
+
+[Volume II, esercizio 1.04]
+giocatori = 37 (4.NC)
+qualificati uscenti = 16
+tabellone = x - | x x | x - | x - | x - | x - | x - | x - | x - | x x | x - | x - | x - | x x | x - | x - | - x | - x | - x | - x | - x | - x | x x | - x | - x | - x | - x | - x | - x | - x | x x | - x
+
+[Volume II, esercizio 1.05]
+giocatori = 53 (4.NC)
+qualificati uscenti = 16
+tabellone = x - | x x | x x | x x | x - | x x | x - | x x | x - | x x | x x | x x | x - | x x | x x | x x | x x | - x | x x | - x | x x | x x | x x | - x | x x | - x | x x | - x | x x | x x | x x | - x
+
+[Volume II, esercizio 1.06]
+giocatori = 2 (4.6), 4 (4.5), 1 (4.4)
+qualificati entranti = 4
+qualificati uscenti = 4
+teste di serie = 4
+tabellone = (1) - | x q | (4) - | q - | q x | - (3) | q x | - (2)
+
+[Volume II, esercizio 1.07]
+giocatori = 6 (4.6), 4 (4.5), 1 (4.4)
+qualificati uscenti = 4
+teste di serie = 5
+tabellone = (1) - | x x | (4) - | (5) - | x x | - (3) | x x | - (2)
+
+[Volume II, esercizio 1.08]
+giocatori = 2 (4.6), 2 (4.5), 4 (4.4), 6 (4.3), 6 (4.2), 6 (4.1)
+qualificati uscenti = 8
+teste di serie = 8
+tabellone = (1) - | x x | (8) x | x x | (4) - | x x | (5) - | x x | x x | - (6) | x x | - (3) | x x | x (7) | x x | - (2)
+
+[Volume II, esercizio 1.09]
+giocatori = 6 (4.6), 3 (4.5), 7 (4.4)
+qualificati entranti = 9
+qualificati uscenti = 8
+teste di serie = 10
+tabellone = (1) - | x q | (8) q | (9) q | (4) - | x q | (5) - | x q | q x | - (6) | q x | - (3) | q (10) | - (7) | q x | - (2)
+
+[Volume II, esercizio 1.10]
+giocatori = 6 (4.3), 4 (4.2), 4 (4.1)
+qualificati entranti = 8
+qualificati uscenti = 8
+teste di serie = 8
+tabellone = (1) - | x q | (8) - | q - | (4) - | x q | (5) - | x q | q x | - (6) | q x | - (3) | - q | - (7) | q x | - (2)
+
+[Volume II, esercizio 1.21]
+giocatori = 3 (4.2), 3 (4.1)
+qualificati entranti = 5
+qualificati uscenti = 4
+teste di serie = 4
+tabellone = (1) - | x q | (4) q | x q | - q | - (3) | - q | - (2)
+
+[Volume II, esercizio 1.22]
+giocatori = 5 (4.2), 2 (4.1)
+qualificati entranti = 7
+qualificati uscenti = 4
+teste di serie = 7
+tabellone = (1) - | q - | (4) q | (5) q | q (6) | q (3) | q (7) | q (2)
+
+[Volume II, esercizio 1.23]
+giocatori = 10 (4.6)
+qualificati entranti = 10
+qualificati uscenti = 8
+teste di serie = 10
+tabellone = (1) - | q - | (8) q | (9) q | (4) - | q - | (5) - | q - | - q | - (6) | - q | - (3) | q (10) | q (7) | - q | - (2)
+
+[Volume II, esercizio 1.24]
+giocatori = 8 (4.6), 5 (4.5)
+qualificati entranti = 11
+qualificati uscenti = 8
+teste di serie = 8
+tabellone = (1) - | x q | (8) q | x q | (4) - | q - | (5) - | q - | q x | q (6) | - q | - (3) | q x | q (7) | q x | - (2)
+
+[Volume II, esercizio 1.25]
+giocatori = 10 (4.6), 3 (4.5), 2 (4.4)
+qualificati entranti = 10
+qualificati uscenti = 8
+teste di serie = 8
+tabellone = (1) - | x q | (8) q | x q | (4) - | x q | (5) - | x q | - q | - (6) | q x | - (3) | q x | q (7) | q x | - (2)
+
+[Volume II, esercizio 1.26]
+giocatori = 8 (4.6), 6 (4.5)
+qualificati entranti = 12
+qualificati uscenti = 8
+teste di serie = 8
+tabellone = (1) - | x q | (8) q | x q | (4) - | q - | (5) q | x q | q x | q (6) | - q | - (3) | q x | q (7) | q x | - (2)
+
+[Volume II, esercizio 1.27]
+giocatori = 7 (3.5), 11 (3.4), 7 (3.3), 4 (3.2)
+qualificati entranti = 18
+qualificati uscenti = 16
+teste di serie = 18
+tabellone = (1) - | x q | (16) q | (17) q | (8) - | x q | (9) - | x q | (4) - | x q | (13) - | q - | (5) - | x q | (12) - | q - | q x | - (11) | q x | - (6) | - q | - (14) | q x | - (3) | q x | - (10) | q x | - (7) | q (18) | q (15) | q x | - (2)
 
 
 # ---------------------------------------------------------------------------
