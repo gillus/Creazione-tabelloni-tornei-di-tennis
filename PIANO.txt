@@ -148,6 +148,15 @@ passare al successivo.
  9. PROVE CON GLI ESERCIZI
     Aggiungere le soluzioni del Volume II poco alla volta, capitolo per
     capitolo, insieme ai passi da 3 a 8.
+    - FATTO: tutti gli esercizi del Volume II sono nelle prove (calcoli,
+      teste di serie, scale, divisioni in piu' tabelloni).
+    - FATTO: i tabelloni di estrazione disegnati nel manuale, posto per
+      posto: esercizi 1.01-1.10 e 1.21-1.27, 2.01-2.12 e 2.21-2.23,
+      5.01-5.09. Il programma fa lo stesso tabellone del manuale (5.07:
+      vedi domanda J2).
+    - DA FARE: i tabelloni di selezione disegnati nel manuale, posto per
+      posto (per ora solo 3.01, 3.03 e 3.04). Si confrontano gia' la scala e
+      le teste di serie di tutti gli esercizi.
 
 Con i passi da 1 a 6 si ha un programma che funziona per i tornei
 semplici. I passi 7 e 8 sono la parte piu' grande.
