@@ -206,3 +206,13 @@ class ProveProgramma(unittest.TestCase):
             finally:
                 os.chdir(vecchia)
                 tabelloni.apri_nel_browser = apri
+
+    def test_sorteggio_integrale_solo_per_il_finale(self):
+        # "tipo = integrale" per tutto il torneo: vale solo per l'ultimo tabellone.
+        import tabelloni
+        from programma.collegati import Parte
+        impostazioni = {"nome": "Prova", "gara": "Singolare", "tipo": "integrale"}
+        prima = tabelloni.impostazioni_della_parte(impostazioni, Parte(1, ["4.NC"]), 2)
+        ultima = tabelloni.impostazioni_della_parte(impostazioni, Parte(2, ["4.1"]), 2)
+        self.assertNotIn("tipo", prima)
+        self.assertEqual(ultima["tipo"], "integrale")

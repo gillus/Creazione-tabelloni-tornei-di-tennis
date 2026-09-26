@@ -185,6 +185,8 @@ def impostazioni_della_parte(impostazioni, parte, quante):
     """Le impostazioni di un tabellone della divisione, come se fosse un torneo a se'."""
     una = {nome: impostazioni[nome] for nome in ("nome", "gara", "date", "tipo")
            if nome in impostazioni}
+    if una.get("tipo") == INTEGRALE and parte.numero < quante:
+        del una["tipo"]  # il sorteggio integrale e' solo per il tabellone finale
     una.update(parte.impostazioni)
     una["qualificati entranti"] = parte.qualificati_entranti
     una["qualificati uscenti"] = parte.qualificati_uscenti
