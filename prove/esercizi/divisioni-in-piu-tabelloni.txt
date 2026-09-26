@@ -1,0 +1,109 @@
+# DIVISIONI DEI GIOCATORI IN PIU' TABELLONI COLLEGATI, DAGLI ESERCIZI DEL MANUALE
+# ===============================================================================
+#
+# Qui e' ricopiata, esercizio per esercizio, la divisione dei giocatori in piu'
+# tabelloni scelta dal manuale (Volume I, capitolo VI; Volume II, capitolo 6).
+# Le prove automatiche controllano che la divisione rispetti le regole, e che il
+# programma proponga gli stessi qualificati uscenti.
+#
+# Ogni esercizio comincia con il suo nome tra parentesi quadre.
+#   - "giocatori" e "qualificati entranti" (quelli che arrivano al primo
+#     tabellone) sono i dati del problema;
+#   - le righe "tabellone N" sono la soluzione del manuale, scritte come in
+#     dati/torneo.txt: le classifiche di quel tabellone e i qualificati uscenti.
+#     L'ultimo tabellone e' quello che segue (il tabellone finale, o quello di
+#     terza categoria che l'esercizio da' come dato).
+#   - "proposta del programma" sono i qualificati uscenti che il programma
+#     propone, tabellone per tabellone, quando sono diversi da quelli del manuale
+#     (senza righe scritte, un tabellone dopo l'altro).
+#   - "proposta per categoria" e' la divisione che il programma propone quando
+#     in dati/torneo.txt non ci sono righe "tabellone N" (un tabellone per
+#     categoria), quando e' diversa da quella del manuale.
+#
+# Fonte: Volume I, capitolo VI, ipotesi 2 (pagine 84-93);
+#        Volume II, esercizi da 6.01 a 6.06 (pagine 192-207).
+
+[Volume I, capitolo VI, ipotesi 2]
+giocatori = 21 (4.NC), 3 (4.6), 6 (4.5), 3 (4.4), 3 (4.3), 6 (4.2), 5 (4.1), 3 (3.5), 2 (3.4), 2 (3.3), 3 (3.2), 2 (3.1), 4 (2.8), 3 (2.7), 2 (2.6), 2 (2.5), 1 (2.4), 1 (2.2), 1 (2.1)
+tabellone 1 = 4.NC ; qualificati uscenti = 8
+tabellone 2 = 4.6, 4.5, 4.4, 4.3, 4.2, 4.1 ; qualificati uscenti = 4
+tabellone 3 = 3.5, 3.4, 3.3, 3.2, 3.1 ; qualificati uscenti = 4
+tabellone 4 = 2.8, 2.7, 2.6, 2.5, 2.4, 2.2, 2.1
+
+[Volume II, esercizio 6.01]
+giocatori = 4 (4.6), 3 (4.5), 4 (4.4), 4 (4.3), 2 (4.2), 2 (4.1), 3 (3.5), 1 (3.4)
+qualificati entranti = 4
+tabellone 1 = 4.6, 4.5 ; qualificati uscenti = 4
+tabellone 2 = 4.4, 4.3 ; qualificati uscenti = 4
+tabellone 3 = 4.2, 4.1 ; qualificati uscenti = 4
+tabellone 4 = 3.5, 3.4
+proposta per categoria = 4.6, 4.5, 4.4, 4.3, 4.2, 4.1 | 3.5, 3.4
+
+# Il testo dell'esercizio dice 5 (4.5), ma il primo tabellone ha 21 giocatori:
+# 8 q, 5 (4.6), 4 (4.5), 4 (4.4). I tabelloni 2 e 3 hanno i (4.3), (4.2) e (4.1)
+# (il manuale scrive per errore "(3.3)" e "(3.2)").
+[Volume II, esercizio 6.02]
+giocatori = 5 (4.6), 4 (4.5), 4 (4.4), 5 (4.3), 3 (4.2), 8 (4.1), 6 (3.5), 2 (3.4)
+qualificati entranti = 8
+tabellone 1 = 4.6, 4.5, 4.4 ; qualificati uscenti = 8
+tabellone 2 = 4.3, 4.2 ; qualificati uscenti = 8
+tabellone 3 = 4.1 ; qualificati uscenti = 8
+tabellone 4 = 3.5, 3.4
+proposta per categoria = 4.6, 4.5, 4.4, 4.3, 4.2, 4.1 | 3.5, 3.4
+
+# Ipotesi 2 (la 1 divide i (2.5) e i (2.4) in due tabelloni: da evitare).
+# Il testo dell'esercizio dice 3 (2.5), ma il secondo tabellone ha 20 giocatori:
+# 8 q, 7 (2.6), 5 (2.5).
+[Volume II, esercizio 6.03]
+giocatori = 6 (2.8), 4 (2.7), 7 (2.6), 5 (2.5), 8 (2.4), 4 (2.3), 6 (2.2), 2 (2.1)
+qualificati entranti = 8
+tabellone 1 = 2.8, 2.7 ; qualificati uscenti = 8
+tabellone 2 = 2.6, 2.5 ; qualificati uscenti = 8
+tabellone 3 = 2.4, 2.3 ; qualificati uscenti = 8
+tabellone 4 = 2.2, 2.1
+proposta per categoria = 2.8, 2.7, 2.6, 2.5, 2.4, 2.3, 2.2, 2.1
+
+# Ipotesi 2 (la 1 divide i (4.3) e i (4.2) in due tabelloni: da evitare).
+[Volume II, esercizio 6.04]
+giocatori = 8 (4.NC), 5 (4.6), 4 (4.5), 7 (4.4), 6 (4.3), 5 (4.2), 6 (4.1), 8 (3.5)
+tabellone 1 = 4.NC, 4.6, 4.5 ; qualificati uscenti = 8
+tabellone 2 = 4.4, 4.3 ; qualificati uscenti = 8
+tabellone 3 = 4.2, 4.1 ; qualificati uscenti = 8
+tabellone 4 = 3.5
+proposta per categoria = 4.NC | 4.6, 4.5, 4.4, 4.3, 4.2, 4.1 | 3.5
+
+# Ipotesi 2, seconda soluzione: tre tabelloni a sezioni che qualificano 7
+# giocatori (con 8 non si puo': troppi qualificati entranti). Il programma
+# propone una potenza di due: 4, 4 e 8.
+[Volume II, esercizio 6.05]
+giocatori = 3 (4.6), 3 (4.5), 3 (4.4), 7 (4.3), 6 (4.2), 7 (4.1), 5 (3.5), 3 (3.4)
+qualificati entranti = 8
+tabellone 1 = 4.6, 4.5, 4.4 ; qualificati uscenti = 7
+tabellone 2 = 4.3 ; qualificati uscenti = 7
+tabellone 3 = 4.2, 4.1 ; qualificati uscenti = 7
+tabellone 4 = 3.5, 3.4
+proposta del programma = 4, 4, 8
+proposta per categoria = 4.6, 4.5, 4.4, 4.3, 4.2, 4.1 | 3.5, 3.4
+
+# Ipotesi 2: il primo tabellone qualifica 5 giocatori "per incontrare i 5 (2.5)",
+# il secondo 3 "per incontrare i tre (2.2)". Il programma propone 8 e 4, come la
+# "soluzione semplice" dell'ipotesi 1, che il manuale sconsiglia (tre
+# progressioni a parita' di classifica nel primo tabellone).
+[Volume II, esercizio 6.06, ipotesi 2]
+giocatori = 4 (2.7), 11 (2.6), 5 (2.5), 4 (2.4), 2 (2.3), 3 (2.2), 1 (2.1)
+qualificati entranti = 8
+tabellone 1 = 2.7, 2.6 ; qualificati uscenti = 5
+tabellone 2 = 2.5, 2.4, 2.3 ; qualificati uscenti = 3
+tabellone 3 = 2.2, 2.1
+proposta del programma = 8, 4
+proposta per categoria = 2.7, 2.6, 2.5, 2.4, 2.3, 2.2, 2.1
+
+# Ipotesi 3: il primo tabellone come nell'ipotesi 2, poi un solo tabellone
+# finale di selezione.
+[Volume II, esercizio 6.06, ipotesi 3]
+giocatori = 4 (2.7), 11 (2.6), 5 (2.5), 4 (2.4), 2 (2.3), 3 (2.2), 1 (2.1)
+qualificati entranti = 8
+tabellone 1 = 2.7, 2.6 ; qualificati uscenti = 5
+tabellone 2 = 2.5, 2.4, 2.3, 2.2, 2.1
+proposta del programma = 8
+proposta per categoria = 2.7, 2.6, 2.5, 2.4, 2.3, 2.2, 2.1

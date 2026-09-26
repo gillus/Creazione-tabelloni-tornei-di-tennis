@@ -18,6 +18,8 @@ IMPOSTAZIONI_FACOLTATIVE = ("date", "tipo", "qualificati entranti", "qualificati
 IMPOSTAZIONI_A_SCELTA = {"tipo": ("selezione", "estrazione", "integrale")}
 # "turno 1", "turno 2"...: la scala di un tabellone di selezione scritta dal giudice arbitro.
 MASSIMO_TURNO = 12
+# "tabellone 1", "tabellone 2"...: i tabelloni collegati.
+MASSIMO_TABELLONI = 9
 # Impostazioni che devono essere un numero intero, e il numero piu' piccolo ammesso.
 IMPOSTAZIONI_NUMERICHE = {"qualificati entranti": 0, "qualificati uscenti": 1, "teste di serie": 0}
 
@@ -166,6 +168,11 @@ def leggi_torneo(percorso):
         valore = valore.strip()
         turno_della_scala = nome.startswith("turno ") and nome[6:].isdigit() \
             and 1 <= int(nome[6:]) <= MASSIMO_TURNO
+        # "tabellone 1 = 4.NC", "tabellone 2 = 4.6, 4.5 ; qualificati uscenti = 4":
+        # i tabelloni collegati (li legge programma.collegati).
+        riga_di_tabellone = nome.startswith("tabellone ") and nome[10:].isdigit() \
+            and 1 <= int(nome[10:]) <= MASSIMO_TABELLONI
+        turno_della_scala = turno_della_scala or riga_di_tabellone
         if turno_della_scala and nome not in torneo.impostazioni and valore:
             torneo.impostazioni[nome] = valore
         elif nome not in conosciute and not turno_della_scala:

@@ -46,6 +46,26 @@
 # Il programma mostra sempre la scala che usa, scritta cosi': si puo' copiare
 # qui e cambiare.
 #
+# TABELLONI COLLEGATI (qualificazioni -> tabelloni intermedi -> tabellone
+# finale). Se i giocatori sono di categorie diverse (per esempio non
+# classificati, quarta e terza categoria), il programma propone da solo un
+# tabellone per categoria: i qualificati uscenti di un tabellone entrano nel
+# tabellone seguente, e l'ultimo tabellone da' il vincitore. Per decidere voi
+# la divisione, una riga per tabellone, dal primo (classifiche piu' basse)
+# all'ultimo:
+#
+#   tabellone 1 = 4.NC
+#   tabellone 2 = 4.6, 4.5, 4.4, 4.3, 4.2, 4.1 ; qualificati uscenti = 4
+#   tabellone 3 = 3.5, 3.4, 3.3, 3.2, 3.1 ; tipo = estrazione ; teste di serie = 4
+#
+# Dopo le classifiche, separate da punto e virgola, si possono scrivere per
+# quel tabellone: qualificati uscenti, tipo, teste di serie. Se i qualificati
+# uscenti mancano li propone il programma. Con i tabelloni collegati
+# "qualificati entranti" (qui sopra) sono quelli che arrivano al primo
+# tabellone; la scala ("turno N") la propone sempre il programma.
+# Un solo tabellone con tutti: una sola riga "tabellone 1 = ..." con tutte le
+# classifiche.
+#
 # Qui sotto c'e' un torneo DI FANTASIA, solo per provare il programma: un
 # tabellone di terza categoria che qualifica 4 giocatori, con 4 qualificati
 # entranti da un tabellone di quarta categoria.

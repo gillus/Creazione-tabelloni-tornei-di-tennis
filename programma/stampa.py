@@ -228,6 +228,10 @@ def pagina(tabellone, impostazioni, adesso=None):
     """La pagina HTML completa, pronta da salvare."""
     if hasattr(tabellone, "radici"):
         return pagina_selezione(tabellone, impostazioni, adesso)
+    return _documento(impostazioni, _riassunto(tabellone), fogli(tabellone), adesso)
+
+
+def _riassunto(tabellone):
     calcoli = tabellone.calcoli
     Qu = calcoli.qualificati_uscenti
     uscita = "il vincitore" if Qu == 1 else f"{Qu} qualificati"
@@ -237,11 +241,16 @@ def pagina(tabellone, impostazioni, adesso=None):
         riassunto += f" &middot; {calcoli.sezioni} sezioni"
     if calcoli.teste_di_serie:
         riassunto += f" &middot; {calcoli.teste_di_serie} teste di serie"
-    return _documento(impostazioni, riassunto, fogli(tabellone), adesso)
+    return riassunto
 
 
 def _documento(impostazioni, riassunto, griglie, adesso=None):
     """La pagina con un foglio per ogni griglia, con testata e piede."""
+    return _pagina_html(impostazioni, _fogli_html(impostazioni, riassunto, griglie, adesso))
+
+
+def _fogli_html(impostazioni, riassunto, griglie, adesso=None):
+    """Un foglio (una sezione della pagina) per ogni griglia, con testata e piede."""
     adesso = adesso or datetime.datetime.now()
     nome = impostazioni.get("nome", "Tabellone")
     gara = impostazioni.get("gara", "")
@@ -261,6 +270,12 @@ def _documento(impostazioni, riassunto, griglie, adesso=None):
   <div class="firma">Il giudice arbitro <span></span></div>
 </div>
 </section>""")
+    return fogli_html
+
+
+def _pagina_html(impostazioni, fogli_html):
+    nome = impostazioni.get("nome", "Tabellone")
+    gara = impostazioni.get("gara", "")
     return f"""<!DOCTYPE html>
 <html lang="it">
 <head>
@@ -274,6 +289,21 @@ def _documento(impostazioni, riassunto, griglie, adesso=None):
 </body>
 </html>
 """
+
+
+def pagina_collegati(tabelloni, impostazioni, adesso=None):
+    """Una sola pagina con i fogli di tutti i tabelloni collegati, uno dopo l'altro.
+
+    tabelloni  coppie (tabellone, impostazioni di quel tabellone)
+    """
+    fogli_html = []
+    for tabellone, impostazioni_tabellone in tabelloni:
+        if hasattr(tabellone, "radici"):
+            riassunto, griglie = _riassunto_selezione(tabellone), fogli_selezione(tabellone)
+        else:
+            riassunto, griglie = _riassunto(tabellone), fogli(tabellone)
+        fogli_html += _fogli_html(impostazioni_tabellone, riassunto, griglie, adesso)
+    return _pagina_html(impostazioni, fogli_html)
 
 
 # --- Tabellone di selezione: un albero disegnato in SVG -----------------------------
@@ -440,6 +470,11 @@ def fogli_selezione(tabellone):
 
 
 def pagina_selezione(tabellone, impostazioni, adesso=None):
+    return _documento(impostazioni, _riassunto_selezione(tabellone), fogli_selezione(tabellone),
+                      adesso)
+
+
+def _riassunto_selezione(tabellone):
     Qu = tabellone.qualificati_uscenti
     uscita = "il vincitore" if Qu == 1 else f"{Qu} qualificati"
     riassunto = (f"Tabellone di selezione &middot; {tabellone.N} giocatori &middot; "
@@ -448,4 +483,4 @@ def pagina_selezione(tabellone, impostazioni, adesso=None):
         riassunto += f" &middot; {tabellone.sezioni} sezioni"
     if tabellone.teste_di_serie:
         riassunto += f" &middot; {tabellone.teste_di_serie} teste di serie"
-    return _documento(impostazioni, riassunto, fogli_selezione(tabellone), adesso)
+    return riassunto
