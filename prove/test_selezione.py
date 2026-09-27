@@ -80,6 +80,36 @@ def tabellone_dell_esercizio(esercizio, seme=1):
                    random.Random(seme)), giocatori
 
 
+def leggi_incontri(testo):
+    """Le parti del tabellone scritte come nella riga "incontri" del file degli esercizi."""
+    def nodo(i):
+        if parole[i] == "[":
+            alto, i = nodo(i + 1)
+            basso, i = nodo(i)
+            assert parole[i] == "]"
+            turni = [x.turno + (not isinstance(x, Voce)) for x in (alto, basso)]
+            return Incontro(max(turni), alto, basso), i + 1
+        classifica, turno = parole[i].split("/")
+        if classifica == "q":
+            return Voce(QUALIFICATO_ENTRANTE, int(turno)), i + 1
+        return Voce(GIOCATORE, int(turno), classifica), i + 1
+
+    radici = []
+    for parte in testo.split("|"):
+        parole = parte.replace("[", " [ ").replace("]", " ] ").split()
+        radici.append(nodo(0)[0])
+    return radici
+
+
+def incontri(radici):
+    """Gli incontri di ogni parte, senza contare chi e' scritto sopra (in ordine alfabetico)."""
+    def testo(n):
+        if isinstance(n, Voce):
+            return ("q" if n.tipo == QUALIFICATO_ENTRANTE else n.classifica) + f"/{n.turno}"
+        return "[" + " ".join(sorted(testo(x) for x in n.lati)) + "]"
+    return [testo(r) for r in radici]
+
+
 def come_testo(radici):
     """Il tabellone scritto come nel file degli esercizi: '(1)3.3/3 3.4/2 q/1 | ...'."""
     parti = []
@@ -169,6 +199,38 @@ class ProveTabellone(unittest.TestCase):
                 for seme in range(3):
                     tabellone, _ = tabellone_dell_esercizio(esercizio, seme)
                     self.assertEqual(come_testo(tabellone.radici), esercizio["tabellone"])
+
+    def test_i_tabelloni_disegnati_nel_manuale_rispettano_le_regole(self):
+        # Il controllo del programma non trova errori nei tabelloni del manuale (le
+        # teste di serie non ci sono: quei controlli si saltano).
+        for nome, esercizio in leggi_scale().items():
+            if "incontri" not in esercizio:
+                continue
+            with self.subTest(esercizio=nome):
+                _, q, Qu = dati(esercizio)
+                voci = [v for r in leggi_incontri(esercizio["incontri"]) for v in voci_di(r)]
+                giocatori = giocatori_per([v.classifica for v in voci if v.tipo == GIOCATORE])
+                persone = iter(giocatori)
+                for v in voci:
+                    if v.tipo == GIOCATORE:
+                        v.giocatore = next(persone)
+                errori = [p.messaggio for p in controllo_selezione.controlla(
+                    voci, giocatori, CLASSIFICHE, q, Qu) if p.gravita == ERRORE
+                          and "teste di serie" not in p.messaggio]
+                self.assertEqual(errori, [])
+
+    def test_stessi_incontri_del_manuale(self):
+        # Con la scala del manuale il programma fa gli stessi incontri del manuale
+        # (le parti possono essere in un altro ordine), o quelli scritti in
+        # "incontri del programma".
+        for nome, esercizio in leggi_scale().items():
+            if "incontri" not in esercizio:
+                continue
+            with self.subTest(esercizio=nome):
+                tabellone, _ = tabellone_dell_esercizio(esercizio)
+                atteso = esercizio.get("incontri del programma", esercizio["incontri"])
+                self.assertEqual(sorted(incontri(tabellone.radici)),
+                                 sorted(incontri(leggi_incontri(atteso))))
 
     def test_tabelloni_del_programma_rispettano_le_regole(self):
         for nome, esercizio in leggi_scale().items():
