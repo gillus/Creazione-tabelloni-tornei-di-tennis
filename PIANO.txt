@@ -154,9 +154,16 @@ passare al successivo.
       posto: esercizi 1.01-1.10 e 1.21-1.27, 2.01-2.12 e 2.21-2.23,
       5.01-5.09. Il programma fa lo stesso tabellone del manuale (5.07:
       vedi domanda J2).
-    - DA FARE: i tabelloni di selezione disegnati nel manuale, posto per
-      posto (per ora solo 3.01, 3.03 e 3.04). Si confrontano gia' la scala e
-      le teste di serie di tutti gli esercizi.
+    - FATTO: i tabelloni di selezione disegnati nel manuale (39: esercizi
+      3.01-3.24, 4.01-4.16, 5.31-5.33), letti dalle pagine del PDF e scritti
+      come "chi incontra chi". Il controllo del programma non trova errori in
+      nessuno. Con la scala del manuale il programma fa gli stessi incontri in
+      21 casi su 39; negli altri 18 il suo tabellone segue le raccomandazioni
+      come quello del manuale o meglio, tranne 3.16, 4.12 e 5.32 (di poco, o
+      per dove il manuale mette le teste di serie).
+    - DA FARE: confrontare anche i numeri delle teste di serie dei tabelloni
+      di selezione (nel PDF sono disegnati, non scritti: vanno letti a occhio)
+      e i tabelloni degli esempi 57-67 del Volume I.
 
 Con i passi da 1 a 6 si ha un programma che funziona per i tornei
 semplici. I passi 7 e 8 sono la parte piu' grande.
