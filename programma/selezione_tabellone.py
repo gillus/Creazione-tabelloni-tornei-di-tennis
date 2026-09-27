@@ -260,12 +260,21 @@ def _valuta(nodo, livello, livello_q, finale=False):
             costo += PESO_COPPIA_DIVERSA * differenza
     elif fresco_a or fresco_b:
         entrante, vincitore = (a, b) if fresco_a else (b, a)
-        costo += _costo_progressione(vincitore[0] - entrante[0])
+        costo += _costo_progressione_disposizione(vincitore[0] - entrante[0])
     else:
         costo += PESO_COMPRESSIONE * differenza
         costo += PESO_Q_SBILANCIATI * max(0, abs(q_a - q_b) - 1)
     passa, extra = _vince(a, b, finale)
     return passa, costo + extra, q_a + q_b, n_a + n_b, False
+
+
+def _costo_progressione_disposizione(differenza):
+    """Come _costo_progressione, ma una differenza grande costa piu' di due piccole
+    (1, 3, 6... invece di 1, 2, 3...): il manuale preferisce due progressioni di due
+    gruppi a una di tre e una di uno (raccomandazione 6; esercizi 3.02, 3.13)."""
+    if differenza <= 0:
+        return _costo_progressione(differenza)
+    return (differenza - 1) * differenza // 2
 
 
 def costo_del_tabellone(tabellone, livello):
