@@ -41,6 +41,10 @@ CARTELLA_RISULTATI = "risultati"
 FILE_TABELLONE = os.path.join(CARTELLA_RISULTATI, "tabellone.txt")
 FILE_DA_STAMPARE = os.path.join(CARTELLA_RISULTATI, "tabellone.html")
 
+# Dopo il tabellone, la pagina da stampare si apre da sola nel browser. La pagina
+# web (web/pagina.py) mette False: li' il browser c'e' gia'.
+APRI_BROWSER = True
+
 
 def leggi_dati(file_dati=FILE_DATI):
     """Legge i tre file dei dati. Restituisce classifiche, giocatori, torneo e problemi,
@@ -78,6 +82,8 @@ def controlla_tabellone(giocatori, classifiche, impostazioni, posti):
 
 
 def apri_nel_browser(percorso):
+    if not APRI_BROWSER:
+        return
     try:
         webbrowser.open(pathlib.Path(percorso).resolve().as_uri())
     except Exception:
