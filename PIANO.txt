@@ -175,6 +175,10 @@ passare al successivo.
     funzionare come prima. Cambia solo la "facciata": al posto della
     finestra c'e' la pagina. Niente viene mandato o salvato su GitHub: i
     conti si fanno nel browser di chi usa la pagina.
+    Le prove le fanno i giudici arbitri sulla pagina: ne' chi ha proposto
+    il progetto ne' chi scrive il codice conosce i tornei. Quindi la
+    pagina deve spiegarsi da sola, e deve essere facile mandare indietro
+    i dati e il risultato quando qualcosa non va.
 
     Cosa e' gia' pronto: programma/ usa solo la libreria standard (niente
     tkinter, niente file aperti direttamente, tranne la lettura dei file
@@ -223,6 +227,18 @@ passare al successivo.
         - Un errore inatteso del programma si mostra nel riquadro, come
           nella finestra ("dettaglio tecnico da mandare a chi segue il
           programma").
+        - In cima alla pagina poche righe: cosa fa, come si usa (1. dati,
+          2. "Fai il tabellone", 3. stampa), e che i dati restano nel
+          browser (si possono usare anche gli elenchi veri: non vengono
+          mandati da nessuna parte; nel repository pero' restano solo
+          quelli di fantasia).
+        - Pulsante "Copia tutto per segnalare un problema": mette insieme
+          i tre file dei dati, il tabellone da controllare se c'e', e il
+          riquadro dei risultati in un solo testo, da incollare in una
+          mail o in un messaggio a chi segue il programma (anche "Scarica"
+          come file .txt). Con quel testo il problema si rifa' uguale sul
+          computer. Accanto, l'indirizzo delle issue del fork per chi ha
+          un account GitHub.
         - Stile semplice, senza librerie: solo web/stile.css.
     10c. GITHUB PAGES.
         - File vuoto .nojekyll nella cartella principale, altrimenti
@@ -246,10 +262,15 @@ passare al successivo.
           tre file di dati/ (se se ne dimentica uno la pagina si rompe
           solo online), che index.html non carichi PyScript con "latest",
           e che .nojekyll esista.
-        - Prova a mano nel browser: tabellone semplice, tabelloni
-          collegati (dati/ di esempio), controllo di un tabellone, un file
-          dei dati con un errore (il messaggio deve essere lo stesso della
-          finestra).
+        - Prova a mano nel browser, da fare da chi scrive il codice PRIMA
+          di ogni push su main (nessun altro prova sul computer): tabellone
+          semplice, tabelloni collegati (dati/ di esempio), controllo di un
+          tabellone, un file dei dati con un errore (il messaggio deve
+          essere lo stesso della finestra), "Copia tutto", stampa. Si fa
+          con "py -m http.server" e il browser di Windows su
+          http://localhost:8000/.
+        - Quello che i giudici arbitri mandano indietro va nelle prove
+          (prove/esercizi/ o un file nuovo), cosi' il problema non torna.
     10e. DOPO, SE SERVE.
         - Copiare PyScript dentro il repository per far funzionare la
           pagina senza internet (sono molti MB: solo se chi ha proposto il
