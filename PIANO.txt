@@ -166,7 +166,7 @@ passare al successivo.
       e i tabelloni degli esempi 57-67 del Volume I.
 
 10. PAGINA NEL BROWSER (PyScript + GitHub Pages sul fork)
-    FATTA la pagina (10a, 10b, 10d); da accendere GitHub Pages (10c). Deciso con chi ha proposto il progetto (ottobre 2026): per
+    FATTO (7 ottobre 2026): la pagina e' pubblicata e provata online. Deciso con chi ha proposto il progetto (ottobre 2026): per
     provare il programma senza installare niente, una pagina pubblicata su
     GitHub Pages dal fork dell'account gillus, all'indirizzo
     https://gillus.github.io/Creazione-tabelloni-tornei-di-tennis/
@@ -247,7 +247,7 @@ passare al successivo.
           e si apre http://localhost:8000/ (aprire index.html con un
           doppio clic NON funziona, perche' il browser non lascia
           scaricare i file dalla cartella).
-        - DA FARE, con conferma: accendere GitHub Pages sul fork (ramo main,
+        - FATTO (7 ottobre 2026): acceso GitHub Pages sul fork (ramo main,
           cartella principale), per esempio con gh api, e portare il
           lavoro su main. Da quel momento ogni push su main cambia la
           pagina.
