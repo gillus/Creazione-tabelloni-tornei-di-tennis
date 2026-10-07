@@ -1,0 +1,28 @@
+# Configurazione di PyScript per la pagina index.html.
+#
+# [files] dice a PyScript quali file scaricare nella sua cartella "finta"
+# (sta nella memoria del browser) prima di far partire web/pagina.py.
+# A sinistra da dove prenderli (percorso relativo a QUESTO file, quindi
+# "../" e' la cartella principale), a destra dove metterli: con gli stessi
+# nomi di sempre, cosi' tabelloni.py e programma/ non si accorgono di niente.
+#
+# Se si aggiunge un file .py in programma/ va aggiunto anche qui, altrimenti
+# la pagina non lo trova (la prova prove/test_pagina.py lo controlla).
+
+[files]
+"../tabelloni.py" = "./tabelloni.py"
+"../programma/__init__.py" = "./programma/__init__.py"
+"../programma/armonizzazione.py" = "./programma/armonizzazione.py"
+"../programma/calcoli.py" = "./programma/calcoli.py"
+"../programma/collegati.py" = "./programma/collegati.py"
+"../programma/controllo.py" = "./programma/controllo.py"
+"../programma/controllo_selezione.py" = "./programma/controllo_selezione.py"
+"../programma/dati.py" = "./programma/dati.py"
+"../programma/selezione.py" = "./programma/selezione.py"
+"../programma/selezione_tabellone.py" = "./programma/selezione_tabellone.py"
+"../programma/sorteggio.py" = "./programma/sorteggio.py"
+"../programma/stampa.py" = "./programma/stampa.py"
+"../dati/classifiche.txt" = "./dati/classifiche.txt"
+"../dati/giocatori.txt" = "./dati/giocatori.txt"
+"../dati/torneo.txt" = "./dati/torneo.txt"
+"../dati/tabellone-da-controllare.txt" = "./dati/tabellone-da-controllare.txt"

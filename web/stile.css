@@ -1,0 +1,129 @@
+/* Stile della pagina index.html (nessuna libreria: solo questo file). */
+
+:root {
+  --inchiostro: #1d1d1f;
+  --grigio: #5b5b60;
+  --chiaro: #eef0f3;
+  --linea: #cfd3d9;
+  --verde: #1b6e3a;
+  --rosso: #b00020;
+  --arancione: #9a5b00;
+  --blu: #1c4f9c;
+  --sfondo: #f7f8fa;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 0 16px 48px;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--inchiostro);
+  background: var(--sfondo);
+}
+
+main { max-width: 1180px; margin: 0 auto; }
+
+h1 { font-size: 1.7em; margin: 24px 0 4px; }
+h2 { font-size: 1.15em; margin: 28px 0 8px; }
+.sottotitolo { color: var(--grigio); margin: 0 0 16px; }
+
+.stato {
+  padding: 10px 14px;
+  border-radius: 6px;
+  margin: 12px 0;
+  border: 1px solid var(--linea);
+  background: #fff;
+}
+.stato.attesa { background: #fff6dc; border-color: #e8d49a; }
+.stato.lavoro { background: #e3ecfb; border-color: #b7cdf2; }
+.stato.pronto { background: #e5f4ea; border-color: #b4dcc1; }
+.stato.errore { background: #fbe4e7; border-color: #f0b4bc; }
+
+.riquadro {
+  background: #fff;
+  border: 1px solid var(--linea);
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin: 12px 0;
+}
+.riquadro ol, .riquadro ul { margin: 6px 0; padding-left: 22px; }
+.riquadro p { margin: 6px 0; }
+.privacy { color: var(--grigio); font-size: 0.95em; }
+
+.file-dati { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 900px) { .file-dati { grid-template-columns: 1fr; } }
+
+.file-dati label, .controllo label { font-weight: 600; display: block; margin-bottom: 4px; }
+.file-dati .nome-file, .controllo .nome-file { font-weight: normal; color: var(--grigio); font-size: 0.9em; }
+
+textarea {
+  width: 100%;
+  min-height: 260px;
+  font-family: ui-monospace, Consolas, "Courier New", monospace;
+  font-size: 13px;
+  line-height: 1.35;
+  padding: 8px;
+  border: 1px solid var(--linea);
+  border-radius: 6px;
+  resize: vertical;
+  background: #fff;
+  color: var(--inchiostro);
+}
+.controllo textarea { min-height: 200px; }
+
+.strumenti { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 6px; }
+.strumenti input[type=file] { font-size: 0.9em; max-width: 100%; }
+
+button {
+  font: inherit;
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--linea);
+  background: #fff;
+  color: var(--inchiostro);
+  cursor: pointer;
+}
+button:hover:not(:disabled) { background: var(--chiaro); }
+button:disabled { opacity: 0.5; cursor: default; }
+button.principale { background: var(--blu); color: #fff; border-color: var(--blu); font-weight: 600; }
+button.principale:hover:not(:disabled) { background: #163f7d; }
+button.piccolo { padding: 4px 10px; font-size: 0.9em; }
+
+.comandi { display: flex; flex-wrap: wrap; gap: 10px; margin: 16px 0; }
+
+details.controllo { margin: 12px 0; }
+details.controllo summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
+details.controllo .dentro { margin-top: 8px; }
+
+pre#risultati {
+  background: #fff;
+  border: 1px solid var(--linea);
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin: 0;
+  max-height: 520px;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: ui-monospace, Consolas, "Courier New", monospace;
+  font-size: 13px;
+  line-height: 1.4;
+}
+pre#risultati .errore { color: var(--rosso); font-weight: 600; }
+pre#risultati .avviso { color: var(--arancione); }
+pre#risultati .titolo { font-weight: 700; font-size: 1.1em; }
+
+iframe#stampa {
+  width: 100%;
+  height: 820px;
+  border: 1px solid var(--linea);
+  border-radius: 8px;
+  background: #fff;
+  margin-top: 10px;
+}
+
+footer { margin-top: 40px; color: var(--grigio); font-size: 0.9em; }
+a { color: var(--blu); }

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tabelloni dei tornei FITP</title>
+<!-- PyScript fa girare Python dentro il browser. Versione fissa: mai "latest". -->
+<link rel="stylesheet" href="https://pyscript.net/releases/2026.7.3/core.css">
+<script type="module" src="https://pyscript.net/releases/2026.7.3/core.js"></script>
+<link rel="stylesheet" href="web/stile.css">
+</head>
+<body>
+<main>
+
+<h1>Tabelloni dei tornei FITP</h1>
+<p class="sottotitolo">Versione di prova che funziona nel browser: niente da installare.
+Fa gli stessi conti del programma per il computer, seguendo i manuali FIT dei tabelloni.</p>
+
+<div id="stato" class="stato attesa">Sto preparando Python nel browser (circa 10 MB da scaricare,
+solo la prima volta): attendere qualche secondo...</div>
+
+<div class="riquadro">
+  <p><strong>Come si usa</strong></p>
+  <ol>
+    <li>Scrivere i giocatori iscritti e le impostazioni del torneo nei tre riquadri qui sotto
+        (dentro c'è un torneo di fantasia, da cui partire; oppure caricare un file dal proprio
+        computer con "Scegli un file"). Le righe che cominciano con # spiegano come si compila.</li>
+    <li>Premere <strong>Fai il tabellone</strong>. In basso compaiono i calcoli, gli avvisi e il
+        tabellone pronto da stampare (pulsante "Stampa").</li>
+    <li>Per far controllare un tabellone fatto o corretto a mano, aprire "Controllare un tabellone"
+        e premere <strong>Controlla il tabellone</strong>.</li>
+    <li>Se qualcosa non torna, premere <strong>Copia tutto per segnalare un problema</strong>
+        (in fondo) e incollare il testo in una mail o in un messaggio a chi segue il programma.</li>
+  </ol>
+  <p class="privacy">Tutto si fa dentro il browser: quello che si scrive qui <strong>non viene mandato
+  da nessuna parte</strong> e sparisce chiudendo la pagina. Si possono usare anche gli elenchi veri
+  (con i codici dei giocatori, non i nomi).</p>
+</div>
+
+<h2>I dati del torneo</h2>
+<div class="file-dati">
+  <div>
+    <label for="testo-giocatori">Giocatori <span class="nome-file">(dati/giocatori.txt)</span></label>
+    <textarea id="testo-giocatori" spellcheck="false"></textarea>
+    <div class="strumenti">
+      <input type="file" class="scegli" data-per="giocatori" accept=".txt,text/plain">
+      <button class="piccolo esempio" data-per="giocatori" disabled>Rimetti l'esempio</button>
+    </div>
+  </div>
+  <div>
+    <label for="testo-torneo">Torneo <span class="nome-file">(dati/torneo.txt)</span></label>
+    <textarea id="testo-torneo" spellcheck="false"></textarea>
+    <div class="strumenti">
+      <input type="file" class="scegli" data-per="torneo" accept=".txt,text/plain">
+      <button class="piccolo esempio" data-per="torneo" disabled>Rimetti l'esempio</button>
+    </div>
+  </div>
+  <div>
+    <label for="testo-classifiche">Classifiche <span class="nome-file">(dati/classifiche.txt)</span></label>
+    <textarea id="testo-classifiche" spellcheck="false"></textarea>
+    <div class="strumenti">
+      <input type="file" class="scegli" data-per="classifiche" accept=".txt,text/plain">
+      <button class="piccolo esempio" data-per="classifiche" disabled>Rimetti l'esempio</button>
+    </div>
+  </div>
+</div>
+
+<div class="comandi">
+  <button id="fai" class="principale" disabled>Fai il tabellone</button>
+</div>
+
+<details class="controllo" id="controllo">
+  <summary>Controllare un tabellone fatto o corretto a mano</summary>
+  <div class="dentro">
+    <label for="testo-tabellone">Tabellone da controllare
+      <span class="nome-file">(dati/tabellone-da-controllare.txt; va bene anche copiare qui il
+      tabellone in forma di testo fatto dal programma e correggerlo)</span></label>
+    <textarea id="testo-tabellone" spellcheck="false"></textarea>
+    <div class="strumenti">
+      <input type="file" class="scegli" data-per="tabellone" accept=".txt,text/plain">
+      <button class="piccolo esempio" data-per="tabellone" disabled>Rimetti l'esempio</button>
+      <button id="controlla" disabled>Controlla il tabellone</button>
+    </div>
+  </div>
+</details>
+
+<section id="sezione-risultati" hidden>
+  <h2>Risultati</h2>
+  <pre id="risultati"></pre>
+</section>
+
+<section id="sezione-stampa" hidden>
+  <h2>Tabellone da stampare</h2>
+  <div class="comandi">
+    <button id="stampa-tabellone" class="principale">Stampa</button>
+    <button id="apri-scheda">Apri in una nuova scheda</button>
+    <button id="scarica-html">Scarica tabellone.html</button>
+    <span id="scarica-txt"></span>
+  </div>
+  <iframe id="stampa" title="Tabellone da stampare"></iframe>
+</section>
+
+<section id="sezione-segnala">
+  <h2>Qualcosa non va?</h2>
+  <div class="comandi">
+    <button id="copia-tutto" disabled>Copia tutto per segnalare un problema</button>
+    <button id="scarica-tutto" disabled>Scarica come file segnalazione.txt</button>
+  </div>
+  <p class="privacy">Il testo contiene i dati scritti qui sopra e i risultati: così chi segue il
+  programma può rifare la stessa prova. Chi ha un account GitHub può anche scrivere una
+  <a href="https://github.com/gillus/Creazione-tabelloni-tornei-di-tennis/issues" target="_blank"
+  rel="noopener">segnalazione sul repository</a>.</p>
+</section>
+
+<footer>
+  Programma per i tabelloni dei tornei FITP, secondo i manuali FIT dei tabelloni (Volume I e II).
+  Codice e versione per il computer:
+  <a href="https://github.com/gillus/Creazione-tabelloni-tornei-di-tennis" target="_blank"
+  rel="noopener">github.com/gillus/Creazione-tabelloni-tornei-di-tennis</a>.
+</footer>
+
+</main>
+
+<script>
+// Poche funzioni che il browser sa fare meglio di Python: scaricare un file,
+// aprire una scheda, copiare negli appunti, stampare il riquadro. Le chiama web/pagina.py.
+window.scaricaFile = function (nome, testo, tipo) {
+  const blob = new Blob([testo], { type: tipo || "text/plain;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = nome;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 20000);
+};
+window.apriScheda = function (html) {
+  const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+  window.open(URL.createObjectURL(blob), "_blank");
+};
+window.copiaTesto = async function (testo) {
+  try { await navigator.clipboard.writeText(testo); return true; } catch (e) { return false; }
+};
+window.stampaRiquadro = function () {
+  const f = document.getElementById("stampa");
+  f.contentWindow.focus(); f.contentWindow.print();
+};
+// Se dopo un po' Python non e' ancora pronto, lo diciamo (di solito manca internet).
+setTimeout(function () {
+  const s = document.getElementById("stato");
+  if (s.classList.contains("attesa")) {
+    s.textContent = "Python non si è ancora caricato. Se resta così, controllare il collegamento a " +
+      "internet e ricaricare la pagina (F5).";
+    s.className = "stato errore";
+  }
+}, 90000);
+</script>
+<script type="py" src="web/pagina.py" config="web/pyscript.toml"></script>
+</body>
+</html>
