@@ -165,8 +165,101 @@ passare al successivo.
       di selezione (nel PDF sono disegnati, non scritti: vanno letti a occhio)
       e i tabelloni degli esempi 57-67 del Volume I.
 
+10. PAGINA NEL BROWSER (PyScript + GitHub Pages sul fork)
+    DA FARE. Deciso con chi ha proposto il progetto (ottobre 2026): per
+    provare il programma senza installare niente, una pagina pubblicata su
+    GitHub Pages dal fork dell'account gillus, all'indirizzo
+    https://gillus.github.io/Creazione-tabelloni-tornei-di-tennis/
+    PyScript fa girare Python dentro il browser: il codice di programma/
+    e' lo stesso del programma sul computer, che resta e continua a
+    funzionare come prima. Cambia solo la "facciata": al posto della
+    finestra c'e' la pagina. Niente viene mandato o salvato su GitHub: i
+    conti si fanno nel browser di chi usa la pagina.
+
+    Cosa e' gia' pronto: programma/ usa solo la libreria standard (niente
+    tkinter, niente file aperti direttamente, tranne la lettura dei file
+    dei dati); la finestra chiama le funzioni di tabelloni.py e raccoglie
+    quello che scrivono: la pagina fara' esattamente lo stesso. Il
+    tabellone da stampare e' gia' una pagina HTML. Un sorteggio prende
+    mezzo secondo sul computer: nel browser qualche secondo, va bene.
+
+    10a. PREPARARE tabelloni.py (piccolo ritocco, senza cambiare i conti).
+        - Dopo il tabellone, tabelloni.py apre da solo il browser con
+          webbrowser: dentro il browser non ha senso. Aggiungere
+          un'impostazione (per esempio APRI_BROWSER = True in cima al
+          file) che la pagina mette a False.
+        - Nient'altro: leggere i file con open() va bene anche nel
+          browser, perche' PyScript ha una sua cartella "finta" (sta in
+          memoria) in cui la pagina copia dati/, programma/ e scrive
+          risultati/.
+    10b. LA PAGINA: index.html nella cartella principale e cartella web/
+        con stile.css, pagina.py (il pezzo di Python che collega i
+        pulsanti) e pyscript.toml (dice a PyScript quali file scaricare
+        nella sua cartella finta: tutti i .py di programma/ e i tre file
+        di dati/, con gli stessi nomi, cosi' gli import non cambiano).
+        - index.html carica PyScript da pyscript.net con una versione
+          precisa (da scegliere guardando pyscript.net al momento di
+          farlo; mai "latest").
+        - Tre riquadri di testo con dentro dati/giocatori.txt, torneo.txt
+          e classifiche.txt (come li ha il repository): si modificano
+          li', oppure si carica un file dal proprio computer (pulsante
+          "Scegli un file").
+        - Pulsante "Fai il tabellone": scrive i tre riquadri nei file
+          della cartella finta, chiama fai_tabellone() raccogliendo
+          quello che scrive (come fa la finestra, con redirect_stdout),
+          mostra il testo nel riquadro dei risultati (ERRORE in rosso,
+          AVVISO in arancione, come nella finestra) e il tabellone da
+          stampare (risultati/tabellone.html della cartella finta) in un
+          riquadro sotto o in una nuova scheda, da cui si stampa con il
+          pulsante del browser. Pulsanti "Scarica" per tabellone.html e
+          per i tabellone.txt (anche quelli numerati dei tabelloni
+          collegati).
+        - Pulsante "Controlla un tabellone": un quarto riquadro (o un
+          file caricato) scritto in dati/tabellone-da-controllare.txt
+          della cartella finta, poi controlla_file().
+        - Mentre PyScript si scarica (10 MB circa, la prima volta) e
+          mentre fa i conti, la pagina dice "attendere": altrimenti
+          sembra rotta.
+        - Un errore inatteso del programma si mostra nel riquadro, come
+          nella finestra ("dettaglio tecnico da mandare a chi segue il
+          programma").
+        - Stile semplice, senza librerie: solo web/stile.css.
+    10c. GITHUB PAGES.
+        - File vuoto .nojekyll nella cartella principale, altrimenti
+          GitHub nasconde programma/__init__.py (i nomi che cominciano
+          con "_") e la pagina non parte.
+        - Prima si prova sul computer: "py -m http.server" nella cartella
+          e si apre http://localhost:8000/ (aprire index.html con un
+          doppio clic NON funziona, perche' il browser non lascia
+          scaricare i file dalla cartella).
+        - Poi, con conferma: accendere GitHub Pages sul fork (ramo main,
+          cartella principale), per esempio con gh api, e portare il
+          lavoro su main. Da quel momento ogni push su main cambia la
+          pagina.
+        - Scrivere l'indirizzo della pagina nel README.md (oggi vuoto),
+          con due righe su come si usa.
+    10d. PROVE.
+        - Le prove di programma/ non cambiano (py -m unittest discover
+          prove).
+        - Una prova nuova, prove/test_pagina.py, controlla che
+          web/pyscript.toml elenchi tutti i file .py di programma/ e i
+          tre file di dati/ (se se ne dimentica uno la pagina si rompe
+          solo online), che index.html non carichi PyScript con "latest",
+          e che .nojekyll esista.
+        - Prova a mano nel browser: tabellone semplice, tabelloni
+          collegati (dati/ di esempio), controllo di un tabellone, un file
+          dei dati con un errore (il messaggio deve essere lo stesso della
+          finestra).
+    10e. DOPO, SE SERVE.
+        - Copiare PyScript dentro il repository per far funzionare la
+          pagina senza internet (sono molti MB: solo se chi ha proposto il
+          progetto lo chiede).
+        - Ricordare i riquadri nel browser (localStorage) per non
+          riscrivere i dati a ogni apertura.
+
 Con i passi da 1 a 6 si ha un programma che funziona per i tornei
-semplici. I passi 7 e 8 sono la parte piu' grande.
+semplici. I passi 7 e 8 sono la parte piu' grande. Il passo 10 aggiunge la pagina
+nel browser, per provare il programma senza installare niente.
 
 
 DA CHIEDERE A CHI HA PROPOSTO IL PROGETTO, PRIMA DI COMINCIARE
