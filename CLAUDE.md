@@ -6,9 +6,12 @@ Questo è un **programma scritto in Python** che funziona in **due modi**:
   normale di lavorare per il giudice arbitro;
 - **nel browser**, come **pagina pubblicata su GitHub Pages** dalla copia
   (fork) dell'account `gillus`, grazie a **PyScript** (uno strumento che fa
-  girare Python dentro il browser, senza installare niente). Serve per le
-  **prove veloci**: chi vuole provare il programma apre l'indirizzo
+  girare Python dentro il browser, senza installare niente). **È qui che i
+  giudici arbitri provano il programma**: aprono l'indirizzo
   https://gillus.github.io/Creazione-tabelloni-tornei-di-tennis/ e basta.
+  Le prove le fanno **loro**, non chi scrive il codice (che non conosce i
+  tornei): la pagina deve **spiegarsi da sola** e dare un modo semplice di
+  **mandare indietro** quello che non va.
 
 Le due versioni usano **lo stesso codice** (cartella `programma/`): cambia
 solo la "facciata" (finestra oppure pagina). Deciso con chi ha proposto il
