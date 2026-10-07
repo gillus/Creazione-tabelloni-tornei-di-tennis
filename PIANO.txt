@@ -166,7 +166,7 @@ passare al successivo.
       e i tabelloni degli esempi 57-67 del Volume I.
 
 10. PAGINA NEL BROWSER (PyScript + GitHub Pages sul fork)
-    DA FARE. Deciso con chi ha proposto il progetto (ottobre 2026): per
+    FATTA la pagina (10a, 10b, 10d); da accendere GitHub Pages (10c). Deciso con chi ha proposto il progetto (ottobre 2026): per
     provare il programma senza installare niente, una pagina pubblicata su
     GitHub Pages dal fork dell'account gillus, all'indirizzo
     https://gillus.github.io/Creazione-tabelloni-tornei-di-tennis/
@@ -187,7 +187,7 @@ passare al successivo.
     tabellone da stampare e' gia' una pagina HTML. Un sorteggio prende
     mezzo secondo sul computer: nel browser qualche secondo, va bene.
 
-    10a. PREPARARE tabelloni.py (piccolo ritocco, senza cambiare i conti).
+    10a. FATTO - PREPARARE tabelloni.py (piccolo ritocco, senza cambiare i conti).
         - Dopo il tabellone, tabelloni.py apre da solo il browser con
           webbrowser: dentro il browser non ha senso. Aggiungere
           un'impostazione (per esempio APRI_BROWSER = True in cima al
@@ -196,14 +196,13 @@ passare al successivo.
           browser, perche' PyScript ha una sua cartella "finta" (sta in
           memoria) in cui la pagina copia dati/, programma/ e scrive
           risultati/.
-    10b. LA PAGINA: index.html nella cartella principale e cartella web/
+    10b. FATTO - LA PAGINA: index.html nella cartella principale e cartella web/
         con stile.css, pagina.py (il pezzo di Python che collega i
         pulsanti) e pyscript.toml (dice a PyScript quali file scaricare
         nella sua cartella finta: tutti i .py di programma/ e i tre file
         di dati/, con gli stessi nomi, cosi' gli import non cambiano).
         - index.html carica PyScript da pyscript.net con una versione
-          precisa (da scegliere guardando pyscript.net al momento di
-          farlo; mai "latest").
+          precisa: 2026.7.3 (che porta Python 3.14; mai "latest").
         - Tre riquadri di testo con dentro dati/giocatori.txt, torneo.txt
           e classifiche.txt (come li ha il repository): si modificano
           li', oppure si carica un file dal proprio computer (pulsante
@@ -241,20 +240,20 @@ passare al successivo.
           un account GitHub.
         - Stile semplice, senza librerie: solo web/stile.css.
     10c. GITHUB PAGES.
-        - File vuoto .nojekyll nella cartella principale, altrimenti
+        - FATTO: file vuoto .nojekyll nella cartella principale, altrimenti
           GitHub nasconde programma/__init__.py (i nomi che cominciano
           con "_") e la pagina non parte.
-        - Prima si prova sul computer: "py -m http.server" nella cartella
+        - FATTO: provata sul computer con "py -m http.server" nella cartella
           e si apre http://localhost:8000/ (aprire index.html con un
           doppio clic NON funziona, perche' il browser non lascia
           scaricare i file dalla cartella).
-        - Poi, con conferma: accendere GitHub Pages sul fork (ramo main,
+        - DA FARE, con conferma: accendere GitHub Pages sul fork (ramo main,
           cartella principale), per esempio con gh api, e portare il
           lavoro su main. Da quel momento ogni push su main cambia la
           pagina.
-        - Scrivere l'indirizzo della pagina nel README.md (oggi vuoto),
-          con due righe su come si usa.
-    10d. PROVE.
+        - FATTO: l'indirizzo della pagina e' nel README.md, con due righe
+          su come si usa.
+    10d. FATTO - PROVE.
         - Le prove di programma/ non cambiano (py -m unittest discover
           prove).
         - Una prova nuova, prove/test_pagina.py, controlla che
@@ -268,7 +267,10 @@ passare al successivo.
           tabellone, un file dei dati con un errore (il messaggio deve
           essere lo stesso della finestra), "Copia tutto", stampa. Si fa
           con "py -m http.server" e il browser di Windows su
-          http://localhost:8000/.
+          http://localhost:8000/ (oppure con Chrome senza finestra, pilotato
+          da un piccolo programma, come e' stato fatto la prima volta).
+          Una cosa scoperta provando: nel file web/pyscript.toml i percorsi
+          a sinistra sono relativi alla cartella web/, non alla pagina.
         - Quello che i giudici arbitri mandano indietro va nelle prove
           (prove/esercizi/ o un file nuovo), cosi' il problema non torna.
     10e. DOPO, SE SERVE.
