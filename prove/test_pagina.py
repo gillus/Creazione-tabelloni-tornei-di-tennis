@@ -149,6 +149,51 @@ class ProvePaginaPy(unittest.TestCase):
         senza = self.pagina.testo_segnalazione({"torneo": "nome = X"}, None)
         self.assertIn("nessuno", senza)
 
+    def test_maschera_nella_pagina(self):
+        from prove.test_maschera import CLASSIFICHE, FILE_DEL_GIUDICE
+        from programma.maschera import maschera_dal_testo, testo_dalla_maschera
+        p = self.pagina
+        maschera = maschera_dal_testo(FILE_DEL_GIUDICE, CLASSIFICHE)
+        conteggio = {"4.NC": 6, "4.3": 10, "3.2": 8, "2.5": 3}
+        codice = p.html_della_maschera(maschera, CLASSIFICHE, conteggio)
+        for identificatore in ("m-nome", "m-gara", "m-inizio", "m-fine", "m-date-scritte", "m-quanti",
+                               "m-alta-0", "m-alta-2", "m-teste-3", "m-uscenti-3", "m-per-categoria"):
+            self.assertIn(f'id="{identificatore}"', codice)
+        self.assertNotIn('id="m-alta-3"', codice)  # l'ultimo arriva fino alla piu' alta
+        self.assertIn('<select id="m-teste-0" disabled>', codice)  # 4.NC: niente teste di serie
+        self.assertIn("4.3 (4a categoria) - 10 giocatori", codice)
+        # Come se si scegliessero date, teste di serie e qualificati nella pagina.
+        p.maschera_dai_valori({"m-nome": "Coppa <Fantasia>", "m-gara": "Singolare maschile",
+                               "m-inizio": "2026-11-20", "m-fine": "2026-11-30", "m-quanti": "4",
+                               "m-entranti": "0", "m-alta-1": "4.1", "m-teste-1": "4",
+                               "m-uscenti-1": "4", "m-uscenti-3": "1", "m-teste-3": ""},
+                              maschera, CLASSIFICHE)
+        testo = testo_dalla_maschera(maschera, CLASSIFICHE)
+        self.assertIn("nome = Coppa <Fantasia>", testo)
+        self.assertIn("date = dal 20 al 30 novembre 2026", testo)
+        self.assertIn("tabellone 2 = 4.1, 4.2, 4.3, 4.4, 4.5, 4.6 ; teste di serie = 4 ; "
+                      "qualificati uscenti = 4", testo)
+        self.assertIn("Coppa &lt;Fantasia&gt;", p.html_della_maschera(maschera, CLASSIFICHE, {}))
+        # Da 4 a 2 tabelloni: resta il primo e l'ultimo.
+        p.maschera_dai_valori({"m-quanti": "2"}, maschera, CLASSIFICHE)
+        self.assertEqual(len(maschera.tabelloni), 2)
+        self.assertEqual(maschera.tabelloni[0].piu_alta, "4.NC")
+        p.maschera_dai_valori({"m-quanti": "0"}, maschera, CLASSIFICHE)
+        self.assertTrue(maschera.divisione_automatica)
+        self.assertIn("Tutto il torneo", p.html_della_maschera(maschera, CLASSIFICHE, {}))
+        p.uno_per_categoria(maschera, CLASSIFICHE, conteggio)
+        self.assertEqual([t.piu_alta for t in maschera.tabelloni[:-1]], ["4.NC", "4.3", "3.2"])
+
+    def test_classifiche_dal_testo(self):
+        self.assertEqual(self.pagina.classifiche_dal_testo("# commento\n2.1\n3,1\n\n4.nc\n"),
+                         ["2.1", "3.1", "4.NC"])
+
+    def test_riconosce_l_excel(self):
+        from prove.test_excel import INTESTAZIONE, xlsx
+        self.assertTrue(self.pagina.e_un_excel(xlsx(INTESTAZIONE)))
+        self.assertTrue(self.pagina.e_un_excel(b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1"))
+        self.assertFalse(self.pagina.e_un_excel("G001 ; 3.1 ; TC Uno".encode()))
+
 
 if __name__ == "__main__":
     unittest.main()

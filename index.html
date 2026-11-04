@@ -22,9 +22,12 @@ solo la prima volta): attendere qualche secondo...</div>
 <div class="riquadro">
   <p><strong>Come si usa</strong></p>
   <ol>
-    <li>Scrivere i giocatori iscritti e le impostazioni del torneo nei tre riquadri qui sotto
-        (dentro c'è un torneo di fantasia, da cui partire; oppure caricare un file dal proprio
-        computer con "Scegli un file"). Le righe che cominciano con # spiegano come si compila.</li>
+    <li>Compilare il torneo con la <strong>maschera</strong> qui sotto (nome, date, quanti
+        tabelloni, teste di serie, qualificati): la maschera scrive da sola il riquadro "Torneo".</li>
+    <li>Mettere i giocatori iscritti nel riquadro "Giocatori": si può caricare direttamente il
+        <strong>file Excel degli iscritti</strong> ("Scegli un file", sotto il riquadro), oppure
+        scriverli a mano. Dentro c'è un torneo di fantasia, da cui partire. Le righe che cominciano
+        con # spiegano come si compila.</li>
     <li>Premere <strong>Fai il tabellone</strong>. In basso compaiono i calcoli, gli avvisi e il
         tabellone pronto da stampare (pulsante "Stampa").</li>
     <li>Per far controllare un tabellone fatto o corretto a mano, aprire "Controllare un tabellone"
@@ -37,13 +40,23 @@ solo la prima volta): attendere qualche secondo...</div>
   con i nomi dei giocatori.</p>
 </div>
 
+<h2>Il torneo</h2>
+<div class="riquadro maschera">
+  <div id="maschera"><p class="nota">La maschera compare quando Python è pronto.</p></div>
+  <div id="maschera-problemi" class="avviso-maschera"></div>
+</div>
+
 <h2>I dati del torneo</h2>
+<p class="nota">Il riquadro "Torneo" lo scrive la maschera qui sopra; si può anche correggere a mano
+(per esempio per scrivere la scala) e la maschera si aggiorna.</p>
 <div class="file-dati">
   <div>
-    <label for="testo-giocatori">Giocatori <span class="nome-file">(dati/giocatori.txt)</span></label>
+    <label for="testo-giocatori">Giocatori <span class="nome-file">(dati/giocatori.txt; si può
+      caricare anche l'Excel degli iscritti)</span></label>
     <textarea id="testo-giocatori" spellcheck="false"></textarea>
     <div class="strumenti">
-      <input type="file" class="scegli" data-per="giocatori" accept=".txt,text/plain">
+      <input type="file" class="scegli" data-per="giocatori" accept=".txt,.xlsx,text/plain"
+        title="Un file di testo, oppure il file Excel (.xlsx) degli iscritti">
       <button class="piccolo esempio" data-per="giocatori" disabled>Rimetti l'esempio</button>
     </div>
   </div>

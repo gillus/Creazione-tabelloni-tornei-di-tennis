@@ -125,5 +125,30 @@ iframe#stampa {
   margin-top: 10px;
 }
 
+.nota { color: var(--grigio); font-size: 0.92em; }
+
+.maschera .campi {
+  display: grid;
+  grid-template-columns: 210px minmax(0, 1fr);
+  gap: 8px 12px;
+  align-items: center;
+  max-width: 780px;
+}
+.maschera .campi label { font-weight: 600; }
+.maschera .campi > input, .maschera .campi > select { justify-self: start; }
+.maschera input[type=text] { width: 100%; max-width: 480px; }
+.maschera input, .maschera select { font: inherit; padding: 4px 6px; border: 1px solid var(--linea);
+                                    border-radius: 4px; background: #fff; }
+.maschera select:disabled { color: var(--grigio); background: var(--chiaro); }
+.maschera table.tabelloni { border-collapse: collapse; margin-top: 14px; }
+.maschera table.tabelloni th, .maschera table.tabelloni td { padding: 4px 10px 4px 0; text-align: left; }
+.maschera table.tabelloni td:nth-child(3) { min-width: 200px; }
+.maschera table.tabelloni select { max-width: 190px; }
+.maschera { overflow-x: auto; }
+.maschera table.tabelloni thead th { color: var(--grigio); font-weight: normal; font-size: 0.92em; }
+.avviso-maschera { color: var(--rosso); margin-top: 10px; }
+.avviso-maschera:empty { display: none; }
+@media (max-width: 700px) { .maschera .campi { grid-template-columns: 1fr; } }
+
 footer { margin-top: 40px; color: var(--grigio); font-size: 0.9em; }
 a { color: var(--blu); }
