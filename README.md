@@ -9,8 +9,10 @@ tabellone fatto a mano, pagina pronta da stampare.
 
 Aprire https://gillus.github.io/Creazione-tabelloni-tornei-di-tennis/
 
-1. Scrivere i giocatori e le impostazioni del torneo nei riquadri (dentro c'è
-   un torneo di fantasia da cui partire), oppure caricare i propri file.
+1. Compilare il torneo con la maschera (nome, date, quanti tabelloni, teste di
+   serie, qualificati) e caricare il file Excel degli iscritti nel riquadro
+   "Giocatori" (oppure scriverli a mano: dentro c'è un torneo di fantasia da
+   cui partire).
 2. Premere **Fai il tabellone**: compaiono i calcoli, gli avvisi e il
    tabellone da stampare.
 3. Se qualcosa non va, premere **Copia tutto per segnalare un problema** e
@@ -24,7 +26,10 @@ Serve solo Python 3 (niente altro da installare). Nella cartella del programma:
 
     py tabelloni.py
 
-si apre la finestra con i pulsanti. I dati si scrivono nei file della cartella
-`dati/`, i risultati finiscono in `risultati/`.
+si apre la finestra con i pulsanti. Con "Carica dall'Excel..." si prende
+l'elenco degli iscritti, con "Compila con la maschera..." si scrive il torneo:
+tutti e due finiscono nella cartella `dati-veri/`, che resta sul computer (non
+va su internet). Gli esempi di fantasia sono nella cartella `dati/`, i
+risultati finiscono in `risultati/`.
 
 Le prove si avviano con `py -m unittest discover prove`.
