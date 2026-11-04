@@ -151,6 +151,101 @@ def leggi_giocatori(percorso, classifiche):
     return giocatori, problemi
 
 
+MESI = ("gennaio", "febbraio", "marzo", "aprile", "maggio", "giugno", "luglio", "agosto",
+        "settembre", "ottobre", "novembre", "dicembre")
+_GIORNI_DEL_MESE = (31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
+
+
+def giorni_del_mese(mese, anno=None):
+    """Quanti giorni ha il mese (1-12); senza l'anno, febbraio ne ha 29."""
+    if mese == 2 and anno is not None:
+        bisestile = anno % 4 == 0 and (anno % 100 != 0 or anno % 400 == 0)
+        return 29 if bisestile else 28
+    return _GIORNI_DEL_MESE[mese - 1]
+
+
+def _cambia_anno(mese_prima, mese_dopo):
+    """Da dicembre a gennaio (o simili) un torneo passa all'anno dopo."""
+    return mese_dopo is not None and mese_prima - mese_dopo >= 6
+
+
+def date_del_testo(testo):
+    """Le date scritte nel testo, in ordine: elenco di (giorno, mese, anno o None).
+
+    Capisce "dal 1 al 10 ottobre 2026", "dal 28 febbraio al 3 marzo", "1-10 ottobre",
+    "01/11/2026", "1.11.26". Restituisce anche i giorni scritti senza mese
+    (mese None), per poterli segnalare."""
+    import re
+    date = []
+    giorni = []  # giorni letti che aspettano il loro mese
+    # "1/11", "1.11.26", "1-11-2026" sono date; "1-10" (senza anno) e' dal giorno 1 al 10.
+    parole = re.findall(r"\d{1,2}[/.]\d{1,2}(?:[/.]\d{2,4})?|\d{1,2}-\d{1,2}-\d{2,4}|\d+|[a-zàèéìòù]+",
+                        testo.lower())
+    for indice, parola in enumerate(parole):
+        numerica = re.fullmatch(r"(\d{1,2})[/.\-](\d{1,2})(?:[/.\-](\d{2,4}))?", parola)
+        if numerica:
+            giorno, mese, anno = numerica.groups()
+            anno = int(anno) if anno else None
+            if anno is not None and anno < 100:
+                anno += 2000
+            date.append((int(giorno), int(mese), anno))
+        elif parola.isdigit() and len(parola) <= 2:
+            giorni.append(int(parola))
+        elif parola[:3] in [m[:3] for m in MESI] and (parola in MESI or len(parola) == 3):
+            mese = [m[:3] for m in MESI].index(parola[:3]) + 1
+            anno = None
+            if indice + 1 < len(parole) and parole[indice + 1].isdigit() \
+                    and len(parole[indice + 1]) == 4:
+                anno = int(parole[indice + 1])
+            date += [(giorno, mese, anno) for giorno in giorni]
+            if not giorni:
+                date.append((None, mese, anno))
+            giorni = []
+    date += [(giorno, None, None) for giorno in giorni]
+    # Un anno scritto solo in fondo ("dal 28 dicembre al 3 gennaio 2027") vale per
+    # tutte: per le date prima, l'anno e' lo stesso (o quello prima, se si passa da
+    # fine anno all'inizio dell'anno dopo).
+    anno_noto = None
+    for i in range(len(date) - 1, -1, -1):
+        giorno, mese, anno = date[i]
+        if anno is not None:
+            anno_noto, mese_noto = anno, mese
+        elif anno_noto is not None and mese is not None:
+            anno_noto = anno_noto - 1 if _cambia_anno(mese, mese_noto) else anno_noto
+            mese_noto = mese
+            date[i] = (giorno, mese, anno_noto)
+    return date
+
+
+def controlla_date(testo):
+    """Controlla che le date del torneo esistano davvero (niente 31 novembre) e che la
+    fine non venga prima dell'inizio. Restituisce un elenco di (gravita, messaggio)."""
+    problemi = []
+    date = date_del_testo(testo)
+    complete = []
+    for giorno, mese, anno in date:
+        if mese is None:
+            problemi.append((AVVISO, f"nelle date c'e' il giorno {giorno} senza il mese: "
+                                     f"scrivere per esempio \"dal 1 al 10 novembre\""))
+        elif not 1 <= mese <= 12:
+            problemi.append((ERRORE, f"nelle date il mese {mese} non esiste"))
+        elif giorno is None:
+            problemi.append((AVVISO, f"nelle date manca il giorno di {MESI[mese - 1]}"))
+        elif not 1 <= giorno <= giorni_del_mese(mese, anno):
+            quale = f"{giorno} {MESI[mese - 1]}" + (f" {anno}" if anno else "")
+            problemi.append((ERRORE, f"la data {quale} non esiste ({MESI[mese - 1]} ha "
+                                     f"{giorni_del_mese(mese, anno)} giorni)"))
+        else:
+            complete.append((giorno, mese, anno))
+    if not problemi:
+        for (g1, m1, a1), (g2, m2, a2) in zip(complete, complete[1:]):
+            if (a1 is None) == (a2 is None) and (a1 or 0, m1, g1) > (a2 or 0, m2, g2) \
+                    and not (a1 is None and _cambia_anno(m1, m2)):
+                problemi.append((ERRORE, f"nelle date il {g2} {MESI[m2 - 1]} viene prima del "
+                                         f"{g1} {MESI[m1 - 1]}: la fine e' prima dell'inizio"))
+    return problemi
+
+
 def leggi_torneo(percorso):
     """Legge le impostazioni del torneo (righe 'nome = valore')."""
     torneo = Torneo()
@@ -203,6 +298,9 @@ def leggi_torneo(percorso):
             else:
                 torneo.impostazioni[nome] = int(valore)
         else:
+            if nome == "date":
+                for gravita, messaggio in controlla_date(valore):
+                    problemi.append(Problema(gravita, percorso, numero, messaggio))
             torneo.impostazioni[nome] = valore
 
     for nome in IMPOSTAZIONI_OBBLIGATORIE:

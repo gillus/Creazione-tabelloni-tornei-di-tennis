@@ -4,7 +4,8 @@ import os
 import tempfile
 import unittest
 
-from programma.dati import AVVISO, ERRORE, leggi_classifiche, leggi_giocatori, leggi_torneo
+from programma.dati import (AVVISO, ERRORE, controlla_date, leggi_classifiche, leggi_giocatori,
+                            leggi_torneo)
 
 CLASSIFICHE = ["3.1", "3.2", "4.1", "4.NC"]
 
@@ -125,6 +126,39 @@ class ProveTorneo(ProvaFile):
         torneo, problemi = leggi_torneo(self.file("nome = Uno\ngara = Due\ntipo = misto\n"))
         self.assertEqual([p.gravita for p in problemi], [ERRORE])
         self.assertIn("selezione, estrazione", problemi[0].messaggio)
+
+
+    def test_data_che_non_esiste(self):
+        # Segnalato dal primo giudice arbitro che ha provato il programma: il 31 novembre.
+        torneo, problemi = leggi_torneo(self.file("nome = Uno\ngara = Due\n"
+                                                  "date = dal 25 al 31 novembre\n"))
+        self.assertEqual([(p.gravita, p.riga) for p in problemi], [(ERRORE, 3)])
+        self.assertIn("31 novembre non esiste", problemi[0].messaggio)
+
+
+class ProveDate(unittest.TestCase):
+    def gravita(self, testo):
+        return [g for g, _ in controlla_date(testo)]
+
+    def test_date_giuste(self):
+        for testo in ("dal 1 al 10 ottobre", "dal 1 al 10 ottobre 2026", "1-10 nov 2026",
+                      "dal 28 febbraio al 3 marzo 2027", "29 febbraio 2028", "29 febbraio",
+                      "dal 28 dicembre al 3 gennaio 2027", "dal 28 dicembre al 3 gennaio",
+                      "01/11/2026 - 30/11/2026", "1-11-2026", "torneo di Natale"):
+            self.assertEqual(self.gravita(testo), [], testo)
+
+    def test_giorni_che_non_esistono(self):
+        for testo in ("dal 31 novembre al 2 dicembre", "30 febbraio", "29 febbraio 2027",
+                      "dal 1/11 al 31/11", "31 aprile 2026", "32 marzo", "0 marzo", "1/13/2026"):
+            self.assertEqual(self.gravita(testo), [ERRORE], testo)
+
+    def test_fine_prima_dell_inizio(self):
+        self.assertEqual(self.gravita("dal 10 al 3 ottobre"), [ERRORE])
+        self.assertEqual(self.gravita("dal 3 novembre al 30 ottobre 2026"), [ERRORE])
+
+    def test_giorni_o_mese_mancanti(self):
+        self.assertEqual(self.gravita("dal  al  novembre"), [AVVISO])
+        self.assertEqual(self.gravita("dal 1 al 10"), [AVVISO, AVVISO])
 
 
 if __name__ == "__main__":

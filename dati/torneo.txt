@@ -10,7 +10,9 @@
 #   nome                  il nome del torneo, come deve comparire sul tabellone
 #                         (obbligatorio)
 #   gara                  la gara, per esempio "Singolare maschile" (obbligatorio)
-#   date                  le date del torneo, scritte come si vuole (facoltativo)
+#   date                  le date del torneo, per esempio "dal 1 al 10 novembre 2026"
+#                         (facoltativo). Il programma controlla che i giorni
+#                         esistano (niente 31 novembre)
 #   tipo                  "selezione" (i giocatori entrano in tre o piu' turni,
 #                         secondo la classifica) oppure "estrazione" (tutti
 #                         entrano al primo o al secondo turno) oppure
