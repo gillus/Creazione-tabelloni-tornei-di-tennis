@@ -35,8 +35,13 @@ Deciso con chi ha proposto il progetto (risposte complete in `DOMANDE.txt`).
 - **Tabelloni concatenati**: non un solo tabellone, ma **più tabelloni
   collegati** (qualificazioni → tabellone intermedio → tabellone finale),
   con i giocatori che entrano in fasi diverse secondo la classifica.
-- **Dati di ogni giocatore**: un **codice anonimo** (userid), la **classifica**
-  FITP (per esempio 4.6, 3.2) e il **circolo**.
+- **Dati di ogni giocatore**: il **nome** (cognome e nome, come va scritto
+  sul tabellone; va bene anche un codice), la **classifica** FITP (per
+  esempio 4.6, 3.2) e il **circolo**. Prima c'era solo un codice anonimo:
+  cambiato a novembre 2026 perché il giudice arbitro che ha provato il
+  programma stampa il tabellone con i nomi. I nomi veri restano sul
+  computer o nel browser di chi usa il programma (vedi Privacy).
+  Sul **tabellone da stampare** vanno **nome e classifica**, non il circolo.
   Regola dello stesso circolo: **al primo turno due giocatori dello stesso
   circolo non devono incontrarsi**. Vale **solo al primo turno** (il manuale
   dice "nei primi due incontri", ma qui si segue la scelta di chi ha proposto
@@ -156,5 +161,10 @@ Deciso con chi ha proposto il progetto (risposte complete in `DOMANDE.txt`).
   date di nascita, foto, numeri di telefono).
 - Per le prove usare nomi di fantasia o sigle. I file di esempio in `dati/`
   finiscono sulla pagina pubblica: devono restare di fantasia.
+- Gli elenchi veri (per esempio l'Excel degli iscritti, che ha anche email,
+  telefoni e date di nascita) **non vanno mai nel repository**: sul computer
+  il programma li mette nella cartella `dati-veri/`, che git ignora; i file
+  `.xls`/`.xlsx` sono ignorati anche loro. Dall'Excel il programma prende
+  solo cognome, nome, classifica e circolo.
 - La pagina nel browser **non manda da nessuna parte** quello che ci si
   scrive dentro: i conti si fanno dentro il browser di chi la usa.

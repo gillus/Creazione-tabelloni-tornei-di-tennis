@@ -7,3 +7,9 @@ __pycache__/
 
 # Tabelloni prodotti dal programma: si rifanno quando servono
 risultati/
+
+# Elenchi veri degli iscritti (con nomi, email, telefoni): restano solo su questo computer.
+# Il programma ci mette l'elenco caricato dall'Excel e il torneo compilato con la maschera.
+dati-veri/
+*.xls
+*.xlsx
