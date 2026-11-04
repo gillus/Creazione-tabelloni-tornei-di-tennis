@@ -3,11 +3,12 @@
 Il tabellone da controllare puo' essere fatto dal programma oppure scritto
 (o corretto) a mano in un file di testo: un posto per riga, dall'alto in basso.
 Ogni riga puo' essere:
-    G001            un giocatore (il suo codice, come in dati/giocatori.txt)
+    G001            un giocatore (il suo nome o codice, come in dati/giocatori.txt;
+                    il nome puo' avere piu' parole, per esempio "ROSSI Mario")
     (1) G001        un giocatore testa di serie numero 1
     posto libero    un posto libero (bye); va bene anche solo "libero"
     q               il posto di un qualificato entrante
-Prima puo' esserci il numero del posto (1, 2, 3...) e dopo il codice si
+Prima puo' esserci il numero del posto (1, 2, 3...) e dopo il nome si
 puo' scrivere quello che si vuole (classifica, circolo): il programma
 prende classifica e circolo da dati/giocatori.txt.
 E' lo stesso modo in cui il programma salva il tabellone in risultati/.
@@ -22,7 +23,7 @@ import re
 
 from programma.calcoli import (ESTRAZIONE, INTEGRALE, calcola, conta_per_classifica,
                                dimensione_del_tabellone, e_potenza_di_due)
-from programma.dati import AVVISO, ERRORE, Problema, leggi_righe
+from programma.dati import AVVISO, ERRORE, Problema, leggi_righe, trova_giocatore
 from programma.sorteggio import (GIOCATORE, LIBERO, QUALIFICATO_ENTRANTE, Posto, Tabellone,
                                  giocatori_per_sezione, incontri_stesso_circolo, schema,
                                  sorteggia, sorteggia_integrale)
@@ -32,7 +33,7 @@ _RIGA = re.compile(r"^(?:(\d+)\s+)?(?:\(\s*(\d+)\s*\)\s*)?(\S+)(.*)$")
 
 def leggi_tabellone(percorso, giocatori):
     """Legge un tabellone da un file di testo. Restituisce i posti e i problemi."""
-    per_codice = {g.codice.upper(): g for g in giocatori}
+    per_chiave = {g.chiave: g for g in giocatori}
     posti = []
     problemi = []
     gia_messi = {}  # codice -> riga dove compare la prima volta
@@ -54,14 +55,14 @@ def leggi_tabellone(percorso, giocatori):
             posti.append(Posto(LIBERO, testa))
         elif parola_minuscola == "q":
             posti.append(Posto(QUALIFICATO_ENTRANTE, testa))
-        elif parola.upper() in per_codice:
-            codice = parola.upper()
-            if codice in gia_messi:
+        elif trova_giocatore(parola + resto, per_chiave)[0] is not None:
+            g = trova_giocatore(parola + resto, per_chiave)[0]
+            if g.chiave in gia_messi:
                 problemi.append(Problema(
                     ERRORE, percorso, numero_riga,
-                    f"il giocatore {parola} e' gia' nel tabellone alla riga {gia_messi[codice]}"))
-            gia_messi.setdefault(codice, numero_riga)
-            posti.append(Posto(GIOCATORE, testa, per_codice[codice]))
+                    f"il giocatore {g.codice} e' gia' nel tabellone alla riga {gia_messi[g.chiave]}"))
+            gia_messi.setdefault(g.chiave, numero_riga)
+            posti.append(Posto(GIOCATORE, testa, g))
         else:
             problemi.append(Problema(
                 ERRORE, percorso, numero_riga,

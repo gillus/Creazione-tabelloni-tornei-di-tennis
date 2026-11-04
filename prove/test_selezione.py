@@ -302,6 +302,19 @@ class ProveControllo(unittest.TestCase):
                           for v in self.voci])
         self.assertEqual(self.controlla(voci), [])
 
+    def test_si_rilegge_con_i_nomi_di_piu_parole(self):
+        for i, g in enumerate(self.giocatori):
+            g.codice = f"COGNOME{i} Nome Secondo"
+        testo = disegna(self.tabellone, "Prova")
+        with tempfile.TemporaryDirectory() as cartella:
+            percorso = os.path.join(cartella, "tabellone.txt")
+            with open(percorso, "w", encoding="utf-8") as f:
+                f.write(testo)
+            voci, problemi = controllo_selezione.leggi_tabellone(percorso, self.giocatori)
+        self.assertEqual(problemi, [])
+        self.assertEqual([v.giocatore and v.giocatore.codice for v in voci],
+                         [v.giocatore and v.giocatore.codice for v in self.voci])
+
     def test_turni_che_non_formano_un_tabellone(self):
         self.voci[0].turno = 2
         self.assertErrore("non formano un tabellone")

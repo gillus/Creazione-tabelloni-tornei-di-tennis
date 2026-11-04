@@ -97,10 +97,20 @@ class ProvePagina(unittest.TestCase):
         self.assertIn(">Q8<", fogli[1])
         self.assertIn("13 sezioni", testo)
 
-    def test_caratteri_speciali_nel_circolo(self):
-        tabellone, testo = fai_pagina([("4.NC", "<b>Circolo & Co</b>"), ("4.NC", "Altro")])
+    def test_il_circolo_non_si_stampa(self):
+        # Sul tabellone da stampare bastano nome e classifica (primo giudice arbitro che
+        # ha provato il programma): il circolo non compare.
+        tabellone, testo = fai_pagina([("4.NC", "Circolo Speciale"), ("4.NC", "Altro")])
         self.assertBenFatta(testo)
-        self.assertIn("&lt;b&gt;Circolo &amp; Co&lt;/b&gt;", testo)
+        self.assertNotIn("Circolo Speciale", testo)
+
+    def test_caratteri_speciali_nel_nome(self):
+        giocatori = giocatori_di_prova([("4.NC", "A"), ("4.NC", "B")])
+        giocatori[0].codice = "D'ANGELO <Mario> & Co"
+        calcoli = calcola(conta_per_classifica(giocatori, CLASSIFICHE))
+        testo = pagina(sorteggia(calcoli, giocatori, random.Random(1)), IMPOSTAZIONI)
+        self.assertBenFatta(testo)
+        self.assertIn("D&#x27;ANGELO &lt;Mario&gt; &amp; Co", testo)
 
 
 if __name__ == "__main__":

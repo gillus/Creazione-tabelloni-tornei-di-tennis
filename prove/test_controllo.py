@@ -273,6 +273,26 @@ class ProveLetturaDelFile(ProvaTabellone):
         self.assertEqual([(p.tipo, p.testa_di_serie) for p in posti],
                          [(GIOCATORE, 1), (LIBERO, 0), (GIOCATORE, 2), (LIBERO, 0)])
 
+    def test_nomi_di_piu_parole(self):
+        # Con i nomi veri (cognome e nome) al posto dei codici.
+        giocatori = [Giocatore("ROSSI Mario", "3.1", "TC Uno"),
+                     Giocatore("ROSSI Mario Luca", "3.2", "TC Due"),
+                     Giocatore("D'ANGELO Anna", "3.2", "TC Tre"),
+                     Giocatore("BIANCHI Ugo", "3.2", "TC Uno")]
+        calcoli = calcola(conta_per_classifica(giocatori, CLASSIFICHE))
+        tabellone = sorteggia(calcoli, giocatori, random.Random(2))
+        percorso = self.scrivi(disegna(tabellone, "Prova"))
+        posti, problemi = leggi_tabellone(percorso, giocatori)
+        self.assertEqual(problemi, [])
+        self.assertEqual(posti, tabellone.posti)
+        # Scritto a mano, con maiuscole e spazi diversi, e qualcosa dopo il nome.
+        percorso = self.scrivi("(1) rossi  mario 3.1\nrossi mario luca\n"
+                               "d'angelo anna\n(2) Bianchi Ugo 3.2 TC Uno\n")
+        posti, problemi = leggi_tabellone(percorso, giocatori)
+        self.assertEqual(problemi, [])
+        self.assertEqual([p.giocatore.codice for p in posti],
+                         ["ROSSI Mario", "ROSSI Mario Luca", "D'ANGELO Anna", "BIANCHI Ugo"])
+
     def test_errori_nel_file(self):
         percorso = self.scrivi("1 G001\n2 G001\n3 X99\n5 q\n")
         posti, problemi = leggi_tabellone(percorso, self.giocatori)

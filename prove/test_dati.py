@@ -39,6 +39,14 @@ class ProveGiocatori(ProvaFile):
         self.assertEqual([g.codice for g in giocatori], ["A1", "A2"])
         self.assertEqual(giocatori[1].classifica, "4.NC")
 
+    def test_nomi_al_posto_dei_codici(self):
+        percorso = self.file("ROSSI   Mario ; 3.1 ; TC Uno\nrossi mario ; 3.2 ; TC Due\n"
+                             "ROSSI Mario (2) ; 3.2 ; TC Due\n")
+        giocatori, problemi = leggi_giocatori(percorso, CLASSIFICHE)
+        self.assertEqual([g.codice for g in giocatori], ["ROSSI Mario", "ROSSI Mario (2)"])
+        self.assertEqual([(p.gravita, p.riga) for p in problemi], [(ERRORE, 2)])
+        self.assertIn("gia' usato alla riga 1", problemi[0].messaggio)
+
     def test_classifica_con_la_virgola(self):
         giocatori, problemi = leggi_giocatori(self.file("A1 ; 3,2 ; TC Uno\n"), CLASSIFICHE)
         self.assertEqual(problemi, [])

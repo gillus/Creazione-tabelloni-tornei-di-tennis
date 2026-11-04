@@ -46,9 +46,32 @@ class Giocatore:
     riga: int = 0
 
     @property
+    def chiave(self):
+        """Il nome (o codice) scritto in modo da confrontarlo: maiuscole e spazi non contano."""
+        return chiave_del_nome(self.codice)
+
+    @property
     def chiave_circolo(self):
         """Il circolo scritto in modo da confrontarlo: maiuscole e spazi non contano."""
         return " ".join(self.circolo.split()).upper()
+
+
+def chiave_del_nome(testo):
+    return " ".join(testo.split()).upper()
+
+
+def trova_giocatore(testo, per_chiave):
+    """Il giocatore il cui nome (o codice) e' all'inizio del testo, e il resto del testo.
+
+    per_chiave  chiave del nome -> giocatore (vedi Giocatore.chiave).
+    Il nome puo' avere piu' parole ("ROSSI Mario 3.2 TC Collina"): si prova prima
+    con piu' parole possibile. Se non si trova nessuno: None e il testo intero."""
+    parole = testo.split()
+    for quante in range(len(parole), 0, -1):
+        giocatore = per_chiave.get(" ".join(parole[:quante]).upper())
+        if giocatore is not None:
+            return giocatore, " ".join(parole[quante:])
+    return None, testo
 
 
 @dataclass
@@ -108,21 +131,24 @@ def leggi_giocatori(percorso, classifiche):
         if len(parti) != 3:
             problemi.append(Problema(
                 ERRORE, percorso, numero,
-                f"servono 3 dati separati da punto e virgola (codice ; classifica ; circolo), "
+                f"servono 3 dati separati da punto e virgola (nome ; classifica ; circolo), "
                 f"invece ce ne sono {len(parti)}: \"{riga}\""))
             continue
 
         codice, classifica, circolo = parti
+        codice = " ".join(codice.split())  # "ROSSI   Mario" -> "ROSSI Mario"
         classifica = normalizza_classifica(classifica)
         riga_ok = True
 
         if not codice:
-            problemi.append(Problema(ERRORE, percorso, numero, "manca il codice del giocatore"))
+            problemi.append(Problema(ERRORE, percorso, numero, "manca il nome del giocatore"))
             riga_ok = False
         elif codice.upper() in codici_visti:
             problemi.append(Problema(
                 ERRORE, percorso, numero,
-                f"il codice {codice} e' gia' usato alla riga {codici_visti[codice.upper()]}"))
+                f"il nome {codice} e' gia' usato alla riga {codici_visti[codice.upper()]}: "
+                f"se sono due giocatori diversi, aggiungere qualcosa per distinguerli "
+                f"(per esempio la data di nascita o \"(2)\")"))
             riga_ok = False
         else:
             codici_visti[codice.upper()] = numero

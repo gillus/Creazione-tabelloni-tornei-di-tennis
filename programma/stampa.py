@@ -37,9 +37,10 @@ def _voce_giocatore(numero, posto):
     g = posto.giocatore
     if g is None:
         return numero_html
+    # Il circolo non si scrive: sul tabellone da stampare bastano nome e classifica
+    # (come fanno i giudici arbitri); la regola dello stesso circolo la segue il programma.
     return (f'{numero_html}{testa}<span class="codice">{_e(g.codice)}</span>'
-            f'<span class="classifica">{_e(g.classifica)}</span>'
-            f'<span class="circolo">{_e(g.circolo)}</span>')
+            f'<span class="classifica">{_e(g.classifica)}</span>')
 
 
 def _nome_breve(posto):
@@ -188,7 +189,7 @@ body { margin: 0; background: var(--sfondo); color: var(--inchiostro);
 .albero text { font-family: "Segoe UI", Arial, Helvetica, sans-serif; fill: var(--inchiostro); }
 .albero .intestazione-svg { fill: var(--grigio); font-size: 2.6px; letter-spacing: .1px; }
 .albero .codice-svg { font-weight: 600; }
-.albero .circolo-svg, .albero .nota-svg { fill: var(--grigio); }
+.albero .nota-svg { fill: var(--grigio); }
 .albero .nota-svg { font-style: italic; }
 .albero .uscita-svg { font-weight: 700; }
 .albero circle { fill: none; stroke: var(--inchiostro); stroke-width: .25; }
@@ -206,7 +207,6 @@ body { margin: 0; background: var(--sfondo); color: var(--inchiostro);
          font-size: 7pt; font-weight: 600; margin-right: 1.5mm; padding: 0 .5mm; }
 .codice { font-weight: 600; }
 .classifica { display: inline-block; margin-left: 2mm; min-width: 9mm; }
-.circolo { color: var(--grigio); }
 .libero, .nota { color: var(--grigio); font-style: italic; }
 .nota { margin-left: 2mm; }
 .uscita { float: right; font-weight: 700; }
@@ -346,11 +346,9 @@ def _testo_voce(voce, x, y, dimensione):
     else:
         g = voce.giocatore
         codice = g.codice if g else "?"
-        circolo = g.circolo if g else ""
         parti.append(f'<text x="{x:.2f}" y="{y:.2f}" font-size="{dimensione:.2f}">'
                      f'<tspan class="codice-svg">{_e(codice)}</tspan>'
-                     f'<tspan dx="1.5">{_e(voce.classifica)}</tspan>'
-                     f'<tspan class="circolo-svg" dx="1.5">{_e(circolo)}</tspan></text>')
+                     f'<tspan dx="1.5">{_e(voce.classifica)}</tspan></text>')
     return "".join(parti)
 
 

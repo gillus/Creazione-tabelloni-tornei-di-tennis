@@ -17,7 +17,7 @@ Il controllo segnala:
 import re
 
 from programma.calcoli import SELEZIONE, calcola, conta_per_classifica
-from programma.dati import AVVISO, ERRORE, Problema, leggi_righe
+from programma.dati import AVVISO, ERRORE, Problema, leggi_righe, trova_giocatore
 from programma.selezione_tabellone import (Incontro, Posti, TabelloneSelezione, Voce,
                                            albero_dalle_voci, coppie_di_ammessi, incontri_di,
                                            numeri_dei_lati, stesso_circolo, voci_di)
@@ -33,7 +33,7 @@ def e_di_selezione(percorso):
 
 def leggi_tabellone(percorso, giocatori):
     """Legge un tabellone di selezione. Restituisce le voci (dall'alto) e i problemi."""
-    per_codice = {g.codice.upper(): g for g in giocatori}
+    per_chiave = {g.chiave: g for g in giocatori}
     voci, problemi = [], []
     gia_messi = {}
     for numero_riga, riga in leggi_righe(percorso):
@@ -43,21 +43,20 @@ def leggi_tabellone(percorso, giocatori):
                                      f"la riga deve cominciare con \"turno\" e il numero del turno: "
                                      f"\"{riga}\""))
             continue
-        turno, testa, parola, _ = trovato.groups()
+        turno, testa, parola, resto = trovato.groups()
         turno, testa = int(turno), int(testa) if testa else 0
         if turno < 1:
             problemi.append(Problema(ERRORE, percorso, numero_riga, "il turno deve essere almeno 1"))
             continue
         if parola.lower() == "q":
             voci.append(Voce(QUALIFICATO_ENTRANTE, turno, testa_di_serie=testa))
-        elif parola.upper() in per_codice:
-            codice = parola.upper()
-            if codice in gia_messi:
+        elif trova_giocatore(parola + resto, per_chiave)[0] is not None:
+            g = trova_giocatore(parola + resto, per_chiave)[0]
+            if g.chiave in gia_messi:
                 problemi.append(Problema(
                     ERRORE, percorso, numero_riga,
-                    f"il giocatore {parola} e' gia' nel tabellone alla riga {gia_messi[codice]}"))
-            gia_messi.setdefault(codice, numero_riga)
-            g = per_codice[codice]
+                    f"il giocatore {g.codice} e' gia' nel tabellone alla riga {gia_messi[g.chiave]}"))
+            gia_messi.setdefault(g.chiave, numero_riga)
             voci.append(Voce(GIOCATORE, turno, g.classifica, testa, g))
         else:
             problemi.append(Problema(
