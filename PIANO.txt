@@ -49,9 +49,10 @@ Ogni passo produce qualcosa che si puo' vedere funzionare prima di
 passare al successivo.
 
  1. ELENCO GIOCATORI E IMPOSTAZIONI
-    Un file di testo per i giocatori (codice, classifica, circolo) e uno
-    per il torneo. Il programma li legge e segnala gli errori (per esempio
-    una classifica sconosciuta o un codice ripetuto).
+    Un file di testo per i giocatori (nome o codice, classifica, circolo;
+    dal passo 11 anche dall'Excel degli iscritti) e uno per il torneo. Il
+    programma li legge e segnala gli errori (per esempio una classifica
+    sconosciuta o un nome ripetuto).
 
  2. I CALCOLI DI BASE
     Dai giocatori, calcolare dimensione del tabellone, posti liberi e
@@ -280,9 +281,66 @@ passare al successivo.
         - Ricordare i riquadri nel browser (localStorage) per non
           riscrivere i dati a ogni apertura.
 
+11. MIGLIORIE CHIESTE DAL PRIMO GIUDICE ARBITRO CHE HA PROVATO LA PAGINA
+    FATTO (4-5 novembre 2026, pubblicato su main il 5 novembre).
+    Il primo giudice arbitro ha provato la pagina con tornei veri che ha
+    arbitrato: le soluzioni del programma si avvicinano molto a quelle che
+    ha adottato lui. Ha chiesto quattro cose, tutte fatte, sul computer e
+    nella pagina:
+    11a. FATTO - GIOCATORI DAL FILE EXCEL DEGLI ISCRITTI. Scrivere l'elenco
+        a mano era laborioso. Ora si carica il file .xlsx che da' il
+        sistema della FITP (programma/excel.py, solo libreria standard: un
+        .xlsx e' un archivio zip di file XML). Si prendono solo cognome,
+        nome, classifica e circolo; email, telefono, data di nascita e
+        tessera vengono ignorati. Due iscritti con lo stesso nome: al
+        secondo si aggiunge "(2)", con un avviso. I vecchi .xls non si
+        leggono: il programma dice di salvarli come .xlsx.
+        - Sul computer: pulsante "Carica dall'Excel..."; l'elenco va in
+          dati-veri/ (che git ignora: contiene nomi veri).
+        - Nella pagina: "Scegli un file" del riquadro Giocatori accetta
+          anche l'Excel.
+        - Provato con il file vero che ha mandato (59 iscritti, nessun
+          problema); il file NON e' nel repository. Le prove usano file
+          Excel di fantasia costruiti dentro prove/test_excel.py.
+    11b. FATTO - MASCHERA PER IL TORNEO. Scrivere dati/torneo.txt era
+        macchinoso (si era fatto un file da copiare, con 4 tabelloni
+        collegati: 4.NC, quarta, terza, seconda categoria). Ora c'e' una
+        maschera con campi e menu' a tendina (programma/maschera.py, usata
+        dalla finestra e dalla pagina): nome, gara, primo e ultimo giorno,
+        qualificati entranti, quanti tabelloni (fino a 6) e per ognuno la
+        classifica piu' alta, il tipo, le teste di serie e i qualificati
+        uscenti. Ogni riga dice chi gioca ("da 4.6 a 4.1 (4a categoria) -
+        18 giocatori"). Pulsante "Uno per categoria, secondo gli iscritti".
+        Nel tabellone dei soli 4.NC le teste di serie non si scelgono.
+        - La maschera scrive il testo di torneo.txt, che resta visibile e
+          modificabile (per esempio per la scala): le righe che la maschera
+          non conosce restano come sono. Se si cambia il testo, la maschera
+          si rilegge.
+        - Sul computer il file di esempio dati/torneo.txt non si tocca: il
+          torneo compilato va in dati-veri/torneo.txt.
+    11c. FATTO - DATE CHE NON ESISTONO. Il programma accettava il 31
+        novembre. Ora controlla che i giorni esistano (anche il 29
+        febbraio degli anni non bisestili) e che la fine non venga prima
+        dell'inizio. Nella maschera le date si scelgono dal calendario.
+    11d. FATTO - NOMI SUL TABELLONE DA STAMPARE. Sul tabellone si scrivono
+        nome e classifica; il circolo no (il giudice arbitro ne tiene conto
+        ma non lo scrive; la regola dello stesso circolo il programma la
+        segue come prima). Deciso con chi ha proposto il progetto: al posto
+        del codice anonimo si puo' scrivere il nome del giocatore, anche di
+        piu' parole ("ROSSI Mario"); il controllo di un tabellone lo
+        riconosce. I nomi veri restano sul computer o nel browser di chi
+        usa il programma; nel repository solo nomi di fantasia (regole
+        aggiornate in CLAUDE.md; .gitignore esclude dati-veri/ e i file
+        Excel).
+    Prove: 179 prove (py -m unittest discover prove), piu' la finestra
+    provata con tkinter e la pagina provata con Chrome senza finestra, sul
+    computer e poi all'indirizzo pubblico: Excel di fantasia, 4 tabelloni
+    con la maschera, tabellone senza errori, nomi sul foglio da stampare.
+
 Con i passi da 1 a 6 si ha un programma che funziona per i tornei
 semplici. I passi 7 e 8 sono la parte piu' grande. Il passo 10 aggiunge la pagina
-nel browser, per provare il programma senza installare niente.
+nel browser, per provare il programma senza installare niente. Il passo 11
+raccoglie le migliorie chieste dai giudici arbitri che lo provano.
 
 
 DA CHIEDERE A CHI HA PROPOSTO IL PROGETTO, PRIMA DI COMINCIARE
