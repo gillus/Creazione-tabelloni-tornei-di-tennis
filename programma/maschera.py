@@ -360,3 +360,33 @@ def giocatori_per_classifica(testo_giocatori):
             classifica = normalizza_classifica(riga.split(";")[1])
             conteggio[classifica] = conteggio.get(classifica, 0) + 1
     return conteggio
+
+
+def riepilogo_iscritti(conteggio, classifiche):
+    """Quanti iscritti per classifica, una riga per categoria, dalla piu' bassa
+    (come i tabelloni nella maschera):
+        "non classificati (6): 4.NC: 6"
+        "4a categoria (18): 4.6: 3 · 4.5: 3 · ... · 4.1: 3"
+    In fondo le classifiche che non sono in dati/classifiche.txt (vanno corrette)
+    e il totale. Restituisce un elenco di righe (vuoto se non c'e' nessun iscritto)."""
+    if not conteggio:
+        return []
+    righe = []
+    gruppo, pezzi, quanti = None, [], 0
+    for classifica in reversed(classifiche):
+        if not conteggio.get(classifica):
+            continue
+        if gruppo is not None and nome_categoria(classifica) != gruppo:
+            righe.append(f"{gruppo} ({quanti}): " + " · ".join(pezzi))
+            pezzi, quanti = [], 0
+        gruppo = nome_categoria(classifica)
+        pezzi.append(f"{classifica}: {conteggio[classifica]}")
+        quanti += conteggio[classifica]
+    if pezzi:
+        righe.append(f"{gruppo} ({quanti}): " + " · ".join(pezzi))
+    sconosciute = sorted(c for c in conteggio if c not in classifiche)
+    if sconosciute:
+        righe.append("classifiche sconosciute, da correggere: "
+                     + " · ".join(f"{c or '(vuota)'}: {conteggio[c]}" for c in sconosciute))
+    righe.append(f"in tutto: {sum(conteggio.values())} iscritti")
+    return righe

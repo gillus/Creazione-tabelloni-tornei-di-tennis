@@ -10,7 +10,8 @@ from programma.dati import ERRORE, leggi_classifiche, leggi_torneo
 from programma.maschera import (AUTOMATICO, Maschera, TabelloneDellaMaschera,
                                 classifiche_dei_tabelloni, data_da_parti, date_dal_testo,
                                 descrivi_tabellone, giocatori_per_classifica, maschera_dal_testo,
-                                problemi_della_maschera, scelte_della_piu_alta, testo_dalla_maschera,
+                                problemi_della_maschera, riepilogo_iscritti, scelte_della_piu_alta,
+                                testo_dalla_maschera,
                                 testo_delle_date, un_tabellone_per_categoria)
 
 CLASSIFICHE, _ = leggi_classifiche(os.path.join("dati", "classifiche.txt"))
@@ -161,6 +162,18 @@ class ProveMaschera(unittest.TestCase):
         elenco = ["4.1", "4.2", "4.3", "4.4", "4.5", "4.6"]
         self.assertEqual(descrivi_tabellone(elenco, conteggio), "da 4.3 a 4.1 (4a categoria) - 2 giocatori")
         self.assertEqual(descrivi_tabellone(elenco), "da 4.6 a 4.1 (4a categoria)")
+
+    def test_iscritti_per_classifica(self):
+        # Chiesto dal primo giudice arbitro: "cat 4.5: 10; cat 4.4: 5; cat 3.3: 12; cat 2.5: 6".
+        conteggio = {"4.5": 10, "4.4": 5, "3.3": 12, "2.5": 6, "4.NC": 3, "5.1": 1}
+        self.assertEqual(riepilogo_iscritti(conteggio, CLASSIFICHE), [
+            "non classificati (3): 4.NC: 3",
+            "4a categoria (15): 4.5: 10 · 4.4: 5",
+            "3a categoria (12): 3.3: 12",
+            "2a categoria (6): 2.5: 6",
+            "classifiche sconosciute, da correggere: 5.1: 1",
+            "in tutto: 37 iscritti"])
+        self.assertEqual(riepilogo_iscritti({}, CLASSIFICHE), [])
 
     def test_problemi(self):
         maschera = Maschera(inizio=datetime.date(2026, 11, 10), fine=datetime.date(2026, 11, 1),
