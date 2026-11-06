@@ -332,6 +332,15 @@ passare al successivo.
         usa il programma; nel repository solo nomi di fantasia (regole
         aggiornate in CLAUDE.md; .gitignore esclude dati-veri/ e i file
         Excel).
+    11e. FATTO (6 novembre 2026) - ISCRITTI PER CLASSIFICA NELLA MASCHERA.
+        Chiesto dallo stesso giudice arbitro dopo aver visto le modifiche
+        ("cat 4.5: 10; cat 4.4: 5; cat 3.3: 12..."). Nella maschera del
+        torneo c'e' il riquadro "Iscritti per classifica": una riga per
+        categoria, dalla piu' bassa come i tabelloni, con il numero di
+        iscritti di ogni classifica e il totale; in fondo le classifiche
+        sconosciute, da correggere (programma/maschera.py,
+        riepilogo_iscritti). Nella pagina si aggiorna da solo quando
+        cambiano i giocatori.
     Prove: 179 prove (py -m unittest discover prove), piu' la finestra
     provata con tkinter e la pagina provata con Chrome senza finestra, sul
     computer e poi all'indirizzo pubblico: Excel di fantasia, 4 tabelloni
