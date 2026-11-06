@@ -335,6 +335,14 @@ class MascheraTorneo:
                                  "giocatori da un tabellone fatto a parte)", foreground="#666").grid(
             row=6, column=2, columnspan=3, sticky="w", pady=(6, 0))
 
+        iscritti = ttk.LabelFrame(cornice, text="Iscritti per classifica", padding=8)
+        iscritti.pack(fill="x", pady=(10, 0))
+        righe = m.riepilogo_iscritti(conteggio, classifiche)
+        self.iscritti = ttk.Label(iscritti, justify="left", text="\n".join(righe) if righe else
+                                  "Nessun giocatore nel file dei giocatori (si puo' caricare "
+                                  "l'Excel degli iscritti con \"Carica dall'Excel...\").")
+        self.iscritti.pack(anchor="w")
+
         divisione = ttk.LabelFrame(cornice, text="I tabelloni", padding=8)
         divisione.pack(fill="x", pady=(10, 0))
         scelte = ["decisi dal programma"] + [

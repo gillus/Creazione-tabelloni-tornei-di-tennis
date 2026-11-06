@@ -101,6 +101,9 @@ class ProveFinestra(unittest.TestCase):
             self.finestra.file_dati["giocatori"].set(os.path.join("dati", "giocatori.txt"))
             maschera = self.finestra.apri_maschera()
             self.assertEqual(maschera.quanti.get(), "4 tabelloni collegati")
+            # Gli iscritti per classifica (dati/giocatori.txt di esempio: tutti di terza).
+            self.assertIn("3a categoria (", maschera.iscritti.cget("text"))
+            self.assertIn("in tutto:", maschera.iscritti.cget("text"))
             self.assertEqual(len(maschera.righe), 4)
             # Senza giorni: le date scritte a mano ("dal  al  novembre") non vanno bene.
             self.assertFalse(maschera.conferma())

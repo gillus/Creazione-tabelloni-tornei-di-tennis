@@ -162,6 +162,9 @@ class ProvePaginaPy(unittest.TestCase):
         self.assertNotIn('id="m-alta-3"', codice)  # l'ultimo arriva fino alla piu' alta
         self.assertIn('<select id="m-teste-0" disabled>', codice)  # 4.NC: niente teste di serie
         self.assertIn("4.3 (4a categoria) - 10 giocatori", codice)
+        self.assertIn("Iscritti per classifica", codice)
+        self.assertIn("<li>4a categoria (10): 4.3: 10</li>", codice)
+        self.assertIn("in tutto: 27 iscritti", codice)
         # Come se si scegliessero date, teste di serie e qualificati nella pagina.
         p.maschera_dai_valori({"m-nome": "Coppa <Fantasia>", "m-gara": "Singolare maschile",
                                "m-inizio": "2026-11-20", "m-fine": "2026-11-30", "m-quanti": "4",

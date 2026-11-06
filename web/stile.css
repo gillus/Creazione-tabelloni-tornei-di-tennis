@@ -146,6 +146,9 @@ iframe#stampa {
 .maschera table.tabelloni select { max-width: 190px; }
 .maschera { overflow-x: auto; }
 .maschera table.tabelloni thead th { color: var(--grigio); font-weight: normal; font-size: 0.92em; }
+.maschera .iscritti { margin-top: 14px; padding: 8px 12px; background: var(--chiaro);
+                      border-radius: 6px; max-width: 780px; }
+.maschera .iscritti ul { margin: 4px 0 0; padding-left: 20px; }
 .avviso-maschera { color: var(--rosso); margin-top: 10px; }
 .avviso-maschera:empty { display: none; }
 @media (max-width: 700px) { .maschera .campi { grid-template-columns: 1fr; } }

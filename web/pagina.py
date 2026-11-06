@@ -223,6 +223,15 @@ def html_della_maschera(maschera, classifiche, conteggio):
                  + '>Uno per categoria, secondo gli iscritti</button></div>')
     pezzi.append('</div>')
 
+    righe = m.riepilogo_iscritti(conteggio, classifiche)
+    pezzi.append('<div class="iscritti"><strong>Iscritti per classifica</strong>')
+    if righe:
+        pezzi.append("<ul>" + "".join(f"<li>{e(r)}</li>" for r in righe) + "</ul>")
+    else:
+        pezzi.append('<p class="nota">Nessun giocatore nel riquadro "Giocatori" (si può caricare '
+                     'l\'Excel degli iscritti con "Scegli un file", sotto il riquadro).</p>')
+    pezzi.append('</div>')
+
     automatica = maschera.divisione_automatica
     elenchi = m.classifiche_dei_tabelloni(maschera, classifiche)
     pezzi.append('<table class="tabelloni"><thead><tr><th></th>'
