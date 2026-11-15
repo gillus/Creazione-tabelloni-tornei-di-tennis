@@ -47,7 +47,11 @@ MASSIMO_SCALE = 20_000
 PESO_COPPIA_DIVERSA = 3      # coppia di due ammessi di classifica diversa
 PESO_AMMESSI_TRA_LORO = 1    # raccomandazione 4: due ammessi si incontrano al loro primo incontro
 PESO_COPPIE_NON_NECESSARIE = 6  # ... anche quando i q bastano a fare i corridoi
-PESO_PROGRESSIONE_PARI = 4   # raccomandazione 3: progressione tra pari classifica
+# Raccomandazione 3: chi ha vinto il primo incontro non deve trovare un ammesso della sua
+# stessa classifica (Volume I, capitolo IV, B.3 e C.3). Pesa piu' delle altre: un
+# giudice arbitro l'ha chiesto (novembre 2026, "evitare il piu' possibile"), e cosi'
+# l'esercizio 4.15 da' la stessa scala del manuale. Con 10 l'esercizio 3.24 cambia.
+PESO_PROGRESSIONE_PARI = 8
 PESO_COMPRESSIONE = 2        # raccomandazione 2: compressione tra classifiche diverse
 PESO_DUE_A_FAVORE = 2        # raccomandazione 5: due incontri di fila "in favore di pronostico"
 PESO_TRE_A_FAVORE = 6        # raccomandazione 5: mai piu' di due

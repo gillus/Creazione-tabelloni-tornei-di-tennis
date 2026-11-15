@@ -608,11 +608,12 @@ incontri = [2.1/6 [[2.3/4 [2.4/3 [2.5/2 [2.6/1 q/1]]]] [2.3/4 [2.5/3 [[2.6/1 q/1
 # Punteggio (piu' basso = segue meglio le raccomandazioni): manuale 15, programma 15.
 incontri del programma = [2.1/6 [[2.3/4 [2.4/3 [2.5/2 [2.6/1 q/1]]]] [2.3/4 [2.4/3 [[2.6/1 q/1] [2.6/1 q/1]]]]]] | [2.1/6 [[2.3/4 [2.4/3 [[2.6/1 q/1] [2.6/1 q/1]]]] [2.3/4 [2.5/3 [2.6/2 q/2]]]]] | [2.1/6 [[2.3/4 [2.4/3 [2.5/2 [2.6/1 q/1]]]] [2.3/4 [2.4/3 [[2.6/1 q/1] [2.6/1 q/1]]]]]] | [2.1/6 [2.2/5 [[2.4/3 [2.5/2 [2.6/1 q/1]]] [2.4/3 [[2.6/1 q/1] [2.6/1 q/1]]]]]] | [2.1/6 [2.2/5 [[2.4/3 [2.6/2 q/2]] [2.4/3 [[2.6/1 q/1] [2.6/1 q/1]]]]]] | [2.1/6 [2.2/5 [[2.5/3 [2.6/2 q/2]] [2.5/3 [[2.6/1 q/1] [2.6/1 q/1]]]]]]
 
-# Il programma propone una scala di quattro turni: un (4.3) entra al turno 3 e,
-# se vince, trova un altro (4.3) al turno 4, proprio quello che il manuale
-# vuole evitare con la sua scala "modificata" (vedi domanda N in PIANO.txt).
 # La scala "modificata" del manuale: una coppia di (4.5) in piu', per evitare
-# che un (4.3) incontri un altro (4.3).
+# che un (4.3) incontri un altro (4.3) (vedi domanda N in PIANO.txt).
+# Prima il programma proponeva una scala di quattro turni in cui un (4.3)
+# entrava al turno 3 e, se vinceva, trovava un altro (4.3) al turno 4. Da
+# novembre 2026 la raccomandazione 3 pesa di piu' (passo 12 di PIANO.txt) e il
+# programma sceglie la stessa scala del manuale.
 [Volume II, esercizio 4.15]
 giocatori = 20 (4.6), 6 (4.5), 8 (4.4), 12 (4.3)
 qualificati uscenti = 11
@@ -620,14 +621,13 @@ turno 3 = 10 (4.3)
 turno 2 = 2 (4.3), 8 (4.4), 2 (4.5)
 turno 1 = coppie 2 (4.5)+(4.5), 10 (4.6)+(4.6)
 teste di serie = 11
-proposta turno 4 = 11 (4.3)
-proposta turno 3 = 1 (4.3), 8 (4.4), 2 (4.5)
-proposta turno 2 = 2 (4.5); coppie 1 (4.5)+(4.5), 8 (4.6)+(4.6)
-proposta turno 1 = coppie 2 (4.6)+(4.6)
 incontri = [4.3/3 [4.5/2 [4.6/1 4.6/1]]] | [4.3/3 [4.5/2 [4.6/1 4.6/1]]] | [4.3/3 [4.4/2 [4.6/1 4.6/1]]] | [4.3/3 [4.4/2 [4.6/1 4.6/1]]] | [4.3/3 [4.4/2 [4.6/1 4.6/1]]] | [4.3/3 [4.4/2 [4.6/1 4.6/1]]] | [4.3/3 [4.4/2 [4.6/1 4.6/1]]] | [4.3/3 [4.4/2 [4.6/1 4.6/1]]] | [4.3/3 [4.4/2 [4.6/1 4.6/1]]] | [4.3/3 [4.4/2 [4.6/1 4.6/1]]] | [[4.3/2 [4.5/1 4.5/1]] [4.3/2 [4.5/1 4.5/1]]]
 
-# Il programma fa giocare tutti i (4.6) in favore di pronostico contro i (4.NC)
-# (come la soluzione 2 del manuale), con un turno in piu'.
+# Il programma fa giocare quasi tutti i (4.6) in favore di pronostico contro i
+# (4.NC), come il manuale, ma i (4.5) entrano tutti al turno 3 e due (4.4) al
+# turno 4: nessuno, dopo il primo incontro, trova un ammesso della sua stessa
+# classifica (raccomandazione 3). Prima del passo 12 di PIANO.txt proponeva una
+# scala di sei turni con due (4.4) contro (4.4) dopo il primo incontro.
 # Soluzione 1 (la scala scritta dal manuale). La soluzione 2 mette quattro (4.6)
 # in coppia con quattro (4.NC): "la scelta tra le due soluzioni puo' essere fatta
 # con altri criteri".
@@ -640,12 +640,11 @@ turno 3 = 4 (4.4), 2 (4.5)
 turno 2 = 2 (4.5), 7 (4.6)
 turno 1 = coppie 2 (4.6)+(4.6), 9 (4.NC)+(4.NC)
 teste di serie = 6
-proposta turno 6 = nessuno
-proposta turno 5 = 4 (4.4)
-proposta turno 4 = 4 (4.4), 4 (4.5)
-proposta turno 3 = 7 (4.6)
-proposta turno 2 = 4 (4.6); coppie 5 (4.NC)+(4.NC)
-proposta turno 1 = coppie 4 (4.NC)+(4.NC)
+proposta turno 5 = nessuno
+proposta turno 4 = 2 (4.4)
+proposta turno 3 = 6 (4.4), 4 (4.5)
+proposta turno 2 = 9 (4.6); coppie 1 (4.6)+(4.6)
+proposta turno 1 = coppie 9 (4.NC)+(4.NC)
 incontri = [[4.4/4 [[4.5/2 [4.NC/1 4.NC/1]] [4.5/2 [4.NC/1 4.NC/1]]]] [[4.4/3 [4.6/2 [4.NC/1 4.NC/1]]] [4.4/3 [4.6/2 [4.NC/1 4.NC/1]]]]] | [[4.4/4 [4.5/3 [4.6/2 [4.NC/1 4.NC/1]]]] [[4.4/3 [4.6/2 [4.NC/1 4.NC/1]]] [4.4/3 [4.6/2 [4.NC/1 4.NC/1]]]]] | [[4.4/4 [4.5/3 [[4.6/1 4.6/1] [4.6/1 4.6/1]]]] [4.4/4 [[4.6/2 [4.NC/1 4.NC/1]] [4.6/2 [4.NC/1 4.NC/1]]]]]
 # Punteggio (piu' basso = segue meglio le raccomandazioni): manuale 7, programma 7.
 incontri del programma = [[4.4/4 [[4.6/2 [4.NC/1 4.NC/1]] [4.6/2 [4.NC/1 4.NC/1]]]] [[4.4/3 [4.6/2 [4.NC/1 4.NC/1]]] [4.4/3 [4.6/2 [4.NC/1 4.NC/1]]]]] | [[4.4/4 [4.5/3 [4.6/2 [4.NC/1 4.NC/1]]]] [[4.4/3 [4.6/2 [4.NC/1 4.NC/1]]] [4.4/3 [4.6/2 [4.NC/1 4.NC/1]]]]] | [[4.4/4 [4.5/3 [[4.6/1 4.6/1] [4.6/1 4.6/1]]]] [4.4/4 [[4.5/2 [4.NC/1 4.NC/1]] [4.5/2 [4.NC/1 4.NC/1]]]]]
