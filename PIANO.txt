@@ -105,9 +105,9 @@ passare al successivo.
           programma lo dice e fa quello di estrazione.
         - FATTO (passo 9): tabelloni a sezioni di selezione, esercizi
           4.01-4.16. Teste di serie uguali al manuale in 16 casi su 16; scala
-          uguale in 10 casi su 16 (negli altri 6 la scala del programma segue
-          le raccomandazioni come quella del manuale o un po' meglio; per il
-          4.15 vedi la domanda N). Come nel manuale (esercizio 4.07), il
+          uguale in 11 casi su 16 (negli altri 5 la scala del programma segue
+          le raccomandazioni come quella del manuale o un po' meglio; il 4.15
+          e' uguale dal passo 12, vedi la domanda N). Come nel manuale (esercizio 4.07), il
           programma scarta una scala se le sezioni non possono avere lo
           stesso numero di giocatori (due di differenza al massimo) e di
           qualificati entranti (uno di differenza al massimo). Le teste di
@@ -346,10 +346,39 @@ passare al successivo.
     computer e poi all'indirizzo pubblico: Excel di fantasia, 4 tabelloni
     con la maschera, tabellone senza errori, nomi sul foglio da stampare.
 
+12. PROGRESSIONE DELLE CLASSIFICHE NEI TABELLONI DI SELEZIONE
+    FATTO (15 novembre 2026, sul ramo progressione-classifiche).
+    Lo stesso giudice arbitro ha mandato un tabellone del programma (26
+    giocatori, esce il vincitore, 4 teste di serie) e la versione corretta
+    secondo le indicazioni della FIT: chi vince un incontro non deve
+    trovare al turno dopo un giocatore della sua stessa classifica, salvo
+    le compressioni. Nel tabellone del programma un (4.2), vinto il primo
+    incontro, trovava un altro (4.2), e due (4.1) trovavano le teste di
+    serie (4.1). E' la raccomandazione 3 del Volume I (capitolo I, lettera
+    H, e capitolo IV, B.3 e C.3), la stessa della domanda N.
+    - Il difetto era nella scala: con la scala scelta questi incontri non
+      si potevano evitare. Ora nel costo della scala la raccomandazione 3
+      pesa 8 invece di 4 (programma/selezione.py, PESO_PROGRESSIONE_PARI):
+      con questi giocatori il programma sceglie una scala di 7 turni senza
+      nessun incontro tra pari classifica dopo il primo.
+    - Con il nuovo peso l'esercizio 4.15 da' la stessa scala del manuale
+      (prima no); l'esercizio 4.16 una scala diversa da quella di prima e
+      da quella del manuale, ma anche lei senza incontri tra pari
+      classifica (prima ce n'erano due). Con peso 10 l'esercizio 3.24
+      cambierebbe: per questo 8.
+    - Il tabellone corretto dal giudice arbitro ha 8 turni e sale sempre di
+      un solo gruppo (4.5, 4.4, 4.3, 4.2, 4.1). Quello del programma ha 7
+      turni e in qualche corridoio passa da (4.5) a (4.3): due gruppi, come
+      permette la raccomandazione 6. Chi vuole proprio la scala del giudice
+      arbitro la puo' scrivere in torneo.txt con le righe "turno 1 = ...":
+      provata, da' un tabellone giusto e senza avvisi.
+    - Nuova prova automatica con le classifiche di questo torneo (senza
+      nomi) in prove/test_selezione.py.
+
 Con i passi da 1 a 6 si ha un programma che funziona per i tornei
 semplici. I passi 7 e 8 sono la parte piu' grande. Il passo 10 aggiunge la pagina
-nel browser, per provare il programma senza installare niente. Il passo 11
-raccoglie le migliorie chieste dai giudici arbitri che lo provano.
+nel browser, per provare il programma senza installare niente. I passi 11 e 12
+raccolgono le migliorie chieste dai giudici arbitri che lo provano.
 
 
 DA CHIEDERE A CHI HA PROPOSTO IL PROGETTO, PRIMA DI COMINCIARE
@@ -543,4 +572,6 @@ DA CHIEDERE A CHI HA PROPOSTO IL PROGETTO, PRIMA DI COMINCIARE
     raccomandazioni un po' meglio (per esempio meno coppie di due ammessi).
     Domanda: la raccomandazione 3 conta piu' delle altre? Se si', il
     programma le dara' piu' peso.
-    Risposta:
+    Risposta: si' (un giudice arbitro, novembre 2026: "occorre evitare il
+    piu' possibile" che chi vince trovi un pari classifica). Fatto nel
+    passo 12: ora il programma sceglie la scala del manuale.
