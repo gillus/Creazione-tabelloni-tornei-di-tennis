@@ -415,6 +415,21 @@ class ProveRaccomandazioni(unittest.TestCase):
         radice = Incontro(2, Incontro(1, _v("4.4", "A"), _q()), _v("4.4", "B"))
         self.assertIn("incontrano un ammesso della stessa classifica", self.messaggi([radice]))
 
+    def test_il_programma_evita_la_progressione_tra_pari_classifica(self):
+        # Il caso mandato da un giudice arbitro (novembre 2026): 26 giocatori, esce il
+        # vincitore, 4 teste di serie. Prima il programma faceva incontrare un (4.2) che
+        # aveva vinto con un altro (4.2), e due (4.1) con le teste di serie (4.1).
+        diretti = ["4.1"] * 7 + ["4.2"] * 7 + ["4.3"] * 4 + ["4.4"] * 2 + ["4.5"] * 6
+        calcoli = calcola([(c, diretti.count(c)) for c in CLASSIFICHE if c in diretti],
+                          0, 1, tipo=SELEZIONE)
+        _, tutte = scala_migliore(diretti, 0, 1, LIVELLO)
+        scala, teste = scegli_scala(tutte, calcoli.teste_di_serie_minimo,
+                                    calcoli.teste_di_serie_massimo, LIVELLO, 0, 4)
+        for seme in range(5):
+            tabellone = prepara(scala, teste, giocatori_per(diretti), LIVELLO, 0,
+                                random.Random(seme))
+            self.assertNotIn("stessa classifica", self.messaggi(tabellone.radici, finale=True))
+
     def test_piu_di_due_incontri_in_favore(self):
         radice = Incontro(3, Incontro(2, Incontro(1, _v("4.1"), _q()), Incontro(1, _v("4.4", "A"), _q())),
                           Incontro(2, Incontro(1, _v("4.4", "B"), _q()), Incontro(1, _v("4.4", "C"), _q())))
