@@ -375,9 +375,51 @@ passare al successivo.
     - Nuova prova automatica con le classifiche di questo torneo (senza
       nomi) in prove/test_selezione.py.
 
+13. PROGRESSIONE "SENZA SALTI" (STILE DEL GIUDICE ARBITRO)
+    FATTO (16 novembre 2026, sul ramo progressione-senza-salti).
+    Il giudice arbitro del passo 12 preferisce ancora la sua scala, e
+    spiega le buone usanze dei tornei veri (non tutte scritte nel manuale):
+    a) quando si puo', progressioni di un gruppo alla volta, anche con un
+       turno in piu' ("il numero degli incontri non cambia");
+    b) le teste di serie al primo incontro contro una classifica piu' bassa
+       (non in coppia con un pari classifica);
+    c) le teste di serie favorite partendo dalla piu' alta: con la sua
+       scala il programma dava alla n. 3 tre (4.1) e due (4.2), alla n. 4
+       due (4.1) e tre (4.2);
+    d) mai troppi incontri di fila tra pari classifica (per esempio tre).
+    Provate una per una, tutte e quattro cambiano le soluzioni di molti
+    esercizi del manuale (fino a 20 su 48): nelle sue soluzioni il manuale
+    fa spesso progressioni di due gruppi, mette teste di serie in coppia o
+    contro un pari classifica, e a parita' dispone i corridoi secondo i
+    numeri d'ordine. Per questo sono diventate una scelta:
+    - nuova impostazione "progressione" in torneo.txt, e nuovo menu' nella
+      maschera (finestra e pagina): "come il manuale" (se manca, come
+      prima: gli esercizi danno sempre le soluzioni del manuale) oppure
+      "senza salti" (le quattro buone usanze qui sopra);
+    - programma/selezione.py: Stile, con i pesi che cambiano tra i due
+      modi (COME_IL_MANUALE e SENZA_SALTI). Nello stile senza salti una
+      progressione di due gruppi pesa 3 invece di 1; una testa di serie
+      contro un pari classifica al primo incontro pesa 8; tre incontri di
+      fila tra pari classifica dal primo incontro pesano 4 (non per la
+      classifica piu' alta: alla fine i piu' forti si incontrano tra loro);
+    - nella scala le coppie di due ammessi possono anche essere piu' forti
+      dei singoli dello stesso turno, come fa il giudice arbitro ("turno 4
+      = 2 (4.3), 1 (4.2); coppie 2 (4.2)+(4.2)"): prima il programma questa
+      scala non la provava nemmeno. Solo nello stile senza salti (negli
+      esercizi del manuale le coppie sono sempre le piu' deboli);
+    - programma/selezione_tabellone.py: corridoi_delle_teste e
+      teste_sfavorite (la testa di serie n. k non deve avere un corridoio
+      piu' difficile di una con il numero piu' alto), teste_contro_pari.
+    Con i 26 iscritti del giudice arbitro e "progressione = senza salti" il
+    programma propone esattamente la sua scala di 8 turni, con la testa di
+    serie n. 3 piu' favorita della n. 4 e nessuna testa di serie contro un
+    pari classifica al primo incontro.
+    Prove: 186 prove, piu' la finestra provata con tkinter e la pagina con
+    Chrome senza finestra.
+
 Con i passi da 1 a 6 si ha un programma che funziona per i tornei
 semplici. I passi 7 e 8 sono la parte piu' grande. Il passo 10 aggiunge la pagina
-nel browser, per provare il programma senza installare niente. I passi 11 e 12
+nel browser, per provare il programma senza installare niente. I passi da 11 a 13
 raccolgono le migliorie chieste dai giudici arbitri che lo provano.
 
 
