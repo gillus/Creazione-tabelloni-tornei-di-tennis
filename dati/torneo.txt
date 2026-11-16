@@ -28,6 +28,14 @@
 #                         (facoltativo; se manca vale 1). Se non e' 1, 2, 4, 8, 16...
 #                         (per esempio 3, 5 o 6) il tabellone viene diviso in
 #                         sezioni, una per ogni qualificato (capitolo III del manuale)
+#   progressione          solo per i tabelloni di selezione, come il programma
+#                         sceglie la scala: "come il manuale" (come nelle soluzioni
+#                         degli esercizi del Volume II, dove le progressioni di due
+#                         gruppi vanno bene) oppure "senza salti" (quando si puo',
+#                         progressioni di un gruppo alla volta anche con qualche
+#                         turno in piu'; le teste di serie al primo incontro contro
+#                         una classifica piu' bassa; mai tre incontri di fila tra
+#                         pari classifica). Facoltativo; se manca vale "come il manuale"
 #   teste di serie        quante teste di serie fare (facoltativo; se manca le
 #                         propone il programma, secondo le regole del manuale).
 #                         Con le sezioni deve essere un multiplo del numero delle

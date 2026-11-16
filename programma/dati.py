@@ -13,9 +13,10 @@ AVVISO = "AVVISO"
 # Impostazioni del torneo che il programma conosce, e quali sono obbligatorie.
 IMPOSTAZIONI_OBBLIGATORIE = ("nome", "gara")
 IMPOSTAZIONI_FACOLTATIVE = ("date", "tipo", "qualificati entranti", "qualificati uscenti",
-                            "teste di serie")
+                            "teste di serie", "progressione")
 # Valori ammessi per le impostazioni con una scelta tra poche parole.
-IMPOSTAZIONI_A_SCELTA = {"tipo": ("selezione", "estrazione", "integrale")}
+IMPOSTAZIONI_A_SCELTA = {"tipo": ("selezione", "estrazione", "integrale"),
+                         "progressione": ("come il manuale", "senza salti")}
 # "turno 1", "turno 2"...: la scala di un tabellone di selezione scritta dal giudice arbitro.
 MASSIMO_TURNO = 12
 # "tabellone 1", "tabellone 2"...: i tabelloni collegati.

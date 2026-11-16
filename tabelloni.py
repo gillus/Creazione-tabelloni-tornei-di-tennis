@@ -28,7 +28,7 @@ from programma.calcoli import (ESTRAZIONE, INTEGRALE, SELEZIONE, calcola, conta_
                                descrivi)
 from programma.controllo import controlla, leggi_tabellone
 from programma.dati import AVVISO, ERRORE, Problema, leggi_classifiche, leggi_giocatori, leggi_torneo
-from programma.selezione import controlla_scala, descrivi_scala, scala_migliore, scala_scritta
+from programma.selezione import STILI, controlla_scala, descrivi_scala, scala_migliore, scala_scritta
 from programma.sorteggio import disegna, sorteggia, sorteggia_integrale
 from programma.stampa import pagina, pagina_collegati
 
@@ -189,7 +189,7 @@ def fai_tabelloni_collegati(parti, scritta, giocatori, classifiche, torneo, prob
 
 def impostazioni_della_parte(impostazioni, parte, quante):
     """Le impostazioni di un tabellone della divisione, come se fosse un torneo a se'."""
-    una = {nome: impostazioni[nome] for nome in ("nome", "gara", "date", "tipo")
+    una = {nome: impostazioni[nome] for nome in ("nome", "gara", "date", "tipo", "progressione")
            if nome in impostazioni}
     if una.get("tipo") == INTEGRALE and parte.numero < quante:
         del una["tipo"]  # il sorteggio integrale e' solo per il tabellone finale
@@ -308,6 +308,7 @@ def fai_selezione(giocatori, classifiche, impostazioni, titolo):
         return problemi, None
     livello = {c: i for i, c in enumerate(classifiche)}
     diretti = sorted((g.classifica for g in giocatori), key=lambda c: livello[c])
+    stile = STILI[impostazioni.get("progressione", "come il manuale")]
 
     print("TABELLONE DI SELEZIONE")
     print(f"Giocatori: {len(giocatori)} ammessi direttamente e {q} qualificati entranti, "
@@ -338,14 +339,15 @@ def fai_selezione(giocatori, classifiche, impostazioni, titolo):
                              "scala o il numero delle teste di serie")], None
         print("Scala scritta dal giudice arbitro in dati/torneo.txt:")
     else:
-        _, tutte = scala_migliore(diretti, q, Qu, livello)
+        _, tutte = scala_migliore(diretti, q, Qu, livello, stile)
         scala, teste = selezione_tabellone.scegli_scala(tutte, minimo, massimo, livello,
-                                                        calcoli.sezioni, scelte)
+                                                        calcoli.sezioni, scelte, stile)
         if scala is None:
             return [], None
         if sum(1 for t in scala.turni if t.singoli or t.coppie) < 3:
             return [], IN_DUE_TURNI
-        print(f"Scala proposta dal programma (la migliore tra {len(tutte)} possibili):")
+        come = ", progressione senza salti" if stile is STILI["senza salti"] else ""
+        print(f"Scala proposta dal programma (la migliore tra {len(tutte)} possibili{come}):")
     for riga in descrivi_scala(scala):
         print(riga)
     if "tabellone" not in impostazioni:
@@ -357,7 +359,8 @@ def fai_selezione(giocatori, classifiche, impostazioni, titolo):
         print(f"Teste di serie ({chi}): {teste}, possibili da {minimo} a {massimo}")
     print()
 
-    tabellone = selezione_tabellone.prepara(scala, teste, giocatori, livello, calcoli.sezioni)
+    tabellone = selezione_tabellone.prepara(scala, teste, giocatori, livello, calcoli.sezioni,
+                                            stile=stile)
     problemi += tabellone.problemi
     controllo = controllo_selezione.controlla(tabellone.voci(), giocatori, classifiche, q, Qu,
                                               impostazioni.get("teste di serie"))

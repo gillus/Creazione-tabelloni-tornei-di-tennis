@@ -130,6 +130,14 @@ class ProveTorneo(ProvaFile):
         self.assertEqual(torneo.impostazioni["tipo"], "selezione")
         self.assertEqual(torneo.impostazioni["turno 1"], "coppie 4 (4.4)+q")
 
+    def test_progressione(self):
+        torneo, problemi = leggi_torneo(self.file("nome = Uno\ngara = Due\nprogressione = Senza salti\n"))
+        self.assertEqual(problemi, [])
+        self.assertEqual(torneo.impostazioni["progressione"], "senza salti")
+        torneo, problemi = leggi_torneo(self.file("nome = Uno\ngara = Due\nprogressione = a salti\n"))
+        self.assertEqual([p.gravita for p in problemi], [ERRORE])
+        self.assertIn("come il manuale, senza salti", problemi[0].messaggio)
+
     def test_tipo_sbagliato(self):
         torneo, problemi = leggi_torneo(self.file("nome = Uno\ngara = Due\ntipo = misto\n"))
         self.assertEqual([p.gravita for p in problemi], [ERRORE])
