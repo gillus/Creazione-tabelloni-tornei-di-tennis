@@ -57,8 +57,33 @@ PESO_DUE_A_FAVORE = 2        # raccomandazione 5: due incontri di fila "in favor
 PESO_TRE_A_FAVORE = 6        # raccomandazione 5: mai piu' di due
 PESO_CLASSIFICA_DIVISA = 2   # giocatori della stessa classifica in due turni diversi
 PESO_MODI_DIVERSI = 2        # ... alcuni in coppia tra loro e altri no
-PESO_TURNO = 2               # ogni turno in piu'
 PESO_TURNO_VUOTO = 3         # un turno in cui non entra nessuno (solo compressioni)
+
+
+@dataclass(frozen=True)
+class Stile:
+    """Come scegliere la scala, tra quelle che rispettano le regole: i pesi che
+    cambiano tra lo stile degli esercizi del manuale e quello "senza salti"."""
+    salto: float = 1             # raccomandazione 6: ogni gruppo di differenza oltre il primo
+    turno: float = 2             # ogni turno in piu'
+    tre_tra_pari: float = 0      # tre incontri di fila tra giocatori della stessa classifica
+    testa_contro_pari: float = 0  # una testa di serie che al primo incontro trova un pari classifica
+    teste_favorite: float = 0    # una testa di serie con un corridoio piu' difficile di una piu' bassa
+    coppie_sopra: bool = False   # coppie di due ammessi piu' forti dei singoli dello stesso turno
+
+
+# Lo stile delle soluzioni degli esercizi del manuale (Volume II): le progressioni
+# di due gruppi vanno bene (raccomandazione 6), meglio pochi turni.
+COME_IL_MANUALE = Stile()
+# Lo stile chiesto da un giudice arbitro (novembre 2026), "quando si puo'": progressioni
+# di un gruppo alla volta, anche con piu' turni ("il numero degli incontri non cambia");
+# le teste di serie al primo incontro contro una classifica piu' bassa, e favorite partendo
+# dalla piu' alta (corridoi piu' facili); mai tre incontri di fila tra pari classifica. Le coppie di due ammessi possono essere i piu' forti del
+# turno: "turno 4 = 2 (4.3), 1 (4.2); coppie 2 (4.2)+(4.2)".
+SENZA_SALTI = Stile(salto=3, tre_tra_pari=4, testa_contro_pari=8, teste_favorite=1,
+                    coppie_sopra=True)
+# I valori dell'impostazione "progressione" in dati/torneo.txt.
+STILI = {"come il manuale": COME_IL_MANUALE, "senza salti": SENZA_SALTI}
 
 
 @dataclass
@@ -104,7 +129,7 @@ def _calcola_posti(turni, qualificati_uscenti):
 
 def scale_possibili(diretti, qualificati_entranti, qualificati_uscenti,
                     massimo_turni=MASSIMO_TURNI, coppie_in_piu=MASSIMO_COPPIE_IN_PIU,
-                    solo_con_piu=False):
+                    solo_con_piu=False, coppie_sopra=False):
     """Tutte le scale che rispettano le regole.
 
     diretti        le classifiche dei giocatori ammessi direttamente, una per
@@ -112,6 +137,8 @@ def scale_possibili(diretti, qualificati_entranti, qualificati_uscenti,
     coppie_in_piu  quante coppie di due ammessi si possono fare oltre a quelle
                    necessarie (quando i q sono meno dei qualificati uscenti)
     solo_con_piu   solo le scale con esattamente 'coppie_in_piu' coppie in piu'
+    coppie_sopra   se le coppie di due ammessi possono essere piu' forti dei singoli
+                   dello stesso turno (Stile.coppie_sopra)
     """
     q = qualificati_entranti
     liberi = diretti[:len(diretti) - q]
@@ -153,9 +180,6 @@ def scale_possibili(diretti, qualificati_entranti, qualificati_uscenti,
                         break
                     if (vincitori - s) % 2:
                         continue
-                    # Le coppie di due ammessi sono "se possibile" di pari classifica
-                    # (Volume I, capitolo IV, B.2): se no, costano di piu'.
-                    coppie_uguali = liberi[i + s:i + s + 2 * d]
                     resto = (restano_liberi - s - 2 * d) + 2 * (restano_compagni - k)
                     if vincitori == 0 and (s or resto):
                         continue
@@ -167,19 +191,30 @@ def scale_possibili(diretti, qualificati_entranti, qualificati_uscenti,
                     nuovi = _aggiorna_turni(turni_di, set(entrano), livello)
                     if nuovi is None:
                         continue
-                    turno = Turno(liberi[i:i + s],
-                                  [(coppie_uguali[x], coppie_uguali[x + 1]) for x in range(0, 2 * d, 2)]
-                                  + [(c, QUALIFICATO) for c in compagni[j:j + k]])
-                    if vincitori == 0:
-                        if solo_con_piu and coppie_uguali_usate + d < massimo_coppie_uguali:
-                            continue
-                        scala = Scala(list(reversed(turni + [turno])), qualificati_uscenti)
-                        if _calcola_posti(scala.turni, qualificati_uscenti):
-                            trovate.append(scala)
+                    # Le coppie di due ammessi sono "se possibile" di pari classifica
+                    # (Volume I, capitolo IV, B.2): se no, costano di piu'. Negli esercizi
+                    # del manuale sono i piu' deboli di quelli che entrano nel turno; con
+                    # coppie_sopra possono essere anche i piu' forti, o gli uni e gli altri.
+                    blocco = liberi[i:i + s + 2 * d]
+                    modi = []
+                    for sopra in range(d + 1 if s and coppie_sopra else 1):
+                        singoli = blocco[2 * sopra:2 * sopra + s]
+                        if all(singoli != gia for gia, _ in modi):
+                            modi.append((singoli, blocco[:2 * sopra] + blocco[2 * sopra + s:]))
+                    for singoli, coppie_uguali in modi:
+                        turno = Turno(singoli,
+                                      [(coppie_uguali[x], coppie_uguali[x + 1]) for x in range(0, 2 * d, 2)]
+                                      + [(c, QUALIFICATO) for c in compagni[j:j + k]])
+                        if vincitori == 0:
+                            if solo_con_piu and coppie_uguali_usate + d < massimo_coppie_uguali:
+                                continue
+                            scala = Scala(list(reversed(turni + [turno])), qualificati_uscenti)
+                            if _calcola_posti(scala.turni, qualificati_uscenti):
+                                trovate.append(scala)
+                                trovato = True
+                        elif cerca(2 * vincitori, i + s + 2 * d, j + k, turni + [turno], nuovi,
+                                   coppie_uguali_usate + d):
                             trovato = True
-                    elif cerca(2 * vincitori, i + s + 2 * d, j + k, turni + [turno], nuovi,
-                               coppie_uguali_usate + d):
-                        trovato = True
         if not trovato:
             vicoli_ciechi.add(situazione)
         return trovato
@@ -204,29 +239,44 @@ def _aggiorna_turni(turni_di, classifiche, livello):
 
 # --- Il costo di una scala -------------------------------------------------------
 
-def _costo_progressione(differenza):
+def _costo_progressione(differenza, stile=COME_IL_MANUALE):
     """Chi entra (piu' forte) contro il vincitore del turno prima."""
     if differenza <= 0:
         return PESO_PROGRESSIONE_PARI
-    return differenza - 1
+    return stile.salto * (differenza - 1)
 
 
-def _vince(a, b, finale=False):
-    """Chi vince tra due giocatori (livello, incontri a favore): il piu' forte.
+def _vince(a, b, finale=False, tre_tra_pari=0):
+    """Chi vince tra due giocatori (livello, incontri a favore[, incontri tra pari]): il
+    piu' forte. Si possono passare anche solo (livello, incontri a favore).
 
     Nel tabellone finale la raccomandazione 5 (mai piu' di due incontri di fila
-    "in favore di pronostico") non vale (Volume I, capitolo I, H.5): non costa niente."""
-    (livello_a, favore_a), (livello_b, favore_b) = a, b
+    "in favore di pronostico") non vale (Volume I, capitolo I, H.5): non costa niente.
+    Chi entra in gara e gioca tre incontri di fila contro giocatori della sua stessa
+    classifica costa 'tre_tra_pari' (Stile.tre_tra_pari)."""
+    livello_a, favore_a, pari_a = (tuple(a) + (0,))[:3]
+    livello_b, favore_b, pari_b = (tuple(b) + (0,))[:3]
     if livello_b < livello_a:
-        (livello_a, favore_a), (livello_b, favore_b) = (livello_b, favore_b), (livello_a, favore_a)
+        livello_a, favore_a, livello_b, favore_b = livello_b, favore_b, livello_a, favore_a
     favore = favore_a + (livello_b > livello_a)
-    if finale:
-        return (livello_a, favore), 0
-    costo = PESO_DUE_A_FAVORE * (favore == 2) + PESO_TRE_A_FAVORE * (favore >= 3)
-    return (livello_a, favore), costo
+    # Gli incontri tra pari classifica contano solo di fila dal primo incontro: dopo
+    # un incontro contro una classifica diversa non contano piu' (-1). Gli ultimi turni
+    # tra i piu' forti (per esempio semifinale e finale tra 4.1) vanno bene.
+    pari = max(pari_a, pari_b) + 1 if livello_a == livello_b and max(pari_a, pari_b) >= 0 else -1
+    costo = tre_tra_pari * (pari >= 3)
+    if not finale:
+        costo += PESO_DUE_A_FAVORE * (favore == 2) + PESO_TRE_A_FAVORE * (favore >= 3)
+    return (livello_a, favore, pari), costo
 
 
-def _turno_migliore(singoli, vincitori, finale=False):
+def _entra(livello_giocatore, piu_forte=None):
+    """Lo stato (livello, incontri a favore, incontri tra pari) di chi entra in gara. Per
+    la classifica piu' forte del tabellone gli incontri tra pari non contano: alla fine i
+    piu' forti si incontrano tra loro."""
+    return (livello_giocatore, 0, -1 if livello_giocatore == piu_forte else 0)
+
+
+def _turno_migliore(singoli, vincitori, finale=False, stile=COME_IL_MANUALE, piu_forte=None):
     """Chi incontra chi in un turno, con il costo piu' basso.
 
     Si scorrono i vincitori del turno prima, dal piu' forte: ognuno o incontra
@@ -249,15 +299,16 @@ def _turno_migliore(singoli, vincitori, finale=False):
 
         for (j, aperto), (costo, _, _) in strati[-1].items():
             if j < m:
-                _, extra = _vince((singoli[j], 0), vincitori[i], finale)
+                _, extra = _vince(_entra(singoli[j], piu_forte), vincitori[i], finale,
+                                  stile.tre_tra_pari)
                 metti((j + 1, aperto),
-                      costo + _costo_progressione(vincitori[i][0] - singoli[j]) + extra,
+                      costo + _costo_progressione(vincitori[i][0] - singoli[j], stile) + extra,
                       (j, aperto), ("singolo", j))
             if aperto is None:
                 metti((j, i), costo, (j, aperto), ("aspetta",))
             else:
                 a, b = vincitori[aperto], vincitori[i]
-                _, extra = _vince(a, b, finale)
+                _, extra = _vince(a, b, finale, stile.tre_tra_pari)
                 metti((j, None), costo + PESO_COMPRESSIONE * abs(a[0] - b[0]) + extra,
                       (j, aperto), ("compressione", aperto))
         strati.append(nuovo)
@@ -269,14 +320,15 @@ def _turno_migliore(singoli, vincitori, finale=False):
     for i in range(n, 0, -1):
         _, prima, scelta = strati[i][stato]
         if scelta[0] == "singolo":
-            passano.append(_vince((singoli[scelta[1]], 0), vincitori[i - 1])[0])
+            passano.append(_vince(_entra(singoli[scelta[1]], piu_forte), vincitori[i - 1])[0])
         elif scelta[0] == "compressione":
             passano.append(_vince(vincitori[scelta[1]], vincitori[i - 1])[0])
         stato = prima
     return strati[-1][fine][0], passano
 
 
-def costo_della_scala(scala, livello, qualificati_entranti=None, memoria=None):
+def costo_della_scala(scala, livello, qualificati_entranti=None, memoria=None,
+                      stile=COME_IL_MANUALE):
     """Quanto la scala si allontana dalle raccomandazioni: si immagina che vinca
     sempre il giocatore di classifica piu' alta, e che i q perdano contro gli
     ammessi direttamente.
@@ -286,7 +338,9 @@ def costo_della_scala(scala, livello, qualificati_entranti=None, memoria=None):
     """
     livello_q = max(livello.values()) + 1
     finale = scala.qualificati_uscenti == 1
-    costo = PESO_TURNO * len(scala.turni)
+    piu_forte = min((livello[c] for t in scala.turni for c in t.singoli
+                     + [x for coppia in t.coppie for x in coppia if x != QUALIFICATO]), default=None)
+    costo = stile.turno * len(scala.turni)
     vuoti = [not t.singoli and not t.coppie for t in scala.turni]
     if finale:
         # Nel tabellone finale gli ultimi turni senza nessuno che entra (la finale,
@@ -319,11 +373,13 @@ def costo_della_scala(scala, livello, qualificati_entranti=None, memoria=None):
                 continue
             if b != QUALIFICATO:
                 parziale += PESO_COPPIA_DIVERSA * abs(la - lb)
-            vincitore, extra = _vince((la, 0), (lb, 0), finale)
+            vincitore, extra = _vince(_entra(la, piu_forte), _entra(lb, piu_forte), finale,
+                                      stile.tre_tra_pari)
             nuovi.append(vincitore)
             parziale += extra
         if not conti_fatti:
-            extra, passano = _turno_migliore([livello[c] for c in turno.singoli], vincitori, finale)
+            extra, passano = _turno_migliore([livello[c] for c in turno.singoli], vincitori, finale,
+                                             stile, piu_forte)
             parziale += extra
             vincitori = nuovi + passano
             if memoria is not None:
@@ -344,7 +400,8 @@ def costo_della_scala(scala, livello, qualificati_entranti=None, memoria=None):
     return costo
 
 
-def scala_migliore(diretti, qualificati_entranti, qualificati_uscenti, livello):
+def scala_migliore(diretti, qualificati_entranti, qualificati_uscenti, livello,
+                   stile=COME_IL_MANUALE):
     """La scala con il costo piu' basso, e l'elenco di tutte, dalla migliore.
 
     Le coppie di due ammessi si usano il meno possibile (raccomandazione 4): si
@@ -354,12 +411,13 @@ def scala_migliore(diretti, qualificati_entranti, qualificati_uscenti, livello):
     scale = []
     for in_piu in range(MASSIMO_COPPIE_IN_PIU + 1):
         scale += scale_possibili(diretti, qualificati_entranti, qualificati_uscenti,
-                                 coppie_in_piu=in_piu, solo_con_piu=True)
+                                 coppie_in_piu=in_piu, solo_con_piu=True,
+                                 coppie_sopra=stile.coppie_sopra)
         if len(scale) >= SCALE_DA_CONFRONTARE:
             break
     memoria = {}
     for scala in scale:
-        scala.costo = costo_della_scala(scala, livello, qualificati_entranti, memoria)
+        scala.costo = costo_della_scala(scala, livello, qualificati_entranti, memoria, stile)
     scale.sort(key=lambda s: s.costo)
     return (scale[0] if scale else None), scale
 

@@ -13,11 +13,11 @@ import unittest
 from programma import controllo_selezione
 from programma.calcoli import QUALIFICATO, SELEZIONE, calcola
 from programma.dati import ERRORE, leggi_righe
-from programma.selezione import (Scala, _calcola_posti, controlla_scala, leggi_turno,
-                                 scala_migliore, scala_scritta, scrivi_turno)
-from programma.selezione_tabellone import (Incontro, Voce, disegna, prepara, proposta_teste_di_serie,
-                                           scegli_scala,
-                                           voci_di)
+from programma.selezione import (SENZA_SALTI, Scala, _calcola_posti, _vince, controlla_scala,
+                                 leggi_turno, scala_migliore, scala_scritta, scrivi_turno)
+from programma.selezione_tabellone import (Incontro, Voce, corridoi_delle_teste, disegna, prepara,
+                                           proposta_teste_di_serie, scegli_scala, teste_contro_pari,
+                                           teste_sfavorite, voci_di)
 from programma.sorteggio import GIOCATORE, QUALIFICATO_ENTRANTE
 from programma.stampa import pagina
 from prove.test_calcoli import CLASSIFICHE, leggi_elenco
@@ -399,6 +399,14 @@ def _q():
     return Voce(QUALIFICATO_ENTRANTE, 1)
 
 
+# La scala del giudice arbitro che ha mandato il caso (novembre 2026): 26 giocatori,
+# 7 (4.1), 7 (4.2), 4 (4.3), 2 (4.4), 6 (4.5); esce il vincitore.
+SCALA_DEL_GIUDICE = {"turno 1": "coppie 2 (4.5)+(4.5)", "turno 2": "coppie 1 (4.5)+(4.5)",
+                     "turno 3": "2 (4.4); coppie 1 (4.3)+(4.3)",
+                     "turno 4": "1 (4.2), 2 (4.3); coppie 2 (4.2)+(4.2)",
+                     "turno 5": "3 (4.1), 2 (4.2); coppie 1 (4.1)+(4.1)", "turno 6": "2 (4.1)"}
+
+
 class ProveRaccomandazioni(unittest.TestCase):
     """Le raccomandazioni 2, 3, 5 e 6 del manuale (Volume I, capitolo I, lettera H)."""
 
@@ -429,6 +437,50 @@ class ProveRaccomandazioni(unittest.TestCase):
             tabellone = prepara(scala, teste, giocatori_per(diretti), LIVELLO, 0,
                                 random.Random(seme))
             self.assertNotIn("stessa classifica", self.messaggi(tabellone.radici, finale=True))
+
+    def test_teste_di_serie_favorite_dalla_piu_alta(self):
+        # Il giudice arbitro (novembre 2026): con la sua scala il programma dava alla
+        # testa di serie n. 4 due (4.1) e tre (4.2), e alla n. 3 tre (4.1) e due (4.2).
+        diretti = ["4.1"] * 7 + ["4.2"] * 7 + ["4.3"] * 4 + ["4.4"] * 2 + ["4.5"] * 6
+        scala = scala_scritta(SCALA_DEL_GIUDICE, 1)
+        for seme in range(5):
+            with self.subTest(seme=seme):
+                tabellone = prepara(scala, 4, giocatori_per(diretti), LIVELLO, 0, random.Random(seme),
+                                    SENZA_SALTI)
+                self.assertEqual(teste_sfavorite(tabellone, LIVELLO), 0)
+                corridoi = corridoi_delle_teste(tabellone, LIVELLO)
+                self.assertLessEqual(corridoi[4].count(LIVELLO["4.1"]),
+                                     corridoi[3].count(LIVELLO["4.1"]) + 1)
+
+    def test_progressione_senza_salti(self):
+        # Lo stile chiesto dal giudice arbitro: con i suoi 26 iscritti il programma
+        # propone proprio la sua scala, e le teste di serie al primo incontro trovano
+        # sempre una classifica piu' bassa.
+        diretti = ["4.1"] * 7 + ["4.2"] * 7 + ["4.3"] * 4 + ["4.4"] * 2 + ["4.5"] * 6
+        _, tutte = scala_migliore(diretti, 0, 1, LIVELLO, SENZA_SALTI)
+        scala, teste = scegli_scala(tutte, 1, 13, LIVELLO, 0, 4, SENZA_SALTI)
+        self.assertEqual(firma(scala), firma(scala_scritta(SCALA_DEL_GIUDICE, 1)))
+        for seme in range(3):
+            tabellone = prepara(scala, teste, giocatori_per(diretti), LIVELLO, 0, random.Random(seme),
+                                SENZA_SALTI)
+            self.assertEqual(teste_contro_pari(tabellone, LIVELLO), 0)
+            self.assertEqual(teste_sfavorite(tabellone, LIVELLO), 0)
+            self.assertEqual(self.messaggi(tabellone.radici, finale=True), "")
+
+    def test_tre_incontri_di_fila_tra_pari(self):
+        # Chi entra e gioca tre volte di fila contro la sua classifica costa; dopo un
+        # incontro contro una classifica diversa non conta piu'.
+        a, costo = _vince((5, 0), (5, 0), tre_tra_pari=4)
+        a, costo = _vince(a, (5, 0, 1), tre_tra_pari=4)
+        self.assertEqual(costo, 0)
+        _, costo = _vince(a, (5, 0, 2), tre_tra_pari=4)
+        self.assertEqual(costo, 4)
+        b, _ = _vince((4, 0), (5, 0), tre_tra_pari=4)
+        for _ in range(3):
+            b, costo = _vince(b, (4, 0, -1), tre_tra_pari=4)
+            self.assertEqual(costo, 0)
+        # Nello stile del manuale non costa niente.
+        self.assertEqual(_vince(a, (5, 0, 2))[1], 0)
 
     def test_piu_di_due_incontri_in_favore(self):
         radice = Incontro(3, Incontro(2, Incontro(1, _v("4.1"), _q()), Incontro(1, _v("4.4", "A"), _q())),

@@ -20,8 +20,8 @@ from dataclasses import dataclass, field
 
 from programma.calcoli import QUALIFICATO
 from programma.dati import AVVISO, Problema
-from programma.selezione import (PESO_COMPRESSIONE, PESO_COPPIA_DIVERSA, _costo_progressione,
-                                 _vince)
+from programma.selezione import (COME_IL_MANUALE, PESO_COMPRESSIONE, PESO_COPPIA_DIVERSA,
+                                 _costo_progressione, _vince)
 from programma.sorteggio import (GIOCATORE, QUALIFICATO_ENTRANTE, _riga_principale,
                                  numeri_delle_coppie)
 
@@ -277,7 +277,7 @@ def _costo_progressione_disposizione(differenza):
     return (differenza - 1) * differenza // 2
 
 
-def costo_del_tabellone(tabellone, livello):
+def costo_del_tabellone(tabellone, livello, stile=COME_IL_MANUALE):
     livello_q = max(livello.values()) + 1
     costo = 0
     q_parti, giocatori_parti = [], []
@@ -290,7 +290,47 @@ def costo_del_tabellone(tabellone, livello):
     # una parte alle altre abbassa il costo (esercizio 4.04).
     costo += PESO_Q_SBILANCIATI * _squilibrio(q_parti, 1)
     costo += PESO_PARTI_SBILANCIATE * _squilibrio(giocatori_parti, 2)
+    if stile.teste_favorite:
+        costo += stile.teste_favorite * teste_sfavorite(tabellone, livello)
     return costo
+
+
+def corridoi_delle_teste(tabellone, livello):
+    """Per ogni testa di serie (numero -> elenco), le classifiche (come livelli, dalla
+    piu' alta) dei giocatori che puo' incontrare prima di trovare un'altra testa di serie."""
+    livello_q = max(livello.values()) + 1
+    corridoi = {}
+
+    def visita(nodo):
+        """Le teste di serie sotto il nodo, e i livelli degli altri giocatori."""
+        if isinstance(nodo, Voce):
+            if nodo.testa_di_serie:
+                corridoi.setdefault(nodo.testa_di_serie, [])
+                return [nodo.testa_di_serie], []
+            return [], [livello_q if nodo.tipo == QUALIFICATO_ENTRANTE else livello[nodo.classifica]]
+        teste_a, altri_a = visita(nodo.alto)
+        teste_b, altri_b = visita(nodo.basso)
+        if len(teste_a) == 1 and not teste_b:
+            corridoi[teste_a[0]] += altri_b
+        elif len(teste_b) == 1 and not teste_a:
+            corridoi[teste_b[0]] += altri_a
+        return teste_a + teste_b, altri_a + altri_b
+
+    for radice in tabellone.radici:
+        visita(radice)
+    return {k: sorted(v) for k, v in corridoi.items()}
+
+
+def teste_sfavorite(tabellone, livello):
+    """Quante volte una testa di serie ha un corridoio piu' difficile di una testa di
+    serie con il numero piu' alto. Nelle progressioni si favoriscono le teste di serie
+    partendo dalla piu' alta (buona usanza indicata da un giudice arbitro, novembre
+    2026): la n. 3 non deve trovare tre 4.1 e due 4.2 se la n. 4 trova due 4.1 e tre 4.2.
+    Un corridoio e' piu' difficile se, dal giocatore piu' forte, ha prima un giocatore
+    di classifica piu' alta. Negli esercizi del manuale non conta (Stile.teste_favorite)."""
+    corridoi = corridoi_delle_teste(tabellone, livello)
+    difficolta = [tuple(corridoi[k]) + (float("inf"),) for k in sorted(corridoi)]
+    return sum(1 for i, a in enumerate(difficolta) for b in difficolta[i + 1:] if a < b)
 
 
 def _squilibrio(numeri, tolleranza):
@@ -337,12 +377,12 @@ def _scambia(a, b):
             incontro.basso = figlio
 
 
-def migliora(tabellone, livello, rng):
+def migliora(tabellone, livello, rng, stile=COME_IL_MANUALE):
     """Il sorteggio mirato: scambia lati (mai le teste di serie) finche' il costo scende."""
     gruppi = _lati_scambiabili(tabellone)
     if not gruppi:
-        return costo_del_tabellone(tabellone, livello)
-    migliore = costo_del_tabellone(tabellone, livello)
+        return costo_del_tabellone(tabellone, livello, stile)
+    migliore = costo_del_tabellone(tabellone, livello, stile)
     a_vuoto = 0
     while a_vuoto < SCAMBI_A_VUOTO:
         gruppo = rng.choice(gruppi)
@@ -351,7 +391,7 @@ def migliora(tabellone, livello, rng):
             a_vuoto += 1
             continue
         _scambia(a, b)
-        costo = costo_del_tabellone(tabellone, livello)
+        costo = costo_del_tabellone(tabellone, livello, stile)
         if costo < migliore:
             migliore, a_vuoto = costo, 0
         else:
@@ -579,11 +619,11 @@ def proposta_teste_di_serie(scala, minimo, massimo, livello, sezioni=0):
     return T
 
 
-def prepara(scala, teste_di_serie, giocatori, livello, sezioni=0, rng=None):
+def prepara(scala, teste_di_serie, giocatori, livello, sezioni=0, rng=None, stile=COME_IL_MANUALE):
     """Costruisce il tabellone dalla scala: posti, sorteggio mirato, giocatori."""
     rng = rng or random.Random()
     tabellone = costruisci(scala, teste_di_serie, livello, sezioni, rng)
-    migliora(tabellone, livello, rng)
+    migliora(tabellone, livello, rng, stile)
     orienta(tabellone, livello)
     sorteggia_giocatori(tabellone, giocatori, rng)
     return tabellone
@@ -619,19 +659,45 @@ def sezioni_equilibrate(tabellone):
     return max(giocatori) - min(giocatori) <= 2 and max(q) - min(q) <= 1
 
 
-def scegli_scala(scale, minimo, massimo, livello, sezioni=0, teste_scelte=None):
-    """La prima scala (dalla migliore) in cui le teste di serie possono stare al loro
-    posto e le sezioni sono equilibrate; restituisce la scala e il numero delle teste
-    di serie (o None, None)."""
-    for scala in scale:
+def teste_contro_pari(tabellone, livello):
+    """Quante teste di serie giocano il loro primo incontro contro un giocatore della
+    stessa classifica (in coppia, o il vincitore previsto del turno prima). Non e' un
+    errore, ma nello stile "senza salti" si evita (Stile.testa_contro_pari)."""
+    livello_q = max(livello.values()) + 1
+    quante = 0
+    for radice in tabellone.radici:
+        for incontro in incontri_di(radice):
+            for testa, altro in (incontro.lati, reversed(incontro.lati)):
+                if isinstance(testa, Voce) and testa.testa_di_serie:
+                    if _valuta(altro, livello, livello_q)[0][0] == livello[testa.classifica]:
+                        quante += 1
+    return quante
+
+
+def scegli_scala(scale, minimo, massimo, livello, sezioni=0, teste_scelte=None,
+                 stile=COME_IL_MANUALE):
+    """La scala (dalla migliore) in cui le teste di serie possono stare al loro posto e
+    le sezioni sono equilibrate, contando anche (secondo lo stile) le teste di serie che
+    al primo incontro trovano un pari classifica; restituisce la scala e il numero delle
+    teste di serie (o None, None)."""
+    scelta, teste_scelta, costo_scelta = None, None, float("inf")
+    for scala in scale:  # dalla meno costosa
+        if scala.costo >= costo_scelta:
+            break
         teste = 0 if minimo is None else (
             teste_scelte or proposta_teste_di_serie(scala, minimo, massimo, livello, sezioni))
         tabellone = costruisci(scala, teste, livello, sezioni, random.Random(0))
         if not teste_al_loro_posto(tabellone, minimo):
             continue
         if sezioni:
-            migliora(tabellone, livello, random.Random(0))
+            migliora(tabellone, livello, random.Random(0), stile)
             if not sezioni_equilibrate(tabellone):
                 continue
-        return scala, teste
-    return None, None
+        costo = scala.costo
+        if stile.testa_contro_pari:
+            if not sezioni:
+                migliora(tabellone, livello, random.Random(0), stile)
+            costo += stile.testa_contro_pari * teste_contro_pari(tabellone, livello)
+        if costo < costo_scelta:
+            scelta, teste_scelta, costo_scelta = scala, teste, costo
+    return scelta, teste_scelta
