@@ -134,6 +134,18 @@ class ProveMaschera(unittest.TestCase):
             self.assertIn(riga + "\n", nuovo)
         self.assertTrue(nuovo.startswith("# IMPOSTAZIONI DEL TORNEO"))
 
+    def test_progressione(self):
+        maschera = maschera_dal_testo("nome = Uno\ngara = Due\nprogressione = Senza salti\n", CLASSIFICHE)
+        self.assertEqual(maschera.progressione, "senza salti")
+        testo = testo_dalla_maschera(maschera, CLASSIFICHE)
+        self.assertIn("progressione = senza salti\n", testo)
+        self.assertEqual(leggi(testo)[0]["progressione"], "senza salti")
+        # "come il manuale" e' il valore normale: la maschera non lo scrive.
+        maschera = maschera_dal_testo("nome = Uno\ngara = Due\nprogressione = come il manuale\n",
+                                      CLASSIFICHE)
+        self.assertEqual(maschera.progressione, "")
+        self.assertNotIn("progressione", testo_dalla_maschera(maschera, CLASSIFICHE))
+
     def test_niente_teste_di_serie_tra_i_non_classificati(self):
         maschera = Maschera(nome="Uno", gara="Due", divisione_automatica=False,
                             tabelloni=[TabelloneDellaMaschera("4.NC", teste_di_serie=2),

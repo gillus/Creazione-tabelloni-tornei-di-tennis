@@ -213,6 +213,9 @@ def html_della_maschera(maschera, classifiche, conteggio):
                            maschera.qualificati_entranti)
                  + '<span class="nota"> di solito 0: servono solo se il primo tabellone riceve '
                    'giocatori da un tabellone fatto a parte</span></div>')
+    pezzi.append('<label for="m-progressione">Progressione nei tabelloni di selezione</label><div>'
+                 + _scelta("m-progressione", list(m.PROGRESSIONI.items()), maschera.progressione)
+                 + f'<div class="nota">{e(m.SPIEGAZIONE_PROGRESSIONE)}</div></div>')
     quanti = 0 if maschera.divisione_automatica else len(maschera.tabelloni)
     pezzi.append('<label for="m-quanti">Quanti tabelloni</label><div>'
                  + _scelta("m-quanti", [(0, "decisi dal programma")] + [
@@ -290,6 +293,8 @@ def maschera_dai_valori(valori, maschera, classifiche):
     else:
         maschera.date_scritte = valori.get("m-date-scritte", maschera.date_scritte)
     maschera.qualificati_entranti = _numero_dal_valore(valori.get("m-entranti")) or 0
+    if valori.get("m-progressione", "") in m.PROGRESSIONI:
+        maschera.progressione = valori.get("m-progressione", "")
     for numero, tabellone in enumerate(maschera.tabelloni):
         if f"m-alta-{numero}" in valori:
             tabellone.piu_alta = valori[f"m-alta-{numero}"]

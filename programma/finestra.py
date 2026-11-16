@@ -334,6 +334,14 @@ class MascheraTorneo:
         ttk.Label(generale, text="(di solito 0: servono solo se il primo tabellone riceve\n"
                                  "giocatori da un tabellone fatto a parte)", foreground="#666").grid(
             row=6, column=2, columnspan=3, sticky="w", pady=(6, 0))
+        self.progressione = tk.StringVar(self.finestra, m.PROGRESSIONI[maschera.progressione])
+        ttk.Label(generale, text="Progressione nei\ntabelloni di selezione").grid(
+            row=7, column=0, sticky="w", pady=(6, 0))
+        ttk.Combobox(generale, textvariable=self.progressione, width=44, state="readonly",
+                     values=list(m.PROGRESSIONI.values())).grid(
+            row=7, column=1, columnspan=4, sticky="w", pady=(6, 0))
+        ttk.Label(generale, text=m.SPIEGAZIONE_PROGRESSIONE, foreground="#666", wraplength=420,
+                  justify="left").grid(row=8, column=1, columnspan=4, sticky="w")
 
         iscritti = ttk.LabelFrame(cornice, text="Iscritti per classifica", padding=8)
         iscritti.pack(fill="x", pady=(10, 0))
@@ -491,6 +499,8 @@ class MascheraTorneo:
         self.maschera.date_scritte = "" if self.maschera.inizio or self.maschera.fine \
             else self.date_scritte.get()
         self.maschera.qualificati_entranti = int(self.entranti.get() or 0)
+        self.maschera.progressione = next(
+            (valore for valore, testo in m.PROGRESSIONI.items() if testo == self.progressione.get()), "")
         self.leggi_tabelloni()
         return problemi + m.problemi_della_maschera(self.maschera, self.classifiche)
 

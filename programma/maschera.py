@@ -27,12 +27,18 @@ GARE = ("Singolare maschile", "Singolare femminile", "Doppio maschile", "Doppio 
 # Tipo del tabellone: valore nel file -> come si legge nel menu'.
 TIPI = {"": "deciso dal programma", "selezione": "selezione", "estrazione": "estrazione",
         "integrale": "sorteggio integrale (solo tabellone finale)"}
+# Come il programma sceglie la scala dei tabelloni di selezione: valore nel file -> menu'.
+PROGRESSIONI = {"": "come negli esercizi del manuale",
+                "senza salti": "senza salti di classifica (un gruppo alla volta)"}
+SPIEGAZIONE_PROGRESSIONE = ("\"senza salti\": quando si puo', ogni giocatore che entra trova il "
+                            "vincitore della classifica subito sotto, anche con qualche turno in piu'; "
+                            "le teste di serie sono favorite dalla n. 1 in giu'")
 MASSIMO_NUMERO = 32  # i numeri nei menu' (teste di serie, qualificati) arrivano fin qui
 MASSIMO_TABELLONI = 6
 AUTOMATICO = None  # nei menu': "lo propone il programma"
 
 _NOMI_CONOSCIUTI = ("nome", "gara", "date", "tipo", "qualificati entranti",
-                    "qualificati uscenti", "teste di serie")
+                    "qualificati uscenti", "teste di serie", "progressione")
 
 
 @dataclass
@@ -51,6 +57,7 @@ class Maschera:
     fine: object = None
     date_scritte: str = ""  # le date scritte a mano, se non si capiscono (si lasciano cosi')
     qualificati_entranti: int = 0
+    progressione: str = ""  # "" = come negli esercizi del manuale; oppure "senza salti"
     # Divisione in tabelloni scelta dal programma (nessuna riga "tabellone N"):
     # allora conta solo tabelloni[0], per le impostazioni del torneo intero.
     divisione_automatica: bool = True
@@ -224,6 +231,8 @@ def maschera_dal_testo(testo, classifiche):
     else:
         maschera.date_scritte = date
     maschera.qualificati_entranti = _numero(impostazioni.get("qualificati entranti", "")) or 0
+    progressione = " ".join(impostazioni.get("progressione", "").split()).lower()
+    maschera.progressione = progressione if progressione in PROGRESSIONI else ""
 
     if not righe_tabellone:
         maschera.divisione_automatica = True
@@ -289,6 +298,8 @@ def testo_dalla_maschera(maschera, classifiche, presenti=None):
         righe.append(f"date = {date}")
     if maschera.qualificati_entranti:
         righe.append(f"qualificati entranti = {maschera.qualificati_entranti}")
+    if maschera.progressione:
+        righe.append(f"progressione = {maschera.progressione}")
 
     if maschera.divisione_automatica:
         unico = maschera.tabelloni[0]
